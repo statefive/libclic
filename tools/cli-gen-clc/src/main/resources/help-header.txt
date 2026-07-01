@@ -1,0 +1,45 @@
+\n
+Generate a command line configuration from the
+ specified properties files. By default Apache properties will be used; if
+ type inference is not specified, all properties will be treated as
+ strings. Specify (omitting quotes) '-' to read from standard input. If
+ files have spaces or special characters in them, enclose each file in
+ double quotes.\n
+\n
+All properties will be treated as top-level (non-command based) options;
+ however, the API provides the ability to create commands that will have
+ properties associated with them. To take advantage of this, file names of
+ properties files can be prefixed by the colon character, with the name of the
+ command defined before the colon. All properties files defined after such a
+ definition will be associated with the previously defined command.\n
+\n
+For example, to create a command named 'export-files' from a file named 
+ 'cmd1.props', the following definition would be applied:\n
+\n
+    export-files:cmd1.props\n
+\n
+This will create an entry in the generated CLC file that starts with 
+'command.name = export-files' and an auto-generated usage section. Once 
+defined, all subsequent property files do not need to add the above prefix and 
+will automatically be applied to the named command.\n
+\n
+If the file is in a directory relative to the defined command-based properties
+ files, prefix the command name with the directory or directories; for example, 
+if the above file is in the directory named 'src/main/resources/' then the
+ declaration to import the properties will be\n
+\n
+    src/main/resources/export-files:cmd1.props\n
+\n
+Since nested commands are defined as forward slashes, this presents a problem 
+when generating nested commands. The way around this is to separate named 
+commands with an underscore (since this is not a valid character for commands), 
+for example to create a nested command for the above example 'export-files' 
+command named 'media-only', then the prefix applied to file name will be:\n
+\n
+    export-files_media-only:cmd2.props\n
+\n
+This will create a new CLC section with the declaration 
+'command.name = export-files/media-only' containing the properties in the 
+specified file. Again, all subsequent properties defined on the command line 
+will be applied to the given nested command until a new command is defined.
+\n\n

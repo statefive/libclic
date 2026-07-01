@@ -1,0 +1,36 @@
+# 
+# Copyright 2019 www.statefive.org
+# 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#     http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# 
+
+# When version information is invoked, will print "Copyright (C) Some Company 2021; licensed under the MIT license."
+
+global.version.name=version
+global.version.text=Copyright (C) Some Company 2021; licensed under the MIT license.
+
+# 
+# The name must:
+#   - match the option.[name] option configuration. For example, if 
+#     global.version.name is defined as 'version' (not including apostrophes), 
+#     then there must also be an option definition named 'option.version';
+#   - option.[name] hasArg must be false;
+#   - option.[name] must have a description
+# 
+# Defining this will print the version information then quit with 0
+# status.
+# 
+
+option.version.opts=v
+option.version.hasArg=false
+option.version.description=Print version information then quit.

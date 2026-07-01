@@ -1,0 +1,143 @@
+global.help.option.name = help
+
+global.help.command.usage = ${manifest:app-name} [options...] <files...>
+
+global.help.command.header = ${resource:/help-header.txt}
+
+global.help.command.footer = Copyright www.statefive.org.
+
+global.help.format.sort-options = true
+
+global.version.name = version
+global.version.text = ${manifest:app-name}, version ${manifest:Implementation-Version}
+
+option.java-props.opts = j/java-properties
+option.java-props.hasArg = false
+option.java-props.description = When reading the properties use \
+    java.util.Properties to read the input file.
+
+option.allow-dups.opts = A/allow-duplicates
+option.allow-dups.hasArg = false
+option.allow-dups.description = Allow re-defining of properties. It is up to \
+    implementations as to how duplicate properties are handled (and may still \
+    cause an error; refer to the property implementation documentation on how \
+    duplicates are handled).
+
+option.show-import-origin.opts = s/show-import-origin
+option.show-import-origin.hasArg = false
+option.show-import-origin.description = For each block of generated options on \
+    a per-file basis, prefix the CLC (command line configuration) format with \
+    a comment about the full path to file that the properties originated from.
+
+option.output-to.opts = o/output
+option.output-to.hasArg = true
+option.output-to.argName = file
+option.output-to.type = file
+option.output-to.description = Write results to the specified file. By default \
+    information is written to standard output. If the file exists, it will be \
+    overwritten. Optional.
+
+option.excludes.opts = x/excludes
+option.excludes.hasArg = true
+option.excludes.argName = excludes
+option.excludes.description = List of regular expressions to exclude from \
+    generated properties. Only properties that don't match the given regular \
+    expression will be included. Specify multiple expressions with a comma. If \
+    there are spaces, enclose the list in double quotes. Incompatible with \
+    -i/--includes.
+
+option.includes.opts = i/includes
+option.includes.hasArg = true
+option.includes.argName = includes
+option.includes.description = List of regular expressions to include from \
+    generated properties. Only properties that match the given regular \
+    expression will be included. Specify multiple expressions with a comma. If \
+    there are spaces, enclose the list in double quotes. Incompatible with \
+    -x/--excludes.
+
+option.builder.opts = b/builder
+option.builder.hasArg = true
+option.builder.argName = class-name
+option.builder.description = Fully qualified class name of the builder to use; \
+    must be in the class path. Used to load a different properties \
+    implementation. Add to the class path using CLASSPATH_PREFIX.
+
+option.infer-types.opts = I/infer-types
+option.infer-types.hasArg = false
+option.infer-types.description = Attempt to infer types when parsing \
+    properties; out-of-the-box, type inference can be used to associate (for \
+    example) integer, decimal and boolean values to properties. Callers \
+    overriding a property via the command line will have to ensure that the \
+    overridden property is of the same type from the original properties or an \
+    error will be thrown. The types of inferred types may vary across \
+    implementations; consult the implementation documentation to determine \
+    what types can be inferred.
+
+option.natural-numbers-as.opts = N/natural-numbers-as
+option.natural-numbers-as.hasArg = true
+option.natural-numbers-as.argName = type
+option.natural-numbers-as.description = When assigning types to natural \
+    ('whole') numbers, use the specified type. If specified, type inference \
+    will be applied for all properties.
+
+option.real-numbers-as.opts = R/real-numbers-as
+option.real-numbers-as.hasArg = true
+option.real-numbers-as.argName = type
+option.real-numbers-as.description = When assigning types to real \
+    (decimal-based) numbers, use the specified type. If specified, type \
+    inference will be applied for all properties.
+
+option.list-types.opts = l/list-types
+option.list-types.hasArg = false
+option.list-types.description = List available types along with the associated \
+    Java class, then exit.
+
+option.add-header.opts = H/header
+option.add-header.hasArg = false
+option.add-header.description = Add header comments about the tool name and \
+    when the configuration was generated, as well as the switches and \
+    arguments provided to generate the configuration.
+
+option.pad.opts = p/pad
+option.pad.hasArg = false
+option.pad.description = Pad all option-based entries with extra \
+    hash-commented line entries for any option configurations that have not \
+    been defined.
+
+option.insert-defaults.opts = D/insert-defaults
+option.insert-defaults.hasArg = false
+option.insert-defaults.description = For properties that have non-empty \
+    values, add them as 'option.<name>.default' values to the configuration.
+
+option.false-as-unary.opts = F/false-as-unary
+option.false-as-unary.hasArg = false
+option.false-as-unary.description = Treat properties that are set to 'false' \
+    as unary switches. In such a case, supplying the unary switch will set the \
+    property value to 'true'.
+
+option.config.opts = c/config
+option.config.hasArg = true
+option.config.argName = file
+option.config.description = CLC overrides file. CLC entries in the file will \
+    applied when properties are generated.
+option.config.type = file
+option.config.properties = fileType = exists
+
+option.stacktrace.opts = X/stacktrace
+option.stacktrace.hasArg = false
+option.stacktrace.description = When reporting errors also print the stack \
+    trace.
+
+option.value-types.opts = V/value-types
+option.value-types.hasArg = true
+option.value-types.argName = types...
+option.value-types.description = Comma separated list of value types to load; \
+    entries are the name of the value type separated by a colon followed by \
+    the fully qualified class name of the value type. If the type name has \
+    already been loaded by the API of a different class/implementation, it \
+    will be overwritten by the specified implementation. Add to the class path \
+    using CLASSPATH_PREFIX. If there are spaces, include the list in double \
+    quotes.
+
+args.props-files.optional = false
+args.props-files.type = file

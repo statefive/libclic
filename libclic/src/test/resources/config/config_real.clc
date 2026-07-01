@@ -1,0 +1,59 @@
+# 
+# Copyright 2019 www.statefive.org
+# 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#     http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# 
+
+global.help.command.usage=md5-check
+global.help.command.header=Print the MD5 of the specified file, checking if it is \
+    equal to the specified MD5 string.
+global.help.command.footer=Copyright 2019 Apache Software Foundation.
+
+# Implementors do not need to define global.help.option.name - they can 
+# 
+# The name must:
+#   - match the option.[name] option configuration. For example, if 
+#     global.help.option.name is defined as 'help' (not including apostrophes), then
+#     there must also be an option definition named 'option.help';
+#   - option.[name] hasArg must be false;
+# 
+global.help.option.name=help
+
+option.help.opts=h/help
+option.help.hasArg=false
+option.help.description=Print this help then quit.
+
+option.md5.opts=m/md5
+option.md5.hasArg=true
+option.md5.properties=match=[a-zA-Z0-9]+
+option.md5.description=MD5 to test against the file.
+
+option.file.opts=f/file
+option.file.hasArg=true
+option.file.argName=file
+option.file.type=file
+option.file.properties=fileType=exists
+option.file.description=Command line configuration file to parse.
+
+option.dir.opts=d/directory
+option.dir.hasArg=true
+option.dir.argName=dir
+option.dir.type=file
+option.dir.properties=fileType=dir
+option.dir.description=Directory to scan.
+
+option.port.opts=p/port
+option.port.hasArg=true
+option.port.type=int
+option.port.properties=min=80,max=8080
+option.port.description=Port number.

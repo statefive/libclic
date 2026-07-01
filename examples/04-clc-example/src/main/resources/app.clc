@@ -1,0 +1,61 @@
+# Global options
+global.options.opts-type=LONG
+global.help.option.name=help
+global.help.command.usage=${manifest:app-name} [options] <in-dir> <out-dir>
+global.help.command.header=Process files in the given input directory and move them to the specified output directory.
+global.help.command.footer=See some random URL for information
+global.help.switch.opts=help
+global.help.format.auto-usage=false
+global.help.format.column-spacing=5
+global.help.format.left-pad=1
+global.help.format.width=74
+global.help.format.width-from-env=false
+global.help.format.sort-options=false
+
+# Options configuration:
+option.help.opts=help
+option.help.description=Print this help then exit.
+option.help.ignoreCliArgs=true
+
+option.host-ip.opts=host-ip
+option.host-ip.description=Overrides property 'host.ip', default value 'localhost'
+option.host-ip.hasArg=true
+option.host-ip.default=localhost
+
+option.file-mimeTypes.opts=file-mimeTypes
+option.file-mimeTypes.description=MIME types to consider; files that do not match any of the given MIME types will be left in place. Separate multiple MIME types with commas; if there are spaces in the list, surround the arguments with double quotes.
+option.file-mimeTypes.hasArg=true
+option.file-mimeTypes.argName=mimeTypes...
+option.file-mimeTypes.type=list
+option.file-mimeTypes.default=text/html, media/jpg
+
+option.host-protocol.opts=host-protocol
+option.host-protocol.description=Overrides property 'host.protocol', default value 'https'
+option.host-protocol.hasArg=true
+option.host-protocol.default=https
+
+option.file-extensions.opts=file-extensions
+option.file-extensions.description=Overrides property 'file.extensions', default value 'mp3, jpeg'
+option.file-extensions.hasArg=true
+option.file-extensions.type=list
+option.file-extensions.default=mp3, jpeg
+
+option.host-port.opts=host-port
+option.host-port.description=Overrides property 'host.port', default value '1234'
+option.host-port.hasArg=true
+option.host-port.type=int
+option.host-port.properties=min = 1025, max = 65535
+option.host-port.default=1234
+
+option.strip-exif.opts=strip-exif
+option.strip-exif.description=Overrides property 'strip.exif', default value 'false'
+option.strip-exif.hasArg=false
+
+args.in-dir.length=1
+args.in-dir.type=dir
+args.in-dir.properties=dirType = exists
+args.out-dir.length=1
+args.out-dir.type=dir
+args.out-dir.properties=dirType = exists
+args.capped-at-zero.length=0
+

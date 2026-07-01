@@ -1,0 +1,89 @@
+# 
+# Copyright 2019 www.statefive.org
+# 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#     http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# 
+
+global.help.option.name=showHelp
+
+global.help.command.usage=reporttool [command] [options]
+
+global.help.command.header=Supported commands are import and export. Try \
+    \n  reporttool [command] -h\
+    \nor\
+    \n  reporttool [command] --help\
+    \nfor individual help options.\n
+
+global.help.command.footer=Copyright www.statefive.org
+
+option.showHelp.opts=h/help
+option.showHelp.hasArg=false
+option.showHelp.description=Print this help, then quit.
+
+# command: import
+command.name=import
+command.usage=Import reports between the specified dates. \
+    Both dates must be specified.
+
+option.dateFrom.opts=f/from
+option.dateFrom.hasArg=true
+option.dateFrom.argName=date
+option.dateFrom.description=Start date to import the reports for.
+
+option.dateTo.opts=t/to
+option.dateTo.hasArg=true
+option.dateTo.argName=date
+option.dateTo.description=End date to import the reports for.
+
+option.showHelp.opts=h/help
+option.showHelp.hasArg=false
+option.showHelp.description=Show this help then quit.
+
+# command: import/file-type
+command.name=import/file-type
+command.usage=File type to import
+
+option.type.opts=t/type
+option.type.hasArg=true
+option.type.argName=suffix
+option.type.description=Type of file to import.
+
+option.batchSize.opts=b/batch-size
+option.batchSize.hasArg=true
+option.batchSize.argName=size
+option.batchSize.description=Maximum number of reports to import in one go.
+option.batchSize.type=int
+option.batchSize.default=200
+
+option.showHelp.opts=h/help
+option.showHelp.hasArg=false
+option.showHelp.description=Show this help then quit.
+
+# command: export
+command.name=export
+command.usage=Export reports in the specified format to the \
+    given directory.
+
+option.format.opts=f/format
+option.format.hasArg=true
+option.format.argName=format
+option.format.description=Format to export data to.
+
+option.dir.opts=d/directory
+option.dir.hasArg=true
+option.dir.argName=dir
+option.dir.description=Directory to export the reports to.
+
+option.showHelp.opts=h/help
+option.showHelp.hasArg=false
+option.showHelp.description=Show this help then quit.

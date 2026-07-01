@@ -1,0 +1,1 @@
+Sample header information with company ${manifest:Company} and version ${manifest:Version}.

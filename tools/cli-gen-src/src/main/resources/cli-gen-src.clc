@@ -1,0 +1,129 @@
+global.help.option.name = help
+
+global.help.command.usage = ${manifest:app-name} [options] <-c|--clc file>
+
+global.help.command.header = \nVerify a configuration or generate a Java class \
+    for listening to options from a CLC (command line configuration) file. By \
+    default for source generation source file data will be output to standard \
+    output.\n\
+    \n\
+    For variables, the tool will convert all options, arguments and command \
+    arguments as camel case where any non-alphanumeric characters will be \
+    removed and used as the marker to detect when to convert the next \
+    character to uppercase. For example for an option named 'files-to-remove', \
+    the generated variable name will be 'filesToRemove'.\n\
+    \n\
+    Getters will be the variable name prefixed by 'get' and the first letter of \
+    the variable converted to uppercase; in the previous variable example the \
+    getter will be named 'getFilesToRemove'.\n\
+    \n\
+    For arguments, commands and command arguments, the following variable \
+    prefixes are prefixed onto the front of generated variable names, where \
+    underscores will be consumed and the next character converted to \
+    uppercase. The key can be used to override prefix variable names using the \
+    -p/--prefixes option (see below); the value is the prefix applied to \
+    arguments, commands and command arguments respectively:\n\
+    \n\
+    * arguments: key: args, default value: args_\n\
+    * commands: key: command, default value: command_\n\
+    * command arguments key: command-args, default value: command_args_\n\
+    \n\
+    Arguments (for both top-level and command arguments), if fixed-length, \
+    will generate a number of variables and getters equal to the length of the \
+    argument with the index (beginning at zero) incrementing by one for each \
+    argument, applied after the prefix. For unbounded arguments that are not \
+    fixed length no index will be applied and the get-type of the variable \
+    will be a Java 'java.util.List'.\n\
+    \n\
+    If arguments (top-level or command arguments) are defined as value type \
+    list, and are fixed length, the API will generate a variable per item of \
+    the length with the value type of the list. If the last argument of any \
+    top-level or command arguments are unbounded, the the API will generate a \
+    single variable that is a list of lists of the list value type.\n\n
+
+global.help.command.footer = Copyright www.statefive.org.
+
+global.help.format.sort-options = true
+
+global.version.name = version
+
+global.version.text = ${manifest:app-name}, version ${manifest:Implementation-Version}
+
+option.clc-file.opts = c/clc
+option.clc-file.hasArg = true
+option.clc-file.argName = file
+option.clc-file.type = file
+option.clc-file.description = Read the specified CLC file to convert to Java \
+    source. Specify (omitting quotes) '-' to read from standard input.
+
+option.output-dir.opts = o/output-dir
+option.output-dir.hasArg = true
+option.output-dir.argName = dir
+option.output-dir.type = dir
+option.output-dir.properties = dirType = exists
+option.output-dir.description = Write output to the specified directory; the \
+    generated file will be the Java class name with the extension '.java'.
+
+option.package.opts = P/package-name
+option.package.hasArg = true
+option.package.argName = name
+option.package.description = Add the package name to the top of the generated \
+    content. Must be a valid Java package name.
+
+option.class-name.opts = C/class-name
+option.class-name.hasArg = true
+option.class-name.argName = name
+option.class-name.description = Use the specified (valid) Java class name. \
+    Defaults to 'OptionHelper'.
+
+option.command-name.opts = n/command-name
+option.command-name.hasArg = true
+option.command-name.argName = name
+option.command-name.description = When using commands, override the default \
+    command name prefix of 'command' when generating Java member and method \
+    names; use when there is a CLC configuration option already named \
+    'command' within the configuration and commands are being used. The \
+    supplied name must be a valid Java variable name.
+
+option.tabs-as-spaces.opts = S/spaces
+option.tabs-as-spaces.type = int
+option.tabs-as-spaces.properties = min = 1
+option.tabs-as-spaces.hasArg = true
+option.tabs-as-spaces.argName = num
+option.tabs-as-spaces.description = Instead of using tabs when generating source \
+    code, use the number of specified spaces on a per-tab replacement basis.
+
+option.add-header.opts = H/header
+option.add-header.hasArg = false
+option.add-header.description = Add header comments about the tool name and \
+    when the configuration was generated, as well as the switches provided to \
+    generate the source.
+
+option.verify.opts = V/verify
+option.verify.description = Verify the configuration, then exit with a message. \
+    Successful verification exits with status 0, failure exits with status 1. \
+    Verification does not include checking substitutions like ${manifest} and \
+    ${resource}.
+
+option.prefix-prefix.opts = p/prefixes
+option.prefix-prefix.hasArg = true
+option.prefix-prefix.argName = prefixes...
+option.prefix-prefix.type = variable-prefixes
+option.prefix-prefix.default = args = args_, command = command_, command-args = command_args_
+option.prefix-prefix.description = Override the default prefixes for \
+    argument, command and command argument variable names.  Specify as a \
+    comma-separated list of key value pairs where key-value pairs are \
+    separated by '='. Refer to main help for key names and their default \
+    values. If spaces are used, include the list in commas. Underscores are \
+    used to signify joining of characters into camel case, for example \
+    'command_args_' will be converted to 'commandArgs', and for a variable \
+    named 'foo' the final variable name will be converted to 'commandArgsFoo' \
+    because of the trailing underscore on 'command_args_'. All values must \
+    evaluate to a valid Java variable name.
+
+option.stacktrace.opts = X/stacktrace
+option.stacktrace.hasArg = false
+option.stacktrace.description = When reporting errors also print the stack \
+    trace.
+
+args.capped-at-zero.length = 0

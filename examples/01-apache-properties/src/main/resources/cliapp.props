@@ -1,0 +1,6 @@
+host.ip = localhost
+host.port = 1234
+host.protocol = https
+strip.exif = false
+file.mimeTypes = text/html, media/jpg
+file.extensions = mp3, jpeg

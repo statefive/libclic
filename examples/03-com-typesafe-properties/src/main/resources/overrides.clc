@@ -1,0 +1,29 @@
+global.help.command.usage=${manifest:app-name} [options] <in-dir> <out-dir>
+global.help.command.header = Process files in the given input directory and move them \
+    to the specified output directory.
+global.help.command.footer = See some random URL for information
+
+option.file-mimeTypes.argName=mimeTypes...
+option.file-mimeTypes.description=MIME types to consider; files that do not \
+  match any of the given MIME types will be left in place. Separate multiple \
+  MIME types with commas; if there are spaces in the list, surround the \
+  arguments with double quotes.
+option.file-mimeTypes.type = list
+
+option.file-extensions.type = list
+
+# no need to specify type as int, as it it added by type inference; however, set
+# some limits for error checking:
+option.host-port.properties=min = 1025, max = 65535
+
+args.in-dir.length = 1
+args.in-dir.type = dir
+args.in-dir.properties = dirType = exists
+
+args.out-dir.length = 1
+args.out-dir.type = dir
+args.out-dir.properties = dirType = exists
+
+# don't allow more than two arguments to be defined; after this line, no more
+# arguments can be defined:
+args.capped-at-zero.length = 0

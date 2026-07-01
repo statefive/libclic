@@ -1,0 +1,3 @@
+Company: foobar
+Version: 1.0
+License: Some license

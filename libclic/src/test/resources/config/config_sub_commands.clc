@@ -1,0 +1,182 @@
+# 
+# Copyright 2019 www.statefive.org
+# 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#     http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# 
+
+global.help.command.usage=reporttool [command] [options]
+global.help.command.header=Run the specified command. Command options are:\
+    \n  import: import the specified data.\
+    \n  export: export files to JSON format.\
+    \n  find: find things.\
+    \nTry\
+    \n  reporttool [command] -h\
+    \nor \
+    \n  reporttool [command] --help\
+    \nfor options.
+
+global.help.command.footer=Copyright www.statefive.org.
+
+global.help.option.name=help
+
+option.help.opts=h/help
+option.help.description=Print this help then exit.
+
+option.license.opts=l/license
+option.license.description=Print license information then exit.
+
+option.version.opts=v/version
+option.version.description=Show version then exit.
+
+################################################################################
+########################## Command: export #####################################
+################################################################################
+
+command.name=export
+command.usage=Export data from external files (images, video, audio) \
+    for a given device and write them to JSON format. Output to stdout results \
+    of how many files were matched, how many did not match.
+
+option.help.opts=h/help
+option.help.description=Show this help then quit.
+
+option.dir.opts=d/dir
+option.dir.hasArg=true
+option.dir.description=Directory to scan for files; will only consider files \
+    in the specified directory unless -r/--recursive is specified. Required.
+
+option.division.opts=D/division
+option.division.hasArg=true
+option.division.description=Name of the division that the device belongs to; \
+    if it contains spaces, surround the argument with double quotes. Required.
+
+option.exivDateFormat.opts=E/exiv-date-format
+option.exivDateFormat.hasArg=true
+option.exivDateFormat.description=Date format if -e/--exiv-time is \
+    specified; defaults to yyyy:MM:dd HH:mm:ss if not set.
+
+option.exivTime.opts=e/exiv-time
+option.exivTime.description=Obtain file timestamp from file EXIV data.
+
+option.failUnlessOpts.opts=F/fail-unless
+option.failUnlessOpts.description=Do not commit/write changes unless ALL files \
+    considered were matched
+
+option.fileModTime.opts=m/file-mod-time
+option.fileModTime.description=Obtain file timestamp from the system file \
+    modification time.
+
+option.outputDir.opts=o/output-dir
+option.outputDir.hasArg=true
+option.outputDir.description=Directory to export JSON files to; if the \
+    directory does not exist, it is created.
+
+option.datePattern.opts=p/date-pattern
+option.datePattern.hasArg=true
+option.datePattern.description=Date pattern to use when transforming dates \
+    from file names and directories. Do NOT inlclude the file suffix - use \
+    -x/--file-extension for this. For example, for a file named \
+    20180107235906.jpg, the date pattern would be yyyyMMddHHmmss. Date \
+    patterns can include directories, using the path separator /; for example, \
+    the date pattern yyyy-MM-dd/HH-mm-ss would match any file for any file \
+    extension such as 2018-01-07/23-59-06.jpg. Directories can be nested; so \
+    yyyy/MM/dd/HH-mm-ss would match 2018/01/07/23-59-06.jpg
+
+option.recursive.opts=r/recursive
+option.recursive.description=Recursively search nested directories.
+
+option.regexFileMatch.opts=R/regex-file-match
+option.regexFileMatch.hasArg=true
+option.regexFileMatch.description=Regular expression to match files with. \
+    If the regeular expression contains a captured group, this will be used \
+    with -p/--date-pattern. For example, for a regular expression match \
+     'CAM_01_([0-9]*).jpg', for a file named 'CAM_01_20180421134106.jpg' then \
+    20180421134106 will be passed to the -p/--date-pattern option.
+
+option.serial.opts=s/serial
+option.serial.hasArg=true
+option.serial.description=Serial number of the device to import data for. \
+    Required.
+
+option.capturedGroupOrder.opts=C/captured-group-order
+option.capturedGroupOrder.hasArg=true
+option.capturedGroupOrder.description=Use when the date/time are not \
+    in standard time format of descending order of date, for example if using \
+    a US-style date format. Use with -R/--regex-file-match. In such a case, \
+    the regular expression file pattern can contain captured groups that \
+    specify which parts of the date to extract from the regular expression. \
+    Specified as a (forward) slash delimted list of six or seven \
+    case-sensitive characters of the form a/b/c/d/e/f or a/b/c/d/e/f/g where \
+    Y=year, M=month, d=day, H=hour, m=minute, s=second and S=millseconds. \
+    Six characters implies all fields except milliseconds, seven characters \
+    implies all fields used. For example, to specify American style date \
+    format, use Y/d/M/H/m/s; for the same date style with milliseconds, \
+    specify Y/d/M/H/m/s/S. In either case the number of captured groups \
+    specified by the regular expression file pattern must match the number of \
+    characters specified by this option. See -X/--examples for detailed examples.
+
+option.type.opts=t/type
+option.type.hasArg=true
+option.type.description=Report type to import; default is to use mime type, \
+    use this to enforce type if mime type is (for some reason) not present, \
+    or there are several report types that use the same mime type (for example \
+    ASCII text). Types are audio, image, video or rf/wifi/csv
+
+option.examples.opts=X/examples
+option.examples.description=Print example usages then exit.
+
+option.fileExtension.opts=x/file-extension
+option.fileExtension.hasArg=true
+option.fileExtension.description=File extension to match (ignoring case). \
+    If not set, all files will be checked.
+
+################################################################################
+########################## Command: import #####################################
+################################################################################
+
+command.name=import
+command.usage=Import data from external files (images, video, audio) \
+    for a given device and import to local database. Output to stdout results \
+    of how many files were matched, how many did not match.
+
+option.help.opts=h/help
+option.help.description=Show this help then quit.
+
+option.format.opts=f/format
+option.format.hasArg=true
+option.format.argName=format
+option.format.description=Format to export data to.
+
+option.dir.opts=d/directory
+option.dir.hasArg=true
+option.dir.argName=directory
+option.dir.description=Directory to export the reports to.
+
+
+################################################################################
+########################## Command: find #######################################
+################################################################################
+
+command.name=find
+command.usage=Find file that have the text 'Parser' in their name where the \
+    file suffix is .class or .java.
+
+option.help.opts=h/help
+option.help.description=Show this help then quit.
+
+option.dir.opts=d/directory
+option.dir.hasArg=true
+option.dir.argName=directory
+option.dir.type=dir
+option.dir.properties=recursive=true,listener-id=maintester,matches=Parser,suffixes=java class
+option.dir.description=Directory to export the reports to.
