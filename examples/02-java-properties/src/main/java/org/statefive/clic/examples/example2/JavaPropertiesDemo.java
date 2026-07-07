@@ -64,6 +64,7 @@ public class JavaPropertiesDemo {
                                 .withInferTypes()
                                 .withFalseAsUnarySwitch()
                                 .build())
+                .withVersion()
                 .addPropertiesSource(source);
         Properties props = builder.build(args);
 

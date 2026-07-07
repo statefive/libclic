@@ -118,8 +118,9 @@ public class JavaPropertiesBuilder
 
         // now generate a CLC from all the properties:
         ByteArrayOutputStream baos = configurationGenerator.generateConfiguration(
-                properties, configProps, getFilter(), true, 
-                typeInferralConfig, isPad(), isInsertDefaults());
+                properties, configProps, getFilter(), true,
+                typeInferralConfig, isPad(), isInsertDefaults(),
+                getPropertyVersion());
         String configurationData = new String(baos.toByteArray());
         ByteArrayInputStream bis = new ByteArrayInputStream(configurationData.getBytes());
 
@@ -190,7 +191,8 @@ public class JavaPropertiesBuilder
             }
             ByteArrayOutputStream baos = configurationGenerator.generateConfiguration(
                     p, configurationProperties, getFilter(),
-                    header, typeInferralConfig, isPad(), isInsertDefaults());
+                    header, typeInferralConfig, isPad(), isInsertDefaults(),
+                    getPropertyVersion());
             String configData = new String(baos.toByteArray());
             header = false;
             configurationData.append(configData).append(System.lineSeparator());

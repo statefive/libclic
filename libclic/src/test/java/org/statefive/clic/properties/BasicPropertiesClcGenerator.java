@@ -61,6 +61,14 @@ public class BasicPropertiesClcGenerator<P extends BasicProperties>
             boolean pad, boolean insertDefaults) throws IOException {
         throw new UnsupportedOperationException("Operation not supported.");
     }
+    
+    @Override
+    public ByteArrayOutputStream generateConfiguration(P properties, 
+            Configuration config, PropertyNameFilter propertyFilter, 
+            boolean clcGlobalHaeder, TypeInferralConfig typeInferralConfig,
+            boolean pad, boolean insertDefaults, String propertyVersion) throws IOException {
+        throw new UnsupportedOperationException("Operation not supported.");
+    }
 
     /**
      * If inferal of value types is set, for the given value, attempt to infer

@@ -139,5 +139,12 @@ option.value-types.description = Comma separated list of value types to load; \
     using CLASSPATH_PREFIX. If there are spaces, include the list in double \
     quotes.
 
+option.with-version.opts = w/with-version
+option.with-version.hasArg = true
+option.with-version.argName = version
+option.with-version.description = Include the specified property name and use \
+    as the global version value; the property will not be included in the \
+    standard options.
+
 args.props-files.optional = false
 args.props-files.type = file

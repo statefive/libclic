@@ -104,6 +104,13 @@ public abstract class AbstractPropertiesBuilder<P> implements PropertiesBuilder<
      * Property name filter.
      */
     private PropertyNameFilter filter;
+    
+    /**
+     * Property key for versioning.
+     * 
+     * @since 1.1
+     */
+    private String propertyVersion;
 
     /**
      * Builds up information from the CLC (command line configuration) format.
@@ -186,6 +193,28 @@ public abstract class AbstractPropertiesBuilder<P> implements PropertiesBuilder<
     @Override
     public PropertiesBuilder withPropertyNameFilter(PropertyNameFilter filter) {
         this.filter = filter;
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @since 1.1
+     */
+    @Override
+    public PropertiesBuilder withVersion() {
+        propertyVersion = GlobalConfiguration.GLOBAL_VERSION_OPTION_LONG_DEFAULT;
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @since 1.1
+     */
+    @Override
+    public PropertiesBuilder withVersion(String propertyVersionKey) {
+        propertyVersion = propertyVersionKey;
         return this;
     }
 
@@ -329,6 +358,20 @@ public abstract class AbstractPropertiesBuilder<P> implements PropertiesBuilder<
      */
     public Set<String> getOptionNames() {
         return optionNames;
+    }
+
+    /**
+     * Get the named property representing the version. The given property once
+     * transformed to a command line switch will undergo the same transformation
+     * as all other properties.
+     * 
+     * @return the property key value of the version, if present; {@code null}
+     * otherwise.
+     * 
+     * @since 1.1
+     */
+    public String getPropertyVersion() {
+        return propertyVersion;
     }
 
     /**

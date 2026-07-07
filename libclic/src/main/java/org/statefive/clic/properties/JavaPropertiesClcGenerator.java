@@ -68,6 +68,38 @@ public class JavaPropertiesClcGenerator<P extends Properties>
     }
 
     /**
+     * {@inheritDoc}
+     * 
+     * @since 1.1
+     */
+    @Override
+    public ByteArrayOutputStream generateConfiguration(Properties properties,
+            Configuration config, PropertyNameFilter propertyFilter,
+            boolean clcGlobalHeader, TypeInferralConfig typeInferralConfig,
+            boolean pad, boolean insertDefaults, String propertyVersion) throws IOException {
+        Configuration clcOverrides = config;
+        if (clcOverrides == null) {
+            clcOverrides = new PropertiesConfiguration();
+        }
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        Map<String, Object> propMap = new HashMap<>();
+        for (Object key : properties.keySet()) {
+            Object value = properties.get(key.toString());
+            propMap.put(key.toString(), value.toString());
+        }
+        Map<String, String> configMap = new LinkedHashMap<>();
+        for (Iterator<String> it = clcOverrides.getKeys(); it.hasNext(); ) {
+            String key = it.next();
+            Object value = clcOverrides.getString(key);
+            configMap.put(key, value.toString());
+        }
+        os.write(generateConfiguration(propMap, configMap,
+                propertyFilter, clcGlobalHeader, typeInferralConfig,
+                pad, insertDefaults, propertyVersion).getBytes());
+        return os;
+    }
+
+    /**
      * Attempt to infer the type based on the regular expression matching of the
      * given value.
      *

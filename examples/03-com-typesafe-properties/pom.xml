@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.statefive</groupId>
     <artifactId>examples.properties.com.typesafe</artifactId>
-    <version>1.0</version>
+    <version>1.1-SNAPSHOT</version>
     <packaging>jar</packaging>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -16,12 +16,12 @@
         <dependency>
             <groupId>org.statefive</groupId>
             <artifactId>libclic</artifactId>
-            <version>1</version>
+            <version>1.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.statefive</groupId>
             <artifactId>com-typesafe-clic-properties</artifactId>
-            <version>1</version>
+            <version>1.1-SNAPSHOT</version>
         </dependency>
     </dependencies>
     <build>

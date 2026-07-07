@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import org.statefive.clic.ClcException;
+import org.statefive.clic.GlobalConfiguration;
 import org.statefive.clic.OptionListener;
 import org.statefive.clic.valuetype.ValueType;
 
@@ -136,6 +137,41 @@ public interface PropertiesBuilder<P> extends OptionListener {
      * @return this.
      */
     PropertiesBuilder withTypeInferralConfig(TypeInferralConfig typeInferralConfig);
+
+    /**
+     * Ensure that global version is added. If any properties contain the
+     * property {@link GlobalConfiguration#GLOBAL_VERSION_OPTION_LONG_DEFAULT},
+     * that property value will be used, otherwise the application manifest
+     * implementation version will be used, an error being thrown otherwise. The
+     * property will be added to the global property version and then the
+     * property itself (if present in the properties) will be removed from the
+     * underlying properties.
+     *
+     * @return this.
+     *
+     * @since 1.1
+     */
+    PropertiesBuilder withVersion();
+
+    /**
+     * Ensure that global version is added using the specified properties-based
+     * version key; used when the property
+     * {@link GlobalConfiguration#GLOBAL_VERSION_OPTION_LONG_DEFAULT} is already
+     * taken for a different purpose. The property value will be used for the
+     * version, if present, otherwise the manifest file implementation version
+     * will be used, an error being thrown otherwise. The property will be added
+     * to the global property version and then the property itself will be
+     * removed from the underlying properties.
+     *
+     * @param propertyVersionKey property key to use to show the application
+     * version; if not present in the properties, the API will fall back to
+     * using the manifest application version.
+     *
+     * @return this.
+     *
+     * @since 1.1
+     */
+    PropertiesBuilder withVersion(String propertyVersionKey);
 
     /**
      * Build the properties against the given command line options. Properties

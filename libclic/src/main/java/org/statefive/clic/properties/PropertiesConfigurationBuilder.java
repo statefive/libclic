@@ -30,6 +30,7 @@ import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.statefive.clic.Clc;
 import org.statefive.clic.ClcException;
 import org.statefive.clic.ClcParser;
+import org.statefive.clic.GlobalConfiguration;
 import org.statefive.clic.valuetype.ValueType;
 
 /**
@@ -131,7 +132,8 @@ public class PropertiesConfigurationBuilder
         // now generate a CLC from all the properties:
         ByteArrayOutputStream baos = configurationGenerator.generateConfiguration(
                 properties, configurationProperties, getFilter(),
-                true, typeInferralConfig, isPad(), isInsertDefaults());
+                true, typeInferralConfig, isPad(), isInsertDefaults(),
+                getPropertyVersion());
         String configData = new String(baos.toByteArray());
         ByteArrayInputStream bis = new ByteArrayInputStream(configData.getBytes());
         // the properties are the 'original' properties read from the streams;
@@ -140,7 +142,7 @@ public class PropertiesConfigurationBuilder
         properties = new PropertiesConfiguration();
         properties.setListDelimiterHandler(new DefaultListDelimiterHandler(
                 DEFAULT_LIST_DELIMITER));
-        
+
         // finally, amalgamate all of the above properties:
         for (PropertiesConfigurationReader reader : readers) {
             for (Iterator<String> it = reader.getProperties().getKeys(); it.hasNext();) {
@@ -209,7 +211,8 @@ public class PropertiesConfigurationBuilder
             }
             ByteArrayOutputStream baos = configurationGenerator.generateConfiguration(
                     c, configurationProperties, getFilter(),
-                    first, typeInferralConfig, isPad(), isInsertDefaults());
+                    first, typeInferralConfig, isPad(), isInsertDefaults(),
+                    getPropertyVersion());
             String configData = new String(baos.toByteArray());
             first = false;
             configurationData.append(configData).append(System.lineSeparator());

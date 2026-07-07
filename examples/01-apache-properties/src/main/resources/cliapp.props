@@ -4,3 +4,4 @@ host.protocol = https
 strip.exif = false
 file.mimeTypes = text/html, media/jpg
 file.extensions = mp3, jpeg
+version = ${manifest:app-name}, version ${manifest:Implementation-Version}

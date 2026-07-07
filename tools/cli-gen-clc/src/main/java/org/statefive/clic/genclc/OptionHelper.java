@@ -95,6 +95,13 @@ public class OptionHelper implements OptionListener, ArgsListener {
      * Value read from the command line for value types to load.
      */
     private String valueTypes;
+    
+    /**
+     * Property version name to use for the global version value.
+     * 
+     * @since 1.1
+     */
+    private String version;
 
     /**
      * File to output to (if set).
@@ -202,8 +209,13 @@ public class OptionHelper implements OptionListener, ArgsListener {
             case "list-types":
                 listTypes = true;
                 break;
+            case "V":
             case "value-types":
                 valueTypes = (String) value;
+                break;
+            case "w":
+            case "with-version":
+                version = (String) value;
                 break;
             case "v":
             case "version":
@@ -359,6 +371,15 @@ public class OptionHelper implements OptionListener, ArgsListener {
      */
     public String getValueTypes() {
         return valueTypes;
+    }
+
+    /**
+     * Get the version property name.
+     * 
+     * @return version name if set; {@code null} otherwise.
+     */
+    public String getVersion() {
+        return version;
     }
 
     /**

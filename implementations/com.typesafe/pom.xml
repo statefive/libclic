@@ -4,18 +4,18 @@
     <parent>
         <groupId>org.statefive</groupId>
         <artifactId>libclic-root</artifactId>
-        <version>1</version>
+        <version>1.1-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
     <artifactId>com-typesafe-clic-properties</artifactId>
     <packaging>jar</packaging>
     <name>com.typesafe CLC properties implementation</name>
-    <version>1</version>
+    <version>1.1-SNAPSHOT</version>
     <dependencies>
         <dependency>
             <groupId>org.statefive</groupId>
             <artifactId>libclic</artifactId>
-            <version>1</version>
+            <version>1.1-SNAPSHOT</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/com.typesafe/config -->
         <dependency>

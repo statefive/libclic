@@ -64,6 +64,7 @@ public class ApachePropertiesDemo {
                                 .withInferTypes()
                                 .withFalseAsUnarySwitch()
                                 .build())
+                .withVersion()
                 .addPropertiesSource(source);
         Configuration props = builder.build(args);
 

@@ -56,6 +56,8 @@ public class OptionHelper implements OptionListener, ArgsListener {
             case "strip-exif":
                 stripExif = true;
                 break;
+            case "version":
+                System.exit(0);
         }
 
     }

@@ -58,9 +58,9 @@ public class PropertiesConfigurationClcGenerator<P extends Configuration>
      * {@inheritDoc}
      */
     @Override
-    public ByteArrayOutputStream generateConfiguration(PropertiesConfiguration properties,
-            Configuration config, PropertyNameFilter propertyFilter,
-            boolean clcGlobalHeader, TypeInferralConfig typeInferralConfig,
+    public ByteArrayOutputStream generateConfiguration(PropertiesConfiguration properties, 
+            Configuration config, PropertyNameFilter propertyFilter, 
+            boolean clcGlobalHeader, TypeInferralConfig typeInferralConfig, 
             boolean pad, boolean insertDefaults) throws IOException {
         Configuration clcOverrides = config;
         if (clcOverrides == null) {
@@ -84,6 +84,41 @@ public class PropertiesConfigurationClcGenerator<P extends Configuration>
         os.write(generateConfiguration(propMap, configMap,
                 propertyFilter, clcGlobalHeader, typeInferralConfig, pad,
                 insertDefaults).getBytes());
+        return os;
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @since 1.1
+     */
+    @Override
+    public ByteArrayOutputStream generateConfiguration(PropertiesConfiguration properties,
+            Configuration config, PropertyNameFilter propertyFilter,
+            boolean clcGlobalHeader, TypeInferralConfig typeInferralConfig,
+            boolean pad, boolean insertDefaults, String propertyVersion) throws IOException {
+        Configuration clcOverrides = config;
+        if (clcOverrides == null) {
+            clcOverrides = new PropertiesConfiguration();
+        }
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        Map<String, Object> propMap = new HashMap<>();
+        for (Iterator<String> it = properties.getKeys(); it.hasNext();) {
+            String key = it.next();
+            String value = properties.getString(key);
+            propMap.put(key, value);
+        }
+        Map<String, String> configMap = new LinkedHashMap<>();
+        for (Iterator<String> it = clcOverrides.getKeys(); it.hasNext(); ) {
+            String key = it.next();
+            Object value = clcOverrides.getString(key);
+            configMap.put(key, value.toString());
+        }
+        // keep a reference, used to infer value types:
+        this.propertiesConfiguration = properties;
+        os.write(generateConfiguration(propMap, configMap,
+                propertyFilter, clcGlobalHeader, typeInferralConfig, pad,
+                insertDefaults, propertyVersion).getBytes());
         return os;
     }
 

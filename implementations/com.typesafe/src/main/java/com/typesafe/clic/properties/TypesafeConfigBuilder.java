@@ -114,7 +114,9 @@ public class TypesafeConfigBuilder extends AbstractPropertiesBuilder<Config> {
 
         // now generate a CLC from all the properties:
         ByteArrayOutputStream baos = configurationGenerator.generateConfiguration(
-                config, configProps, getFilter(), true, typeInferralConfig, false, false);
+                config, configProps, getFilter(), 
+                true, typeInferralConfig, false, false,
+                getPropertyVersion());
         String configurationData = new String(baos.toByteArray());
         ByteArrayInputStream bis = new ByteArrayInputStream(configurationData.getBytes());
 
@@ -188,7 +190,8 @@ public class TypesafeConfigBuilder extends AbstractPropertiesBuilder<Config> {
                 }
                 ByteArrayOutputStream baos = configurationGenerator.generateConfiguration(
                         p, configurationProperties, getFilter(),
-                        first, typeInferralConfig, isPad(), isInsertDefaults());
+                        first, typeInferralConfig, isPad(), isInsertDefaults(),
+                        getPropertyVersion());
                 for (Object key : configurationGenerator.getPropertyMappings().keySet()) {
                     String optionName = AbstractPropertiesReader.convertToOptionName(
                             key.toString());

@@ -85,15 +85,7 @@ public class CliGenClc {
         CliGenClc cliGenConfig = new CliGenClc();
         try {
             cliGenConfig.buildCliOptions(args);
-            try {
-                cliGenConfig.generateConfiguration();
-            } catch (Exception ex) {
-                if (cliGenConfig.isStackTrace()) {
-                    ex.printStackTrace();
-                }
-                System.err.println("Error: " + ex.getMessage());
-                System.exit(1);
-            }
+            cliGenConfig.generateConfiguration();
         } catch (ClcException | IOException ex) {
             if (cliGenConfig.isStackTrace()) {
                 ex.printStackTrace();
@@ -182,8 +174,10 @@ public class CliGenClc {
                 .allowDuplicates(optionHelper.isAllowDuplicates())
                 .pad(optionHelper.isPad())
                 .insertDefaults(optionHelper.isInsertDefaults())
+                .withVersion(optionHelper.getVersion())
                 .withTypeInferralConfig(
-                        optionHelper.getTypeInferralConfigBuilder().build());
+                        optionHelper.getTypeInferralConfigBuilder()
+                                .build());
         String data = propertiesBuilder.buildConfigurationData();
         if (optionHelper.isHeader()) {
             data = getHeader(data);

@@ -72,6 +72,7 @@ public class ComTypeSafePropertiesDemo {
                                 .withInferTypes()
                                 .withFalseAsUnarySwitch()
                                 .build())
+                .withVersion()
                 .addPropertiesSource(source);
         Config config = builder.build(args);
 

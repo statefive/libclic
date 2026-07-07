@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.statefive</groupId>
         <artifactId>libclic-root</artifactId>
-        <version>1</version>
+        <version>1.1-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
     <artifactId>cli-gen-clc</artifactId>
@@ -18,7 +18,7 @@
         <dependency>
             <groupId>org.statefive</groupId>
             <artifactId>libclic</artifactId>
-            <version>1</version>
+            <version>1.1-SNAPSHOT</version>
         </dependency>
         <!-- Source: https://mvnrepository.com/artifact/commons-cli/commons-cli -->
         <dependency>

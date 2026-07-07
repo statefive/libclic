@@ -18,6 +18,7 @@ package org.statefive.clic.properties;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -847,5 +848,56 @@ public class JavaPropertiesBuilderTest
         assertTrue(output.contains("--host-name <arg>  Overrides property 'host.name', default value"));
         assertTrue(output.contains("--host-port <arg>  Overrides property 'host.port', default value"));
         assertTrue(output.contains("--reports <arg>    Overrides property 'reports', default value 'true'"));
+    }
+
+    /**
+     * Test that adding in version adds in the correct value.
+     */
+    @Test
+    public void testBuildWithNamedVersionOutput() throws Exception {
+        JavaPropertiesBuilder instance = new JavaPropertiesBuilder();
+        InputStream isProps = PropertiesTestHelper.create("some.arg = y\nversion-info = version 1.2.3");
+        String[] args = "--version".split(" ");
+        instance.addPropertiesSource(new PropertiesStreamSource(isProps))
+                .withVersion("version-info");
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(baos));
+        instance.build(args);
+        assertEquals("version 1.2.3", baos.toString().trim());
+    }
+
+    /**
+     * Test that adding in version adds in the correct value.
+     */
+    @Test
+    public void testBuildWithVersionOutput() throws Exception {
+        JavaPropertiesBuilder instance = new JavaPropertiesBuilder();
+        InputStream isProps = PropertiesTestHelper.create("some.arg = y\nversion = version 1.2.3");
+        String[] args = "--version".split(" ");
+        instance.addPropertiesSource(new PropertiesStreamSource(isProps))
+                .withVersion();
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(baos));
+        instance.build(args);
+        assertEquals("version 1.2.3", baos.toString().trim());
+    }
+
+    /**
+     * Test that adding in version shows the version option when {@code --help}
+     * is invoked.
+     */
+    @Test
+    public void testBuildWithVersionHelpOutput() throws Exception {
+        JavaPropertiesBuilder instance = new JavaPropertiesBuilder();
+        InputStream isProps = PropertiesTestHelper.create("some.arg = y\nversion = version 1.2.3");
+        String[] args = "--help".split(" ");
+        instance.addPropertiesSource(new PropertiesStreamSource(isProps))
+                .withVersion("version");
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(baos));
+        instance.build(args);
+        String helpOutput = baos.toString();
+        assertTrue(helpOutput.contains("--version"));
+        assertTrue(helpOutput.contains("Print version then exit."));
     }
 }

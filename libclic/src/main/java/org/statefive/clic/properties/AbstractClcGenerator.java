@@ -54,6 +54,13 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
     private static final String HELP_DEFAULT = "help";
 
     /**
+     * Manifest implementation version.
+     *
+     * @since 1.1
+     */
+    private static final String MANIFEST_IMPLEMENTATION_VERSION = "${manifest:Implementation-Version}";
+
+    /**
      * Map of converted property names; the key will be the command line switch
      * conversion of the key value read from the property file (without the
      * leading {@code --}), which in turn will be the value of the given key.
@@ -171,7 +178,86 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
     protected String generateConfiguration(Map<String, Object> properties,
             Map<String, String> config, PropertyNameFilter propertyFilter,
             boolean clcGlobalHeader, TypeInferralConfig typeInferralConfig,
-            boolean pad, boolean insertDefaults) throws IllegalArgumentException {
+            boolean pad, boolean insertDefaults)
+            throws IllegalArgumentException {
+        return this.generateConfiguration(properties, config, propertyFilter,
+                clcGlobalHeader, typeInferralConfig, pad, insertDefaults,
+                null);
+    }
+
+    /**
+     * Generate a command line configuration from the given properties. The
+     * generated data will include a help option with the help data displaying
+     * what command line options override a given property along with the
+     * default value of the property.
+     *
+     * <p>
+     * The configuration can be used to override default values of both the
+     * default generated global and option configurations.
+     *
+     * @param properties non-{@code null}, non-empty map of property keys to
+     * property values.
+     *
+     * @param config non-{@code null} command line configuration overrides, used
+     * to override default generated values; may be empty.
+     *
+     * @param propertyFilter filter to appy to either include or exclude given
+     * properties from being generated for command line help; may be
+     * {@code null}, in which case all properties will be included.
+     *
+     * @param clcGlobalHeader {@code true} to generate global/top-level CLC
+     * (command line configuration) header (including) help data as well as the
+     * options configuration; {@code false} to generate only the options
+     * configuration.
+     *
+     * @param typeInferralConfig type inference configuration to use; may be
+     * {@code null}.
+     *
+     * @param pad if {@code true} generate comment-prefixed (hash) entries for
+     * all options that have not been used when generating each configuration
+     * block.
+     *
+     * @param insertDefaults Generate a {@link ClcParser#DEFAULT} value based on
+     * the read-in property value within the configuration.
+     *
+     * @param propertyVersion property version to use for versioning; may be
+     * {@code null}, in which case versioning will not be added to the
+     * application. If specified, if the specified property does not exist, the
+     * application manifest implementation version will be used as the output
+     * version for the application, once the property has been converted to the
+     * appropriate command line switch; otherwise the value specified by the
+     * property will be used as the version output when the version switch is
+     * invoked. If the given property key and manifest implementation version is
+     * not present, an error will be thrown.
+     *
+     * @return non-{@code null} command line configuration format.
+     *
+     * @throws IllegalArgumentException if:
+     *
+     * <p>
+     * <ul>
+     * <li>an overridden {@code hasArg} does not have the value
+     * {@code true};</li>
+     * <li>a {@link ClcParser#DEFAULT} value is supplied when
+     * {@code insertDefaults} is {@code false};</li>
+     * <li>the help options {@link ClcParser#OPTS} has been overridden but not
+     * found against the global option value</li>;
+     * <li>No properties were found (either because there were no properties or
+     * because a filter caused no properties to be accepted);</li>
+     * <li>The filter is non-{@code null} and contains invlid regular expression
+     * patterns; or</li>
+     * <li>Property versioning is specified but the given property is not
+     * present in the properties or the manifest implementation version is not
+     * present.</li>
+     * </ul>
+     *
+     * @since 1.1
+     */
+    protected String generateConfiguration(Map<String, Object> properties,
+            Map<String, String> config, PropertyNameFilter propertyFilter,
+            boolean clcGlobalHeader, TypeInferralConfig typeInferralConfig,
+            boolean pad, boolean insertDefaults, String propertyVersion)
+            throws IllegalArgumentException {
         if (typeInferralConfig != null) {
             this.typeInferralConfig = typeInferralConfig;
         }
@@ -193,7 +279,7 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
                         .append(config.get(GlobalConfiguration.GLOBAL_OPTIONS_OPTS_TYPE))
                         .append(System.lineSeparator());
             }
-            sb.append(generateHelpConfiguration(config));
+            sb.append(generateGlobalConfiguration(config, properties, propertyVersion));
         }
         // keep track of number of generated options:
         int includes = 0;
@@ -213,7 +299,7 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
                 // if valueType == null -> add string property value type?
                 // else:
                 propertyValueTypes.put(optionName, valueType);
-                
+
             }
             // if there's a value type, use the type renderer for the value:
             if (valueType != null) {
@@ -334,11 +420,39 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
      * @param config non-{@code null} configuration to override any default help
      * options; may be empty.
      *
+     * @param properties
+     *
+     * @param propertyVersionInfo
+     *
      * @return non-{@code null} command line configuration for the help.
      *
      * @throws IllegalArgumentException if any help properties are not present.
+     * 
+     * @deprecated
      */
-    String generateHelpConfiguration(Map<String, String> config) {
+    String generateGlobalConfiguration(Map<String, String> config) {
+        return this.generateGlobalConfiguration(config, null, null);
+    }
+
+    /**
+     * Generate a default help configuration, unless overridden by the specified
+     * configuration.
+     *
+     * @param config non-{@code null} configuration to override any default help
+     * options; may be empty.
+     *
+     * @param properties
+     *
+     * @param propertyVersionInfo
+     *
+     * @return non-{@code null} command line configuration for the help.
+     *
+     * @throws IllegalArgumentException if any help properties are not present.
+     * 
+     * @since 1.1
+     */
+    String generateGlobalConfiguration(Map<String, String> config,
+            Map<String, Object> properties, String propertyVersion) {
         StringBuilder sb = new StringBuilder();
         String helpOptionName = HELP_DEFAULT;
         String helpOptionNameOverride = processHelpCommandOptionName(sb, config);
@@ -355,6 +469,10 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
         processHelpFormatWidth(sb, config);
         processHelpFormatWidthFromEnv(sb, config);
         processHelpSortOptions(sb, config);
+        if (propertyVersion != null) {
+            // needs to be added in before any non-global options are generated:
+            addPropertyVersionInformation(sb, propertyVersion, properties);
+        }
         // coment to separate global and standard options
         sb.append(System.lineSeparator())
                 .append("# Options configuration:")
@@ -916,6 +1034,42 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
                     .append(config.get(GlobalConfiguration.GLOBAL_HELP_FORMAT_SORT_OPTIONS))
                     .append(System.lineSeparator());;
         }
+    }
+
+    /**
+     * Add in version information in the form of globally defined version,
+     * taking the version either from the given properties, or, if not present,
+     * using the {@link #MANIFEST_IMPLEMENTATION_VERSION}.
+     *
+     * @param sb non-{@code null} string builder to append generated output to.
+     * 
+     * @param propertyVersion version property name to take the value of the
+     * version from; may be {@code null}.
+     * 
+     * @param properties non-{@code null} properties to check; may be empty.
+     *
+     * @since 1.1
+     */
+    private void addPropertyVersionInformation(StringBuilder sb,
+            String propertyVersion, Map<String, Object> properties) {
+        String value = null;
+        if (properties.get(propertyVersion) != null) {
+            value = properties.get(propertyVersion).toString();
+        } else {
+            value = MANIFEST_IMPLEMENTATION_VERSION;
+        }
+        //finally, remove the properties:
+        if (properties.containsKey(propertyVersion)) {
+            properties.remove(propertyVersion);
+        }
+        sb.append(GlobalConfiguration.GLOBAL_VERSION_OPTION_NAME)
+                .append(" = ")
+                .append(propertyVersion)
+                .append(System.lineSeparator());
+        sb.append(GlobalConfiguration.GLOBAL_VERSION_OPTION_TEXT)
+                .append(" = ")
+                .append(value)
+                .append(System.lineSeparator());
     }
 
     /**

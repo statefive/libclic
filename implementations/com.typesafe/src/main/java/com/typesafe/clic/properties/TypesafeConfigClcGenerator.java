@@ -61,6 +61,30 @@ public class TypesafeConfigClcGenerator<P extends Config> extends AbstractClcGen
             Configuration config, PropertyNameFilter propertyFilter,
             boolean clcGlobalHeader, TypeInferralConfig typeInferralConfig,
             boolean pad, boolean insertDefaults) throws IOException {
+        return this.generateConfiguration(properties, config, propertyFilter, 
+                clcGlobalHeader, typeInferralConfig, pad, insertDefaults, null);
+    }
+    
+    /**
+     * 
+     * @param properties
+     * @param config
+     * @param propertyFilter
+     * @param clcGlobalHeader
+     * @param typeInferralConfig
+     * @param pad
+     * @param insertDefaults
+     * @param propertyVersion
+     * @return
+     * @throws IOException 
+     * 
+     * @since 1.1
+     */
+    @Override
+    public ByteArrayOutputStream generateConfiguration(Config properties,
+            Configuration config, PropertyNameFilter propertyFilter,
+            boolean clcGlobalHeader, TypeInferralConfig typeInferralConfig,
+            boolean pad, boolean insertDefaults, String propertyVersion) throws IOException {
         if (typeInferralConfig != null) {
             this.typeInferralConfig = typeInferralConfig;
         }
@@ -91,7 +115,8 @@ public class TypesafeConfigClcGenerator<P extends Config> extends AbstractClcGen
         }
         baos.write(generateConfiguration(propsMap, configMap,
                 propertyFilter, clcGlobalHeader,
-                this.typeInferralConfig, pad, insertDefaults).getBytes());
+                this.typeInferralConfig, pad, insertDefaults,
+                propertyVersion).getBytes());
         return baos;
     }
 
