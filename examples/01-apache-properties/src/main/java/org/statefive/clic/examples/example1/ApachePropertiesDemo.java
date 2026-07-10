@@ -40,6 +40,7 @@ public class ApachePropertiesDemo {
             new ApachePropertiesDemo(args);
         } catch (ClcException | IOException ex) {
             System.err.println(ex.getMessage());
+            System.exit(1);
         }
     }
 

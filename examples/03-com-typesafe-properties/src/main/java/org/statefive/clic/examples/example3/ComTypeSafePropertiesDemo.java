@@ -44,6 +44,7 @@ public class ComTypeSafePropertiesDemo {
             new ComTypeSafePropertiesDemo(args);
         } catch (ClcException | IOException ex) {
             System.err.println(ex.getMessage());
+            System.exit(1);
         }
     }
 
