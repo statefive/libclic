@@ -26,6 +26,7 @@ import java.util.Map;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.PropertiesConfiguration;
 import org.apache.commons.lang3.StringUtils;
+import org.statefive.clic.ClcException;
 import org.statefive.clic.properties.AbstractClcGenerator;
 import org.statefive.clic.properties.PropertyNameFilter;
 import org.statefive.clic.properties.TypeInferralConfig;
@@ -52,49 +53,30 @@ import org.statefive.clic.valuetype.ListType;
  * @param <P>
  */
 public class TypesafeConfigClcGenerator<P extends Config> extends AbstractClcGenerator<Config> {
+    
+    private Config config;
+
+    @Override
+    public void setProperties(Config config) {
+        this.config = config;
+    }
 
     /**
-     * {@inheritDoc}
-     */
-    @Override
-    public ByteArrayOutputStream generateConfiguration(Config properties,
-            Configuration config, PropertyNameFilter propertyFilter,
-            boolean clcGlobalHeader, TypeInferralConfig typeInferralConfig,
-            boolean pad, boolean insertDefaults) throws IOException {
-        return this.generateConfiguration(properties, config, propertyFilter, 
-                clcGlobalHeader, typeInferralConfig, pad, insertDefaults, null);
-    }
-    
-    /**
      * 
-     * @param properties
-     * @param config
-     * @param propertyFilter
-     * @param clcGlobalHeader
-     * @param typeInferralConfig
-     * @param pad
-     * @param insertDefaults
-     * @param propertyVersion
      * @return
+     * @throws ClcException
      * @throws IOException 
      * 
      * @since 1.1
      */
     @Override
-    public ByteArrayOutputStream generateConfiguration(Config properties,
-            Configuration config, PropertyNameFilter propertyFilter,
-            boolean clcGlobalHeader, TypeInferralConfig typeInferralConfig,
-            boolean pad, boolean insertDefaults, String propertyVersion) throws IOException {
-        if (typeInferralConfig != null) {
-            this.typeInferralConfig = typeInferralConfig;
-        }
-        Configuration clcOverrides = config;
+    public ByteArrayOutputStream generateConfiguration() throws ClcException, IOException {
         if (clcOverrides == null) {
             clcOverrides = new PropertiesConfiguration();
         }
         Map<String, Object> p = new HashMap<>();
         Map<String, Object> propsMap = new HashMap<>();
-        TypesafeHoconUtils.traverseFromRoot(properties, p);
+        TypesafeHoconUtils.traverseFromRoot(config, p);
         for (String key : p.keySet()) {
             propsMap.put(key, p.get(key));
         }
@@ -113,11 +95,46 @@ public class TypesafeConfigClcGenerator<P extends Config> extends AbstractClcGen
         for (String clcKey : configMap.keySet()) {
             clcMappings.put(clcKey, configMap.get(clcKey));
         }
-        baos.write(generateConfiguration(propsMap, configMap,
-                propertyFilter, clcGlobalHeader,
-                this.typeInferralConfig, pad, insertDefaults,
-                propertyVersion).getBytes());
+        baos.write(generateConfiguration(propsMap, configMap).getBytes());
         return baos;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public ByteArrayOutputStream generateConfiguration(Config properties,
+            Configuration clcConfig, PropertyNameFilter propertyFilter,
+            boolean clcGlobalHeader, TypeInferralConfig typeInferralConfig,
+            boolean pad, boolean insertDefaults) throws IOException {
+        clcOverrides = clcConfig;
+        if (clcOverrides == null) {
+            clcOverrides = new PropertiesConfiguration();
+        }
+        Map<String, Object> p = new HashMap<>();
+        Map<String, Object> propsMap = new HashMap<>();
+        // first, traverse the configuration building up named properties:
+        TypesafeHoconUtils.traverseFromRoot(this.config, p);
+        for (String key : p.keySet()) {
+            propsMap.put(key, p.get(key));
+        }
+        // ... Now convert it to a 'standard' map of properties:
+        Map<String, String> propMap = new HashMap<>();
+        for (Object key : p.keySet()) {
+            Object value = p.get(key.toString());
+            propMap.put(key.toString(), value.toString());
+        }
+        Map<String, String> configMap = new LinkedHashMap<>();
+        for (Iterator<String> it = clcOverrides.getKeys(); it.hasNext();) {
+            String key = it.next();
+            Object value = clcOverrides.getString(key);
+            configMap.put(key, value.toString());
+        }
+        for (String clcKey : configMap.keySet()) {
+            clcMappings.put(clcKey, configMap.get(clcKey));
+        }
+        return this.generateConfiguration(properties, clcOverrides, propertyFilter, 
+                clcGlobalHeader, typeInferralConfig, pad, insertDefaults);
     }
 
     /**

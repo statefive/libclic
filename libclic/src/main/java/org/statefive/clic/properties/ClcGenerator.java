@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.Map;
 import org.apache.commons.configuration2.Configuration;
 import org.statefive.clic.Clc;
+import org.statefive.clic.ClcException;
 import org.statefive.clic.GlobalConfiguration;
 import org.statefive.clic.OptionConfiguration;
 import org.statefive.clic.valuetype.ValueTypeCreationException;
@@ -27,7 +28,7 @@ import org.statefive.clic.valuetype.ValueType;
 
 /**
  * Generate an underlying stream in <i>command line configuration</i> (CLC)
- * format.
+ * format from properties files.
  *
  * <p>
  * Implementations must provide the ability to take the given properties and
@@ -40,6 +41,10 @@ import org.statefive.clic.valuetype.ValueType;
  * Implementations are required to only provide the minimal amount of CLC format
  * properties required to enable mapping command line arguments to underlying
  * properties.
+ *
+ * <p>
+ * Implementations can either create generators by setting fields on a per-field
+ * basis, or implement an associated {@link ClcGeneratorBuilder}.
  *
  * @author rich
  *
@@ -54,38 +59,18 @@ import org.statefive.clic.valuetype.ValueType;
 public interface ClcGenerator<P> {
 
     /**
-     * Create a CLC stream based on the given properties and configuration; the
-     * configuration provides the ability to override the default generated CLC
-     * configuration.
+     * Generate a CLC stream from the underlying properties.
      *
-     * @param properties non-{@code null} properties.
+     * @return non-{@code null} valid CLC stream with properties converted to
+     * valid format CLC.
      *
-     * @param config configuration properties to override underlying CLC values;
-     * may be {@code null}.
+     * @throws ClcException
      *
-     * @param propertyFilter filter to apply to include or exclude properties
-     * when displaying them via command line help; may be {@code null}.
+     * @throws IOException if the properties cannot be read.
      *
-     * @param clcGlobalHeader {@code true} to generated top-level/global CLC
-     * header (including help) (as well as the options read in), {@code false}
-     * to generate the option configuration only.
-     *
-     * @param typeInferralConfig non-{@code null} type inference configuration.
-     *
-     * @param pad {@code true} to add hash-commented sections to each defined
-     * option configuration for all properties that have not been defined.
-     *
-     * @param insertDefaults {@code true} to insert a default value for any
-     * property that is not the empty string.
-     *
-     * @return non-{@code null} valid CLC stream.
-     *
-     * @throws IOException if there is a problem reading the properties.
+     * @since 1.1
      */
-    ByteArrayOutputStream generateConfiguration(P properties, Configuration config,
-            PropertyNameFilter propertyFilter, boolean clcGlobalHeader,
-            TypeInferralConfig typeInferralConfig, boolean pad,
-            boolean insertDefaults) throws IOException;
+    ByteArrayOutputStream generateConfiguration() throws ClcException, IOException;
 
     /**
      * Create a CLC stream based on the given properties and configuration; the
@@ -112,26 +97,109 @@ public interface ClcGenerator<P> {
      * @param insertDefaults {@code true} to insert a default value for any
      * property that is not the empty string.
      *
-     * @param propertyVersion property version to use for versioning; may be
-     * {@code null}, in which case versioning will not be added to the
-     * application. If specified, if the specified property does not exist, the
-     * application manifest implementation version will be used as the output
-     * version for the application, once the property has been converted to the
-     * appropriate command line switch; otherwise the value specified by the
-     * property will be used as the version output when the version switch is
-     * invoked. If the given property key and manifest implementation version is
-     * not present, an error will be thrown.
-     *
      * @return non-{@code null} valid CLC stream.
+     *
+     * @throws ClcException
      *
      * @throws IOException if there is a problem reading the properties.
      *
-     * @since 1.1
+     * @deprecated use {@link #generateConfiguration()}; deprecated since 1.1.
      */
     ByteArrayOutputStream generateConfiguration(P properties, Configuration config,
             PropertyNameFilter propertyFilter, boolean clcGlobalHeader,
             TypeInferralConfig typeInferralConfig, boolean pad,
-            boolean insertDefaults, String propertyVersion) throws IOException;
+            boolean insertDefaults) throws ClcException, IOException;
+
+    /**
+     * Add the given properties to this generator.
+     *
+     * @param properties non-{@code null} properties.
+     *
+     * @since 1.1
+     */
+    public void setProperties(P properties);
+
+    /**
+     * Pad the generated CLC format with HASH-commented-out (hash-prefixed)
+     * CLC-based options that were <i>not</i> included in the generated output.
+     *
+     * @param pad {@code true} to pad CLC data with commented-out sections of
+     * other options that are available; {@code false} to only output valid CLC
+     * sections.
+     *
+     * @since 1.1
+     */
+    public void setPad(boolean pad);
+
+    /**
+     * For properties that are not the empty string (or {@code null}), ensure
+     * the property is included as the default value when generating CLC data.
+     *
+     * @param insertDefaults {@code true} to insert defaults; {@code false}
+     * otherwise.
+     *
+     * @since 1.1
+     */
+    public void setInsertDefault(boolean insertDefaults);
+
+    /**
+     * Set the global header for the section of generated CLC content; this
+     * could include global help and version information.
+     *
+     * @param header {@code true} to include global header data; {@code false}
+     * otherwise.
+     *
+     * @since 1.1
+     */
+    public void setHeader(boolean header);
+
+    /**
+     * Set the version as the given property value text. If {@code null}, do not
+     * include versioning information. If supplied the property will be
+     * available as an option to print the application version once converted to
+     * the appropriate command line switch.
+     *
+     * @param propertyVersion non-{@code null} property version text; will be
+     * used as the version supplied by the global version; may be {@code null},
+     * in which case no property version will be used.
+     *
+     * @since 1.1
+     */
+    public void setPropertyVersion(String propertyVersion);
+
+    /**
+     * Add the specified CLC overrides file. Any properties encountered that are
+     * present in the overrides file will use the value in the specified
+     * configuration.
+     *
+     * @param clcOverrides Overrides configuration data; may be {@code null}.
+     * The keys must be valid CLC key definitions and the values of the keys
+     * must be valid for the properties they are defining.
+     *
+     * @since 1.1
+     */
+    public void setClcOverrides(Configuration clcOverrides);
+
+    /**
+     * Use the specified property filter to filter for either including or
+     * excluding given properties.
+     *
+     * @param propertyNameFilter property filter; may be {@code null}, whereby
+     * all properties will be included.
+     *
+     * @since 1.1
+     */
+    public void setPropertyNameFilter(PropertyNameFilter propertyNameFilter);
+
+    /**
+     * Set the given type inference configuration.
+     *
+     * @param typeInferralConfig type inference configuration; may be
+     * {@code null}, in which case all properties will be treated as strings.
+     *
+     * @since 1.1
+     */
+    public void setTypeInferralConfig(TypeInferralConfig typeInferralConfig);
 
     /**
      * Get the map of command line keys mapped to the underlying property keys.

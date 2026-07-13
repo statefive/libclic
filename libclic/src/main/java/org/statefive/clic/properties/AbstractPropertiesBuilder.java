@@ -98,7 +98,7 @@ public abstract class AbstractPropertiesBuilder<P> implements PropertiesBuilder<
      * Determine if to convert underlying property values to an appropriate
      * value type.
      */
-    protected TypeInferralConfig typeInferralConfig;
+    protected TypeInferralConfig typeInferralConfig = new TypeInferralConfig();
 
     /**
      * Property name filter.

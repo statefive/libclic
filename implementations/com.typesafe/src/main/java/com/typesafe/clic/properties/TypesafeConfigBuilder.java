@@ -63,7 +63,6 @@ public class TypesafeConfigBuilder extends AbstractPropertiesBuilder<Config> {
      *
      */
     public TypesafeConfigBuilder() {
-        configurationGenerator = new TypesafeConfigClcGenerator();
         Clc.getInstance().addOptionListener(this);
         PropertiesListenerBindings.getInstance().setClc(Clc.getInstance());
     }
@@ -81,14 +80,12 @@ public class TypesafeConfigBuilder extends AbstractPropertiesBuilder<Config> {
         if (this.getPropertiesSources().isEmpty()) {
             // typesafe API will load internal using ConfigFactory.load()
             PropertyReader<Config> propertiesReader = new TypesafeConfigReader();
-            propertiesReader.setConfigurationGenerator(configurationGenerator);
             propertiesReader.setTypeInferralConfig(typeInferralConfig);
             config = propertiesReader.read(new PropertiesFileSource((File) null));
         } else {
             boolean header = true;
             for (PropertiesSource source : this.getPropertiesSources()) {
                 PropertyReader<Config> propertiesReader = new TypesafeConfigReader();
-                propertiesReader.setConfigurationGenerator(configurationGenerator);
                 propertiesReader.setTypeInferralConfig(typeInferralConfig);
                 propertiesReader.setClcGlobalHeader(header);
                 Config config1 = propertiesReader.read(source);
@@ -111,12 +108,18 @@ public class TypesafeConfigBuilder extends AbstractPropertiesBuilder<Config> {
                 throw new ClcException(ex.getMessage());
             }
         }
-
+        configurationGenerator = new TypesafeConfigClcGeneratorBuilder()
+                .clcOverrides(configProps)
+                .globalHeader(true)
+                .insertDefaults(isInsertDefaults())
+                .pad(isPad())
+                .properties(config)
+                .propertyNameFilter(getFilter())
+                .propertyVersion(getPropertyVersion())
+                .typeInferralConfig(typeInferralConfig)
+                .build();
         // now generate a CLC from all the properties:
-        ByteArrayOutputStream baos = configurationGenerator.generateConfiguration(
-                config, configProps, getFilter(), 
-                true, typeInferralConfig, false, false,
-                getPropertyVersion());
+        ByteArrayOutputStream baos = configurationGenerator.generateConfiguration();
         String configurationData = new String(baos.toByteArray());
         ByteArrayInputStream bis = new ByteArrayInputStream(configurationData.getBytes());
 
@@ -142,8 +145,7 @@ public class TypesafeConfigBuilder extends AbstractPropertiesBuilder<Config> {
 
     /**
      *
-     * @return 
-     * @throws ClcException
+     * @return @throws ClcException
      * @throws IOException
      * @throws PropertiesLoadException
      */
@@ -162,15 +164,23 @@ public class TypesafeConfigBuilder extends AbstractPropertiesBuilder<Config> {
             }
             reader.close();
         }
+        configurationGenerator = new TypesafeConfigClcGeneratorBuilder()
+                .clcOverrides(configurationProperties)
+                .globalHeader(true)
+                .insertDefaults(isInsertDefaults())
+                .pad(isPad())
+                .properties(config)
+                .propertyNameFilter(getFilter())
+                .propertyVersion(getPropertyVersion())
+                .typeInferralConfig(typeInferralConfig)
+                .build();
         if (this.getPropertiesSources().isEmpty()) {
             // typesafe API will load internal using ConfigFactory.load()
             PropertyReader<Config> propertiesReader = new TypesafeConfigReader();
             propertiesReader.setTypeInferralConfig(typeInferralConfig);
             Config p = propertiesReader.read(new PropertiesFileSource((File) null));
             TypesafeHoconUtils.traverse(p, configs, null);
-            ByteArrayOutputStream baos = configurationGenerator.generateConfiguration(
-                    p, configurationProperties, getFilter(),
-                    true, typeInferralConfig, isPad(), isInsertDefaults());
+            ByteArrayOutputStream baos = configurationGenerator.generateConfiguration();
             String configData = new String(baos.toByteArray());
             first = false;
             configurationData.append(configData).append(System.lineSeparator());
@@ -188,10 +198,8 @@ public class TypesafeConfigBuilder extends AbstractPropertiesBuilder<Config> {
                     PropertiesCommandSource pcs = (PropertiesCommandSource) source;
                     generateCommandStart(pcs);
                 }
-                ByteArrayOutputStream baos = configurationGenerator.generateConfiguration(
-                        p, configurationProperties, getFilter(),
-                        first, typeInferralConfig, isPad(), isInsertDefaults(),
-                        getPropertyVersion());
+                // now generate a CLC from all the properties:
+                ByteArrayOutputStream baos = configurationGenerator.generateConfiguration();
                 for (Object key : configurationGenerator.getPropertyMappings().keySet()) {
                     String optionName = AbstractPropertiesReader.convertToOptionName(
                             key.toString());

@@ -33,6 +33,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.statefive.clic.ClcParser;
 import org.statefive.clic.Clc;
+import org.statefive.clic.ClcException;
 import org.statefive.clic.GlobalConfiguration;
 import org.statefive.clic.valuetype.ValueType;
 
@@ -62,7 +63,7 @@ public class AbstractClcGeneratorTest {
      * Initialise value types.
      */
     @BeforeClass
-    public static void setUpClass() {
+    public static void setUpClass() throws Exception {
         Clc.initialiseValueTypeFactory();
     }
 
@@ -70,7 +71,7 @@ public class AbstractClcGeneratorTest {
      * Clear all value types.
      */
     @AfterClass
-    public static void tearDownUpClass() {
+    public static void tearDownUpClass() throws Exception {
         PropertiesTestHelper.clearValueTypes();
     }
 
@@ -78,7 +79,7 @@ public class AbstractClcGeneratorTest {
      * Initialise the configuration generator.
      */
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
         generator = new BasicPropertiesClcGenerator();
     }
 
@@ -87,7 +88,7 @@ public class AbstractClcGeneratorTest {
      * https://stackoverflow.com/questions/3301635/change-private-static-final-field-using-java-reflection
      */
     @After
-    public void tearDown() {
+    public void tearDown() throws Exception {
         Reflect.on(propsBindings).set("instance", null);
         Reflect.onClass(Clc.class).set("instance", null);
     }
@@ -97,7 +98,7 @@ public class AbstractClcGeneratorTest {
      * AbstractConfigurationGenerator.
      */
     @Test
-    public void testGenerateConfigurationOverrideLongOptions() {
+    public void testGenerateConfigurationOverrideLongOptions() throws Exception {
         Map<String, String> config = new HashMap<>();
         config.put(GlobalConfiguration.GLOBAL_OPTIONS_OPTS_TYPE, "BOTH");
         String data = generator.generateConfiguration(
@@ -116,7 +117,7 @@ public class AbstractClcGeneratorTest {
      * AbstractConfigurationGenerator.
      */
     @Test
-    public void testGenerateConfigurationOverrideHelpSwitchOpts() {
+    public void testGenerateConfigurationOverrideHelpSwitchOpts() throws Exception {
         Map<String, String> config = new HashMap<>();
         config.put(GlobalConfiguration.GLOBAL_HELP_SWITCH_OPTS, "H/RTFM");
         String data = generator.generateConfiguration(
@@ -136,7 +137,7 @@ public class AbstractClcGeneratorTest {
      * AbstractConfigurationGenerator.
      */
     @Test
-    public void testGenerateConfigurationOverrideOpts() {
+    public void testGenerateConfigurationOverrideOpts() throws Exception {
         Map<String, String> config = new HashMap<>();
         config.put("option.foo-bar.opts", "f/foo-bar");
         String data = generator.generateConfiguration(
@@ -155,7 +156,7 @@ public class AbstractClcGeneratorTest {
      * AbstractConfigurationGenerator.
      */
     @Test
-    public void testGenerateConfigurationOverride() {
+    public void testGenerateConfigurationOverride() throws Exception {
         Map<String, String> config = new HashMap<>();
         config.put("option.help.ignoreCliArgs", ClcParser.FALSE);
         String data = generator.generateConfiguration(
@@ -174,7 +175,7 @@ public class AbstractClcGeneratorTest {
      * AbstractConfigurationGenerator.
      */
     @Test
-    public void testGenerateConfigurationOverrideHasArg() {
+    public void testGenerateConfigurationOverrideHasArg() throws Exception {
         Map<String, String> config = new HashMap<>();
         config.put("option.foo-bar.hasArg", ClcParser.TRUE);
         String data = generator.generateConfiguration(
@@ -193,7 +194,7 @@ public class AbstractClcGeneratorTest {
      * AbstractConfigurationGenerator.
      */
     @Test
-    public void testGenerateConfigurationOverrideArgValue() {
+    public void testGenerateConfigurationOverrideArgValue() throws Exception {
         Map<String, String> config = new HashMap<>();
         config.put("option.foo-bar.argName", "abc");
         String data = generator.generateConfiguration(
@@ -212,14 +213,14 @@ public class AbstractClcGeneratorTest {
      * AbstractConfigurationGenerator.
      */
     @Test
-    public void testGenerateConfigurationOverrideHasArgThrowsException() {
+    public void testGenerateConfigurationOverrideHasArgThrowsException() throws Exception {
         Map<String, String> config = new HashMap<>();
         config.put("option.foo-bar.hasArg", ClcParser.FALSE);
         try {
             generator.generateConfiguration(getBasicPropertyMap(), config, null, true, 
                 null, false, false);
             fail("Expected an exception");
-        } catch (IllegalArgumentException ex) {
+        } catch (ClcException ex) {
             assertEquals(ex.getMessage(), "Configuration"
                     + " option.foo-bar.hasArg can only be 'true', use type"
                     + " inference to override false ss unary switches.");
@@ -232,7 +233,7 @@ public class AbstractClcGeneratorTest {
      * configuration contains {@code hasArg} as {@code false}.
      */
     @Test
-    public void testGenerateConfigurationOverrideFalseAsUnarySwitch() {
+    public void testGenerateConfigurationOverrideFalseAsUnarySwitch() throws Exception {
         Map<String, String> config = new HashMap<>();
         config.put("option.foo-bar.hasArg", ClcParser.FALSE);
         TypeInferralConfig typeConfig = new TypeInferralConfigBuilder()
@@ -248,7 +249,7 @@ public class AbstractClcGeneratorTest {
      * AbstractConfigurationGenerator.
      */
     @Test
-    public void testGenerateConfigurationOverrideDescription() {
+    public void testGenerateConfigurationOverrideDescription() throws Exception {
         Map<String, String> config = new HashMap<>();
         config.put("option.foo-bar.description", "foo has no bar");
         String data = generator.generateConfiguration(getBasicPropertyMap(), config, null, true, 
@@ -272,7 +273,7 @@ public class AbstractClcGeneratorTest {
      * AbstractConfigurationGenerator.
      */
     @Test
-    public void testGenerateConfigurationOverrideHelpCommandName() {
+    public void testGenerateConfigurationOverrideHelpCommandName() throws Exception {
         Map<String, String> config = new HashMap<>();
         config.put(GlobalConfiguration.GLOBAL_HELP_COMMAND_NAME, "program-foo");
         String data = generator.generateConfiguration(getBasicPropertyMap(), config, null, true, 
@@ -290,7 +291,7 @@ public class AbstractClcGeneratorTest {
      * AbstractConfigurationGenerator.
      */
     @Test
-    public void testGenerateConfigurationOverrideHelpCommandHeader() {
+    public void testGenerateConfigurationOverrideHelpCommandHeader() throws Exception {
         Map<String, String> config = new HashMap<>();
         config.put(GlobalConfiguration.GLOBAL_HELP_COMMAND_HEADER,
                 "Important header information");
@@ -311,7 +312,7 @@ public class AbstractClcGeneratorTest {
      * AbstractConfigurationGenerator.
      */
     @Test
-    public void testGenerateConfigurationOverrideHelpCommandFooter() {
+    public void testGenerateConfigurationOverrideHelpCommandFooter() throws Exception {
         Map<String, String> config = new HashMap<>();
         config.put(GlobalConfiguration.GLOBAL_HELP_COMMAND_FOOTER,
                 "Important footer information");
@@ -332,7 +333,7 @@ public class AbstractClcGeneratorTest {
      * AbstractConfigurationGenerator.
      */
     @Test
-    public void testGenerateConfigurationOverrideHelpAutoUsage() {
+    public void testGenerateConfigurationOverrideHelpAutoUsage() throws Exception {
         Map<String, String> config = new HashMap<>();
         config.put(GlobalConfiguration.GLOBAL_HELP_AUTO_USAGE,
                 ClcParser.TRUE);
@@ -353,7 +354,7 @@ public class AbstractClcGeneratorTest {
      * AbstractConfigurationGenerator.
      */
     @Test
-    public void testGenerateConfigurationOverrideHelpColumnSpacing() {
+    public void testGenerateConfigurationOverrideHelpColumnSpacing() throws Exception {
         Map<String, String> config = new HashMap<>();
         config.put(GlobalConfiguration.GLOBAL_HELP_FORMAT_COLUMN_SPACING,
                 "1");
@@ -374,7 +375,7 @@ public class AbstractClcGeneratorTest {
      * AbstractConfigurationGenerator.
      */
     @Test
-    public void testGenerateConfigurationOverrideHelpFormatLeftPad() {
+    public void testGenerateConfigurationOverrideHelpFormatLeftPad() throws Exception {
         Map<String, String> config = new HashMap<>();
         config.put(GlobalConfiguration.GLOBAL_HELP_FORMAT_LEFT_PAD,
                 "1");
@@ -395,7 +396,7 @@ public class AbstractClcGeneratorTest {
      * AbstractConfigurationGenerator.
      */
     @Test
-    public void testGenerateConfigurationOverrideHelpFormatWidth() {
+    public void testGenerateConfigurationOverrideHelpFormatWidth() throws Exception {
         Map<String, String> config = new HashMap<>();
         config.put(GlobalConfiguration.GLOBAL_HELP_FORMAT_WIDTH,
                 "100");
@@ -416,7 +417,7 @@ public class AbstractClcGeneratorTest {
      * AbstractConfigurationGenerator.
      */
     @Test
-    public void testGenerateConfigurationOverrideHelpFormatWidthFromEnv() {
+    public void testGenerateConfigurationOverrideHelpFormatWidthFromEnv() throws Exception {
         Map<String, String> config = new HashMap<>();
         config.put(GlobalConfiguration.GLOBAL_HELP_FORMAT_WIDTH_FROM_ENV,
                 ClcParser.TRUE);
@@ -437,7 +438,7 @@ public class AbstractClcGeneratorTest {
      * AbstractConfigurationGenerator.
      */
     @Test
-    public void testGenerateConfigurationOverrideHelpOptionName() {
+    public void testGenerateConfigurationOverrideHelpOptionName() throws Exception {
         Map<String, String> config = new HashMap<>();
         config.put(GlobalConfiguration.GLOBAL_HELP_OPTION_NAME, "get-some-help");
         config.put("option.get-some-help.opts", "get-some-help");
@@ -457,7 +458,7 @@ public class AbstractClcGeneratorTest {
      * AbstractConfigurationGenerator.
      */
     @Test
-    public void testGenerateConfigurationOverrideHelpOptions() {
+    public void testGenerateConfigurationOverrideHelpOptions() throws Exception {
         Map<String, String> config = new HashMap<>();
         config.put(GlobalConfiguration.GLOBAL_HELP_OPTION_NAME, "get-some-help");
         config.put("option.get-some-help.opts", "get-some-help");
@@ -478,7 +479,7 @@ public class AbstractClcGeneratorTest {
      * AbstractConfigurationGenerator.
      */
     @Test
-    public void testGenerateConfigurationOverrideHelpOptionsThrowsException() {
+    public void testGenerateConfigurationOverrideHelpOptionsThrowsException() throws Exception {
         Map<String, String> config = new HashMap<>();
         config.put(GlobalConfiguration.GLOBAL_HELP_OPTION_NAME, "get-some-help");
         config.put("option.get-some-help-x.opts", "get-some-help");
@@ -486,7 +487,7 @@ public class AbstractClcGeneratorTest {
             generator.generateConfiguration(getBasicPropertyMap(), config, null, true, 
                 null, false, false);
             fail("Expected an exception");
-        } catch (IllegalArgumentException ex) {
+        } catch (ClcException ex) {
             assertEquals(ex.getMessage(),
                     "No definition for option.get-some-help.opts");
         }
@@ -497,7 +498,7 @@ public class AbstractClcGeneratorTest {
      * AbstractConfigurationGenerator.
      */
     @Test
-    public void testGenerateConfigurationOverrideHelpDescription() {
+    public void testGenerateConfigurationOverrideHelpDescription() throws Exception {
         Map<String, String> config = new HashMap<>();
         config.put(GlobalConfiguration.GLOBAL_HELP_OPTION_NAME, "get-some-help");
         config.put("option.get-some-help.opts", "get-some-help");
@@ -519,7 +520,7 @@ public class AbstractClcGeneratorTest {
      * AbstractConfigurationGenerator.
      */
     @Test
-    public void testGenerateConfigurationOverrideHelpDescriptionThrowsException() {
+    public void testGenerateConfigurationOverrideHelpDescriptionThrowsException() throws Exception {
         Map<String, String> config = new HashMap<>();
         config.put(GlobalConfiguration.GLOBAL_HELP_OPTION_NAME, "get-some-help");
         config.put("option.get-some-help.opts", "get-some-help");
@@ -528,7 +529,7 @@ public class AbstractClcGeneratorTest {
             generator.generateConfiguration(getBasicPropertyMap(), config, null, true, 
                 null, false, false);
             fail("Expected an exception");
-        } catch (IllegalArgumentException ex) {
+        } catch (ClcException ex) {
             assertEquals(ex.getMessage(), "No definition for option.get-some-help.description");
         }
     }
@@ -538,14 +539,14 @@ public class AbstractClcGeneratorTest {
      * AbstractConfigurationGenerator.
      */
     @Test
-    public void testGenerateConfigurationOverrideDefaultThrowsException() {
+    public void testGenerateConfigurationOverrideDefaultThrowsException() throws Exception {
         Map<String, String> config = new HashMap<>();
         config.put("option.foo-bar.default", "123");
         try {
             generator.generateConfiguration(getBasicPropertyMap(), config, null, true, 
                 null, false, false);
             fail("Expected an exception");
-        } catch (IllegalArgumentException ex) {
+        } catch (ClcException ex) {
             assertEquals(ex.getMessage(), "Configuration cannot contain"
                     + " a 'default' value.");
         }
@@ -556,7 +557,7 @@ public class AbstractClcGeneratorTest {
      * AbstractConfigurationGenerator.
      */
     @Test
-    public void testGenerateConfigurationWithIncludes() {
+    public void testGenerateConfigurationWithIncludes() throws Exception {
         Map<String, String> config = new HashMap<>();
         PropertyNameFilter filter = PropertiesTestHelper.createPropertyNameFilter(".*port.*", true);
         String data = generator.generateConfiguration(
@@ -580,7 +581,7 @@ public class AbstractClcGeneratorTest {
      * AbstractConfigurationGenerator.
      */
     @Test
-    public void testGenerateConfigurationWithExcludes() {
+    public void testGenerateConfigurationWithExcludes() throws Exception {
         Map<String, String> config = new HashMap<>();
         PropertyNameFilter filter = PropertiesTestHelper.createPropertyNameFilter(".*port.*", false);
         String data = generator.generateConfiguration(
@@ -604,7 +605,7 @@ public class AbstractClcGeneratorTest {
      * AbstractConfigurationGenerator.
      */
     @Test
-    public void testGenerateConfigurationWithValueTypes() {
+    public void testGenerateConfigurationWithValueTypes() throws Exception {
         Map<String, String> config = new HashMap<>();
         TypeInferralConfig typeInferralConfig = new TypeInferralConfigBuilder()
                 .withInferTypes().build();
@@ -633,7 +634,7 @@ public class AbstractClcGeneratorTest {
      * AbstractConfigurationGenerator.
      */
     @Test
-    public void testGenerateConfigurationWithEmptyFilter() {
+    public void testGenerateConfigurationWithEmptyFilter() throws Exception {
         Map<String, String> config = new HashMap<>();
         PropertyNameFilter filter = PropertiesTestHelper.createPropertyNameFilter("", false);
         String data = generator.generateConfiguration(
@@ -657,14 +658,14 @@ public class AbstractClcGeneratorTest {
      * thrown.
      */
     @Test
-    public void testGenerateConfigurationWithBadFilter() {
+    public void testGenerateConfigurationWithBadFilter() throws Exception {
         Map<String, String> config = new HashMap<>();
         PropertyNameFilter filter = PropertiesTestHelper.createPropertyNameFilter(".*", false);
         try {
             generator.generateConfiguration(
                     getMultiplePropertiesMap(), config, filter, true, null, false, false);
             fail("Expected an exception");
-        } catch (IllegalArgumentException ex) {
+        } catch (ClcException ex) {
             assertEquals(ex.getMessage(), "Configuration not generated -"
                     + " bad filter or no properties?");
         }
@@ -675,14 +676,14 @@ public class AbstractClcGeneratorTest {
      * AbstractConfigurationGenerator.
      */
     @Test
-    public void testGenerateConfigurationWithBadRegex() {
+    public void testGenerateConfigurationWithBadRegex() throws Exception {
         Map<String, String> config = new HashMap<>();
         PropertyNameFilter filter = PropertiesTestHelper.createPropertyNameFilter("[a-z*", false);
         try {
             generator.generateConfiguration(
                     getMultiplePropertiesMap(), config, filter, true, null, false, false);
             fail("Expected an exception");
-        } catch (IllegalArgumentException ex) {
+        } catch (ClcException ex) {
             assertEquals(ex.getMessage(), "Bad regular expression: [a-z*");
         }
     }
@@ -719,7 +720,7 @@ public class AbstractClcGeneratorTest {
      * property value is the empty string.
      */
     @Test
-    public void testGenerateConfigurationNoInsertDefaultsForEmptyString() {
+    public void testGenerateConfigurationNoInsertDefaultsForEmptyString() throws Exception {
         Map<String, String> config = new HashMap<>();
         Map<String, String> props = new HashMap<>();
         props.put("foo", "");
@@ -739,7 +740,7 @@ public class AbstractClcGeneratorTest {
      * configuration overrides is the empty string.
      */
     @Test
-    public void testGenerateConfigurationConfigBasedDefeaultNoInsertDefaultsForEmptyString() {
+    public void testGenerateConfigurationConfigBasedDefeaultNoInsertDefaultsForEmptyString() throws Exception {
         Map<String, String> config = new HashMap<>();
         config.put("option.foo.default", "");
         Map<String, String> props = new HashMap<>();
@@ -760,7 +761,7 @@ public class AbstractClcGeneratorTest {
      * generated for {@code ignoreCliArgs} for the given option.
      */
     @Test
-    public void testGenerateConfigurationConfigPadIgnoreCliArgsAdded() {
+    public void testGenerateConfigurationConfigPadIgnoreCliArgsAdded() throws Exception {
         Map<String, String> config = new HashMap<>();
         Map<String, String> props = new HashMap<>();
         props.put("foo", "bar");
@@ -785,7 +786,7 @@ public class AbstractClcGeneratorTest {
      * generated for {@code ignoreCliArgs} for the given option.
      */
     @Test
-    public void testGenerateConfigurationConfigPadIgnoreCliArgsAddedWhenConfigDefined() {
+    public void testGenerateConfigurationConfigPadIgnoreCliArgsAddedWhenConfigDefined() throws Exception {
         Map<String, String> config = new HashMap<>();
         config.put("option.foo.ignoreCliArgs", ClcParser.FALSE);
         Map<String, String> props = new HashMap<>();
@@ -806,7 +807,7 @@ public class AbstractClcGeneratorTest {
      * generated for {@code argName} for the given option.
      */
     @Test
-    public void testGenerateConfigurationConfigPadArgNameAdded() {
+    public void testGenerateConfigurationConfigPadArgNameAdded() throws Exception {
         Map<String, String> config = new HashMap<>();
         Map<String, String> props = new HashMap<>();
         props.put("foo", "bar");
@@ -831,7 +832,7 @@ public class AbstractClcGeneratorTest {
      * generated for {@code argName} for the given option.
      */
     @Test
-    public void testGenerateConfigurationConfigPadArgNameAddedWhenConfigDefined() {
+    public void testGenerateConfigurationConfigPadArgNameAddedWhenConfigDefined() throws Exception {
         Map<String, String> config = new HashMap<>();
         config.put("option.foo.argName", "arg");
         Map<String, String> props = new HashMap<>();
@@ -852,7 +853,7 @@ public class AbstractClcGeneratorTest {
      * generated for {@code type} for the given option.
      */
     @Test
-    public void testGenerateConfigurationConfigPadTypeAdded() {
+    public void testGenerateConfigurationConfigPadTypeAdded() throws Exception {
         Map<String, String> config = new HashMap<>();
         Map<String, String> props = new HashMap<>();
         props.put("foo", "bar");
@@ -877,7 +878,7 @@ public class AbstractClcGeneratorTest {
      * generated for {@code type} for the given option.
      */
     @Test
-    public void testGenerateConfigurationConfigPadTypeAddedWhenConfigDefined() {
+    public void testGenerateConfigurationConfigPadTypeAddedWhenConfigDefined() throws Exception {
         Map<String, String> config = new HashMap<>();
         config.put("option.foo.type", "int");
         Map<String, String> props = new HashMap<>();
@@ -898,7 +899,7 @@ public class AbstractClcGeneratorTest {
      * generated for {@code properties} for the given option.
      */
     @Test
-    public void testGenerateConfigurationConfigPadPropertiesAdded() {
+    public void testGenerateConfigurationConfigPadPropertiesAdded() throws Exception {
         Map<String, String> config = new HashMap<>();
         Map<String, String> props = new HashMap<>();
         props.put("foo", "bar");
@@ -923,7 +924,7 @@ public class AbstractClcGeneratorTest {
      * generated for {@code type} for the given option.
      */
     @Test
-    public void testGenerateConfigurationConfigPadPropertiesAddedWhenConfigDefined() {
+    public void testGenerateConfigurationConfigPadPropertiesAddedWhenConfigDefined() throws Exception {
         Map<String, String> config = new HashMap<>();
         config.put("option.foo.properties", " p1 = x, p2 = y, p3 = z");
         Map<String, String> props = new HashMap<>();
@@ -944,7 +945,7 @@ public class AbstractClcGeneratorTest {
      * generated for {@code default} for the given option.
      */
     @Test
-    public void testGenerateConfigurationConfigPadDefaultAdded() {
+    public void testGenerateConfigurationConfigPadDefaultAdded() throws Exception {
         Map<String, String> config = new HashMap<>();
         Map<String, String> props = new HashMap<>();
         props.put("foo", "bar");
@@ -969,7 +970,7 @@ public class AbstractClcGeneratorTest {
      * generated for {@code default} for the given option.
      */
     @Test
-    public void testGenerateConfigurationConfigPadDefaultAddedWhenConfigDefined() {
+    public void testGenerateConfigurationConfigPadDefaultAddedWhenConfigDefined() throws Exception {
         Map<String, String> config = new HashMap<>();
         config.put("option.foo.default", "x");
         Map<String, String> props = new HashMap<>();
@@ -990,7 +991,7 @@ public class AbstractClcGeneratorTest {
      *
      * @return non-{@code null} property map.
      */
-    private Map<String, String> getBasicPropertyMap() {
+    private Map<String, String> getBasicPropertyMap() throws Exception {
         Map<String, String> map = new HashMap<>();
         map.put("foo-bar", "bar");
         return map;
@@ -1001,7 +1002,7 @@ public class AbstractClcGeneratorTest {
      *
      * @return non-{@code null} property map.
      */
-    private Map<String, String> getMultiplePropertiesMap() {
+    private Map<String, String> getMultiplePropertiesMap() throws Exception {
         Map<String, String> map = new HashMap<>();
         map.put("host.name", "localhost");
         map.put("host.port", "8080");

@@ -30,6 +30,23 @@ import org.statefive.clic.valuetype.ValueType;
  */
 public class BasicPropertiesClcGenerator<P extends BasicProperties> 
         extends AbstractClcGenerator<P> implements ClcGenerator<P> {
+
+    /**
+     * 
+     * @return
+     * @throws IOException 
+     * 
+     * @since 1.1
+     */
+    @Override
+    public ByteArrayOutputStream generateConfiguration() throws IOException {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    @Override
+    public void setProperties(P properties) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
     
     /**
      * Unused. 
@@ -59,14 +76,6 @@ public class BasicPropertiesClcGenerator<P extends BasicProperties>
             Configuration config, PropertyNameFilter propertyFilter, 
             boolean clcGlobalHaeder, TypeInferralConfig typeInferralConfig,
             boolean pad, boolean insertDefaults) throws IOException {
-        throw new UnsupportedOperationException("Operation not supported.");
-    }
-    
-    @Override
-    public ByteArrayOutputStream generateConfiguration(P properties, 
-            Configuration config, PropertyNameFilter propertyFilter, 
-            boolean clcGlobalHaeder, TypeInferralConfig typeInferralConfig,
-            boolean pad, boolean insertDefaults, String propertyVersion) throws IOException {
         throw new UnsupportedOperationException("Operation not supported.");
     }
 

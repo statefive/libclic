@@ -21,16 +21,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import org.apache.commons.cli.help.HelpFormatter;
+import org.apache.commons.configuration2.Configuration;
+import org.statefive.clic.ClcException;
 import org.statefive.clic.ClcParser;
 import org.statefive.clic.GlobalConfiguration;
 import org.statefive.clic.OptionsTypeEnum;
-import org.statefive.clic.valuetype.BooleanType;
-import org.statefive.clic.valuetype.ByteType;
-import org.statefive.clic.valuetype.DoubleType;
-import org.statefive.clic.valuetype.FloatingPointType;
-import org.statefive.clic.valuetype.IntegralType;
-import org.statefive.clic.valuetype.LongType;
-import org.statefive.clic.valuetype.ShortType;
 import org.statefive.clic.valuetype.ValueType;
 import org.statefive.clic.valuetype.ValueTypeCreationException;
 import org.statefive.clic.valuetype.ValueTypeFactory;
@@ -93,6 +88,39 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
     protected final Map<String, ValueType> propertyValueTypes = new HashMap<>();
 
     /**
+     * Pad the configuration with commented lines containing all options that
+     * have not been included.
+     */
+    protected boolean pad;
+
+    /**
+     * Insert the default value of the property read from underlying properties;
+     * only non-empty string values will be included.
+     */
+    protected boolean insertDefaults;
+
+    /**
+     * Generate global header data for the configuration.
+     */
+    protected boolean header;
+
+    /**
+     * Treat the named property as the text to use for the application version,
+     * if present; otherwise use the manifest implementation version.
+     */
+    protected String propertyVersion;
+
+    /**
+     * Use the supplied configuration to override values in the properties.
+     */
+    protected Configuration clcOverrides;
+
+    /**
+     * Property name filter to include or exclude properties.
+     */
+    protected PropertyNameFilter propertyNameFilter;
+
+    /**
      * Used to determine if to attempt to coerce underlying property values to a
      * {@link ValueType}.
      */
@@ -100,6 +128,78 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
 
     /**
      * {@inheritDoc}
+     *
+     * @since 1.1
+     */
+    @Override
+    public void setPad(boolean pad) {
+        this.pad = pad;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @since 1.1
+     */
+    @Override
+    public void setInsertDefault(boolean insertDefaults) {
+        this.insertDefaults = insertDefaults;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @since 1.1
+     */
+    @Override
+    public void setHeader(boolean header) {
+        this.header = header;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @since 1.1
+     */
+    @Override
+    public void setPropertyVersion(String propertyVersion) {
+        this.propertyVersion = propertyVersion;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @since 1.1
+     */
+    @Override
+    public void setClcOverrides(Configuration clcOverrides) {
+        this.clcOverrides = clcOverrides;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @since 1.1
+     */
+    @Override
+    public void setPropertyNameFilter(PropertyNameFilter propertyNameFilter) {
+        this.propertyNameFilter = propertyNameFilter;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @since 1.1
+     */
+    @Override
+    public void setTypeInferralConfig(TypeInferralConfig typeInferralConfig) {
+        this.typeInferralConfig = typeInferralConfig;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @since 1.1
      */
     @Override
     public Map<String, String> getPropertyMappings() {
@@ -159,30 +259,24 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
      *
      * @return non-{@code null} command line configuration format.
      *
-     * @throws IllegalArgumentException if:
+     * @throws ClcException see {@link #generateConfiguration()
      *
-     * <p>
-     * <ul>
-     * <li>an overridden {@code hasArg} does not have the value
-     * {@code true};</li>
-     * <li>a {@link ClcParser#DEFAULT} value is supplied when
-     * {@code insertDefaults} is {@code false};</li>
-     * <li>the help options {@link ClcParser#OPTS} has been overridden but not
-     * found against the global option value</li>;
-     * <li>No properties were found (either because there were no properties or
-     * because a filter caused no properties to be accepted.; or</li>
-     * <li>The filter is non-{@code null} and contains invlid regular expression
-     * patterns.</li>
-     * </ul>
+     * @deprecated use
+     * {@link #generateConfiguration(java.util.Map, java.util.Map)}; deprecated
+     * since 1.1.
      */
     protected String generateConfiguration(Map<String, Object> properties,
             Map<String, String> config, PropertyNameFilter propertyFilter,
             boolean clcGlobalHeader, TypeInferralConfig typeInferralConfig,
-            boolean pad, boolean insertDefaults)
-            throws IllegalArgumentException {
-        return this.generateConfiguration(properties, config, propertyFilter,
-                clcGlobalHeader, typeInferralConfig, pad, insertDefaults,
-                null);
+            boolean pad, boolean insertDefaults) throws ClcException {
+        this.propertyNameFilter = propertyFilter;
+        this.header = clcGlobalHeader;
+        if (typeInferralConfig != null) {
+            this.typeInferralConfig = typeInferralConfig;
+        }
+        this.pad = pad;
+        this.insertDefaults = insertDefaults;
+        return this.generateConfiguration(properties, config);
     }
 
     /**
@@ -198,77 +292,42 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
      * @param properties non-{@code null}, non-empty map of property keys to
      * property values.
      *
-     * @param config non-{@code null} command line configuration overrides, used
-     * to override default generated values; may be empty.
-     *
-     * @param propertyFilter filter to appy to either include or exclude given
-     * properties from being generated for command line help; may be
-     * {@code null}, in which case all properties will be included.
-     *
-     * @param clcGlobalHeader {@code true} to generate global/top-level CLC
-     * (command line configuration) header (including) help data as well as the
-     * options configuration; {@code false} to generate only the options
-     * configuration.
-     *
-     * @param typeInferralConfig type inference configuration to use; may be
-     * {@code null}.
-     *
-     * @param pad if {@code true} generate comment-prefixed (hash) entries for
-     * all options that have not been used when generating each configuration
-     * block.
-     *
-     * @param insertDefaults Generate a {@link ClcParser#DEFAULT} value based on
-     * the read-in property value within the configuration.
-     *
-     * @param propertyVersion property version to use for versioning; may be
-     * {@code null}, in which case versioning will not be added to the
-     * application. If specified, if the specified property does not exist, the
-     * application manifest implementation version will be used as the output
-     * version for the application, once the property has been converted to the
-     * appropriate command line switch; otherwise the value specified by the
-     * property will be used as the version output when the version switch is
-     * invoked. If the given property key and manifest implementation version is
-     * not present, an error will be thrown.
+     * @param clcOverrides command line configuration overrides, used to
+     * override default generated values; may be {@code null}.
      *
      * @return non-{@code null} command line configuration format.
      *
-     * @throws IllegalArgumentException if:
+     * @throws ClcException if:
      *
      * <p>
      * <ul>
-     * <li>an overridden {@code hasArg} does not have the value
-     * {@code true};</li>
-     * <li>a {@link ClcParser#DEFAULT} value is supplied when
+     * <li>if unary-as-false switches are used and the property default value
+     * for {@code boolean} values is {@code true} - unary switches must always
+     * have the value {@code false};</li>
+     * <li>a default value is supplied in the overrides CLC when
      * {@code insertDefaults} is {@code false};</li>
-     * <li>the help options {@link ClcParser#OPTS} has been overridden but not
-     * found against the global option value</li>;
+     * <li>the global help option {@link ClcParser#OPTS} has been overridden but
+     * not found against the global option value;</li>
      * <li>No properties were found (either because there were no properties or
-     * because a filter caused no properties to be accepted);</li>
-     * <li>The filter is non-{@code null} and contains invlid regular expression
-     * patterns; or</li>
-     * <li>Property versioning is specified but the given property is not
-     * present in the properties or the manifest implementation version is not
-     * present.</li>
+     * because a filter caused no properties to be accepted; or</li>
+     * <li>The filter is non-{@code null} and contains an invalid regular
+     * expression pattern.</li>
      * </ul>
      *
      * @since 1.1
      */
     protected String generateConfiguration(Map<String, Object> properties,
-            Map<String, String> config, PropertyNameFilter propertyFilter,
-            boolean clcGlobalHeader, TypeInferralConfig typeInferralConfig,
-            boolean pad, boolean insertDefaults, String propertyVersion)
-            throws IllegalArgumentException {
-        if (typeInferralConfig != null) {
-            this.typeInferralConfig = typeInferralConfig;
-        }
-        for (String clcKey : config.keySet()) {
-            clcMappings.put(clcKey, config.get(clcKey));
+            Map<String, String> clcOverrides) throws ClcException {
+        if (clcOverrides != null) {
+            for (String clcKey : clcOverrides.keySet()) {
+                clcMappings.put(clcKey, clcOverrides.get(clcKey));
+            }
         }
         StringBuilder sb = new StringBuilder();
-        if (clcGlobalHeader) {
+        if (header) {
             sb.append("# Global options").append(System.lineSeparator());
             // short options are not supported:
-            if (!config.containsKey(GlobalConfiguration.GLOBAL_OPTIONS_OPTS_TYPE)) {
+            if (!clcOverrides.containsKey(GlobalConfiguration.GLOBAL_OPTIONS_OPTS_TYPE)) {
                 sb.append(GlobalConfiguration.GLOBAL_OPTIONS_OPTS_TYPE)
                         .append(" = ")
                         .append(OptionsTypeEnum.LONG.getType())
@@ -276,10 +335,10 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
             } else {
                 sb.append(GlobalConfiguration.GLOBAL_OPTIONS_OPTS_TYPE)
                         .append(" = ")
-                        .append(config.get(GlobalConfiguration.GLOBAL_OPTIONS_OPTS_TYPE))
+                        .append(clcOverrides.get(GlobalConfiguration.GLOBAL_OPTIONS_OPTS_TYPE))
                         .append(System.lineSeparator());
             }
-            sb.append(generateGlobalConfiguration(config, properties, propertyVersion));
+            sb.append(generateGlobalConfiguration(clcOverrides, properties));
         }
         // keep track of number of generated options:
         int includes = 0;
@@ -288,7 +347,7 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
         for (String propertyName : properties.keySet()) {
             String valueStr = properties.get(propertyName).toString();
             Object value = properties.get(propertyName);
-            if (!include(propertyFilter, propertyName)) {
+            if (!include(propertyNameFilter, propertyName)) {
                 continue;
             }
             includes++;
@@ -305,38 +364,38 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
             if (valueType != null) {
                 valueStr = valueType.render(properties.get(propertyName));
             }
-            processOpts(sb, config, optionName);
-            processDescription(sb, config, optionName, propertyName, valueStr);
-            processHasArg(sb, config, optionName, valueStr);
+            processOpts(sb, clcOverrides, optionName);
+            processDescription(sb, clcOverrides, optionName, propertyName, valueStr);
+            processHasArg(sb, clcOverrides, optionName, valueStr);
             String optionHasArg = createOptionName(optionName, ClcParser.HAS_ARG);
-            String hasArg = config.get(optionHasArg);
+            String hasArg = clcOverrides.get(optionHasArg);
             if (ClcParser.TRUE.equals(hasArg.toLowerCase())) {
-                processArgName(sb, config, optionName);
-                processType(sb, config, optionName);
-                processProperties(sb, config, optionName);
+                processArgName(sb, clcOverrides, optionName);
+                processType(sb, clcOverrides, optionName);
+                processProperties(sb, clcOverrides, optionName);
                 String keyDefault = createOptionName(optionName, ClcParser.DEFAULT);
                 if (!insertDefaults) {
-                    if (config.containsKey(keyDefault)) {
-                        throw new IllegalArgumentException("Configuration cannot"
+                    if (clcOverrides.containsKey(keyDefault)) {
+                        throw new ClcException("Configuration cannot"
                                 + " contain a 'default' value.");
                     }
-                } else if (!config.containsKey(keyDefault) && !"".equals(valueStr)) {
+                } else if (!clcOverrides.containsKey(keyDefault) && !"".equals(valueStr)) {
                     String optsKey = createOptionName(optionName, ClcParser.DEFAULT);
                     sb.append(optsKey)
                             .append(" = ")
                             .append(valueStr)
                             .append(System.lineSeparator());
-                    config.put(optsKey, valueStr);
+                    clcOverrides.put(optsKey, valueStr);
                 }
             }
             if (pad) {
-                padConfiguration(sb, config, optionName);
+                padConfiguration(sb, clcOverrides, optionName);
             }
             sb.append(System.lineSeparator());
         }
-        sb.append(generateArgsConfigurations(config));
+        sb.append(generateArgsConfigurations(clcOverrides));
         if (includes == 0) {
-            throw new IllegalArgumentException("Configuration not generated -"
+            throw new ClcException("Configuration not generated -"
                     + " bad filter or no properties?");
         }
         return sb.toString();
@@ -348,17 +407,18 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
      * @param propertyFilter filter to apply; may be {@code null} (in chich case
      * the key will be accepted.
      *
-     * @param key non-{@code null} to check.
+     * @param key non-{@code null} property key to check.
      *
      * @return {@code true} if an include filter has been applied and the key
      * matches the filter expression (or the include list is empty), or an
      * exclude filter is being used and doesn't match the expression;
      * {@code false} otherwise.
      *
-     * @throws IllegalArgumentException if there are regular expression patterns
-     * that have invlid syntax.
+     * @throws ClcException if there are regular expression patterns that have
+     * invlid syntax.
      */
-    private boolean include(PropertyNameFilter propertyFilter, String key) {
+    private boolean include(PropertyNameFilter propertyFilter, String key)
+            throws ClcException {
         Boolean include = null;
         if (propertyFilter != null) {
             if (propertyFilter.isFitlerable()) {
@@ -397,62 +457,46 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
      *
      * @return {@code true} if the value matches; {@code false} otherwise.
      *
-     * @throws IllegalArgumentException if the pattern cannot be compiled.
+     * @throws ClcException if the pattern cannot be compiled.
      */
-    private boolean matches(String regex, String value)
-            throws IllegalArgumentException {
+    private boolean matches(String regex, String value) throws ClcException {
         boolean matches = false;
         try {
             Pattern p = Pattern.compile(regex);
             Matcher m = p.matcher(value);
             matches = m.matches();
         } catch (PatternSyntaxException ex) {
-            throw new IllegalArgumentException("Bad regular expression: "
+            throw new ClcException("Bad regular expression: "
                     + regex, ex);
         }
         return matches;
     }
 
     /**
-     * Generate a default help configuration, unless overridden by the specified
-     * configuration.
+     * Generate global default help and (optionally) version configuration,
+     * unless overridden by the specified configuration. Supplying the empty map
+     * of configuration values will generate defaults for all global help
+     * options.
      *
      * @param config non-{@code null} configuration to override any default help
      * options; may be empty.
      *
-     * @param properties
+     * @param properties properties if property version information is required
+     * (via {@link #setPropertyVersion(java.lang.String)} and the manifest entry
+     * {@code Implementation-Version} is not present, use the the specified
+     * version property present in the properties; {@code null} if property
+     * versioning is not required (or is using the implementation version).
      *
-     * @param propertyVersionInfo
+     * @return non-{@code null} command line configuration output data for the
+     * help and versioning data.
      *
-     * @return non-{@code null} command line configuration for the help.
+     * @throws ClcException if any help properties are not present or are
+     * invalid.
      *
-     * @throws IllegalArgumentException if any help properties are not present.
-     * 
-     * @deprecated
-     */
-    String generateGlobalConfiguration(Map<String, String> config) {
-        return this.generateGlobalConfiguration(config, null, null);
-    }
-
-    /**
-     * Generate a default help configuration, unless overridden by the specified
-     * configuration.
-     *
-     * @param config non-{@code null} configuration to override any default help
-     * options; may be empty.
-     *
-     * @param properties
-     *
-     * @param propertyVersionInfo
-     *
-     * @return non-{@code null} command line configuration for the help.
-     *
-     * @throws IllegalArgumentException if any help properties are not present.
-     * 
      * @since 1.1
      */
     String generateGlobalConfiguration(Map<String, String> config,
-            Map<String, Object> properties, String propertyVersion) {
+            Map<String, Object> properties) throws ClcException {
         StringBuilder sb = new StringBuilder();
         String helpOptionName = HELP_DEFAULT;
         String helpOptionNameOverride = processHelpCommandOptionName(sb, config);
@@ -482,19 +526,16 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
         processHelpKeyIgnoreCliArgs(sb, config, helpOptionName);
         return sb.append(System.lineSeparator()).toString();
     }
-
+    
     /**
-     * This currently DOES NOTHING other than return the empty string builder.
-     *
-     * <p>
-     * That's because the configuration original comes from
-     * {@code java.util.Properties} which are not stored in order. When the
-     * configuration is added the properties are in the wrong order and the
-     * generated configuration cannot be parsed.
+     * Take all argument configurations beginning with {@link ClcParser#ARGS}
+     * and return the results where each entry is separated by a newline. The
+     * entries must be valid argument configuration definitions.
      *
      * @param config non-{@code null} configuration.
      *
-     * @return non-{@code null} empty string builder.
+     * @return Non-empty string of argument configurations, if present; the
+     * empty string otherwise.
      */
     String generateArgsConfigurations(Map<String, String> config) {
         StringBuilder sb = new StringBuilder();
@@ -538,8 +579,8 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
     /**
      * Generate a {@link ClcParser#HAS_ARG} value for the specified option name;
      * if there is no user-defined value present in the supplied configuration
-     * map, a default value will be added to the given builder; otherwise the
-     * user-defined option will be used.
+     * map, {@link ClcParser#TRUE}; otherwise the user-defined option will be
+     * used.
      *
      * <p>
      * Properties are <i>always</i> considered to have an argument by their very
@@ -549,16 +590,23 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
      *
      * @param sb non-{@code null} builder to append to.
      *
-     * @param config non-{@code null} configuration to check; may be empty.
+     * @param clcOverrides non-{@code null} configuration to check; may be
+     * empty.
      *
      * @param value non-{@code null} property value.
      *
      * @param optionName non-{@code null} option name.
+     *
+     * @throws CLCException if any user-defined configuration with
+     * {@link ClcParser#HAS_ARG} is set to {@code false} and the type inference
+     * configuration does not have false-as-unary-switches set. If
+     * false-as-inary-switches is not set, <i>all</i> properties are treated as
+     * requiring arguments.
      */
-    private void processHasArg(StringBuilder sb, Map<String, String> config,
-            String optionName, String value) {
+    private void processHasArg(StringBuilder sb, Map<String, String> clcOverrides,
+            String optionName, String value) throws ClcException {
         String optionHasArg = createOptionName(optionName, ClcParser.HAS_ARG);
-        if (!config.containsKey(optionHasArg)) {
+        if (!clcOverrides.containsKey(optionHasArg)) {
             // properties always have 'hasArg' as true, since by definition a
             // property always comes in the form x=y, even if y is the empty
             // string:
@@ -574,18 +622,19 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
                     .append(" = ")
                     .append(hasArg)
                     .append(System.lineSeparator());
-            config.put(optionHasArg, hasArg);
+            clcOverrides.put(optionHasArg, hasArg);
         } else {
-            String hasArgValue = config.get(optionHasArg).toLowerCase();
+            // it's a unary switch; value can only be 'false':
+            String hasArgValue = clcOverrides.get(optionHasArg).toLowerCase();
             if (!ClcParser.TRUE.equals(hasArgValue)) {
-                throw new IllegalArgumentException("Configuration "
+                throw new ClcException("Configuration "
                         + optionHasArg + " can only be 'true', use type inference"
                         + " to override false ss unary switches.");
             } else {
                 sb.append(createOptionName(optionName, ClcParser.HAS_ARG))
                         .append(" = true")
                         .append(System.lineSeparator());
-                config.put(optionHasArg, ClcParser.TRUE);
+                clcOverrides.put(optionHasArg, ClcParser.TRUE);
             }
         }
     }
@@ -692,20 +741,8 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
                 // out what it is:
                 ValueType valueType = (ValueType) propertyValueTypes.get(optionName);
                 String valueTypeName = null;
-                if (valueType instanceof BooleanType) {
-                    valueTypeName = BooleanType.BOOLEAN;
-                } else if (valueType instanceof ByteType) {
-                    valueTypeName = ByteType.BYTE;
-                } else if (valueType instanceof DoubleType) {
-                    valueTypeName = DoubleType.DOUBLE;
-                } else if (valueType instanceof FloatingPointType) {
-                    valueTypeName = FloatingPointType.FLOAT;
-                } else if (valueType instanceof IntegralType) {
-                    valueTypeName = IntegralType.INTEGRAL;
-                } else if (valueType instanceof LongType) {
-                    valueTypeName = LongType.LONG;
-                } else if (valueType instanceof ShortType) {
-                    valueTypeName = ShortType.SHORT;
+                if (valueType != null) {
+                    valueTypeName = valueType.getValueTypeName();
                 }
                 if (valueTypeName != null) {
                     sb.append(optionType)
@@ -719,10 +756,8 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
     }
 
     /**
-     * Generate a {@link ClcParser#PROPERTIES} value for the specified command
-     * key; if there is no user-defined value present in the supplied
-     * configuration map, a default value will be added to the given builder;
-     * otherwise the user-defined option will be used.
+     * Generate a {@link ClcParser#PROPERTIES} value for the specified option if
+     * it exists.
      *
      * @param sb non-{@code null} builder to append to.
      *
@@ -771,7 +806,7 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
             sb.append(GlobalConfiguration.GLOBAL_HELP_COMMAND_NAME)
                     .append(" = ")
                     .append(config.get(GlobalConfiguration.GLOBAL_HELP_COMMAND_NAME))
-                    .append(System.lineSeparator());;
+                    .append(System.lineSeparator());
         }
     }
 
@@ -800,7 +835,7 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
             sb.append(GlobalConfiguration.GLOBAL_HELP_COMMAND_HEADER)
                     .append(" = ")
                     .append(config.get(GlobalConfiguration.GLOBAL_HELP_COMMAND_HEADER))
-                    .append(System.lineSeparator());;
+                    .append(System.lineSeparator());
         }
     }
 
@@ -829,7 +864,7 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
             sb.append(GlobalConfiguration.GLOBAL_HELP_COMMAND_FOOTER)
                     .append(" = ")
                     .append(config.get(GlobalConfiguration.GLOBAL_HELP_COMMAND_FOOTER))
-                    .append(System.lineSeparator());;
+                    .append(System.lineSeparator());
         }
     }
 
@@ -858,7 +893,7 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
             sb.append(GlobalConfiguration.GLOBAL_HELP_SWITCH_OPTS)
                     .append(" = ")
                     .append(config.get(GlobalConfiguration.GLOBAL_HELP_SWITCH_OPTS))
-                    .append(System.lineSeparator());;
+                    .append(System.lineSeparator());
         }
     }
 
@@ -916,7 +951,7 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
             sb.append(GlobalConfiguration.GLOBAL_HELP_FORMAT_COLUMN_SPACING)
                     .append(" = ")
                     .append(config.get(GlobalConfiguration.GLOBAL_HELP_FORMAT_COLUMN_SPACING))
-                    .append(System.lineSeparator());;
+                    .append(System.lineSeparator());
         }
     }
 
@@ -945,7 +980,7 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
             sb.append(GlobalConfiguration.GLOBAL_HELP_FORMAT_LEFT_PAD)
                     .append(" = ")
                     .append(config.get(GlobalConfiguration.GLOBAL_HELP_FORMAT_LEFT_PAD))
-                    .append(System.lineSeparator());;
+                    .append(System.lineSeparator());
         }
     }
 
@@ -974,7 +1009,7 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
             sb.append(GlobalConfiguration.GLOBAL_HELP_FORMAT_WIDTH)
                     .append(" = ")
                     .append(config.get(GlobalConfiguration.GLOBAL_HELP_FORMAT_WIDTH))
-                    .append(System.lineSeparator());;
+                    .append(System.lineSeparator());
         }
     }
 
@@ -1003,7 +1038,7 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
             sb.append(GlobalConfiguration.GLOBAL_HELP_FORMAT_WIDTH_FROM_ENV)
                     .append(" = ")
                     .append(config.get(GlobalConfiguration.GLOBAL_HELP_FORMAT_WIDTH_FROM_ENV))
-                    .append(System.lineSeparator());;
+                    .append(System.lineSeparator());
         }
     }
 
@@ -1032,7 +1067,7 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
             sb.append(GlobalConfiguration.GLOBAL_HELP_FORMAT_SORT_OPTIONS)
                     .append(" = ")
                     .append(config.get(GlobalConfiguration.GLOBAL_HELP_FORMAT_SORT_OPTIONS))
-                    .append(System.lineSeparator());;
+                    .append(System.lineSeparator());
         }
     }
 
@@ -1042,10 +1077,10 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
      * using the {@link #MANIFEST_IMPLEMENTATION_VERSION}.
      *
      * @param sb non-{@code null} string builder to append generated output to.
-     * 
+     *
      * @param propertyVersion version property name to take the value of the
      * version from; may be {@code null}.
-     * 
+     *
      * @param properties non-{@code null} properties to check; may be empty.
      *
      * @since 1.1
@@ -1101,7 +1136,7 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
             sb.append(GlobalConfiguration.GLOBAL_HELP_OPTION_NAME)
                     .append(" = ")
                     .append(config.get(GlobalConfiguration.GLOBAL_HELP_OPTION_NAME))
-                    .append(System.lineSeparator());;
+                    .append(System.lineSeparator());
             helpOptionNameOverride = config.get(GlobalConfiguration.GLOBAL_HELP_OPTION_NAME);
         }
         return helpOptionNameOverride;
@@ -1118,9 +1153,12 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
      * @param config non-{@code null} configuration to check; may be empty.
      *
      * @param helpOptionKey non-{@code null} help option key.
+     *
+     * @throws ClcException if the default help option key has been changed and
+     * there is no defined {@link ClcParser#OPTS} value for the same key.
      */
     private void processHelpOptionOpts(StringBuilder sb,
-            Map<String, String> config, String helpOptionKey) {
+            Map<String, String> config, String helpOptionKey) throws ClcException {
         String optsKey = createOptionName(helpOptionKey, ClcParser.OPTS);
         if (!config.containsKey(optsKey) && HELP_DEFAULT.equals(helpOptionKey)) {
             // add default
@@ -1138,7 +1176,7 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
                     .append(System.lineSeparator());
         } else {
             // no such definition, throw error:
-            throw new IllegalArgumentException("No definition for option."
+            throw new ClcException("No definition for option."
                     + helpOptionKey + "." + ClcParser.OPTS);
         }
     }
@@ -1155,10 +1193,10 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
      *
      * @param helpOptionKey non-{@code null} help option key.
      *
-     * @throws IllegalArgumentException if there is no help description present.
+     * @throws ClcException if there is no help description present.
      */
     private void processHelpOptionDescription(StringBuilder sb,
-            Map<String, String> config, String helpOptionKey) {
+            Map<String, String> config, String helpOptionKey) throws ClcException {
         String optsKey = createOptionName(helpOptionKey, ClcParser.DESCRIPTION);
         if (!config.containsKey(optsKey)
                 && HELP_DEFAULT.equals(helpOptionKey)) {
@@ -1171,10 +1209,10 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
             sb.append(optsKey)
                     .append(" = ")
                     .append(config.get(optsKey))
-                    .append(System.lineSeparator());;
+                    .append(System.lineSeparator());
         } else {
             // no such definition, throw error:
-            throw new IllegalArgumentException("No definition for option."
+            throw new ClcException("No definition for option."
                     + helpOptionKey + "." + ClcParser.DESCRIPTION);
         }
     }
@@ -1191,7 +1229,7 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
      *
      * @param helpOptionKey non-{@code null} help option key.
      *
-     * @throws IllegalArgumentException if there is no help description present.
+     * @throws ClcException if there is no help description present.
      */
     private void processHelpKeyIgnoreCliArgs(StringBuilder sb,
             Map<String, String> config, String helpOptionKey) {
@@ -1206,7 +1244,7 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
             sb.append(optsKey)
                     .append(" = ")
                     .append(config.get(optsKey))
-                    .append(System.lineSeparator());;
+                    .append(System.lineSeparator());
         }
     }
 

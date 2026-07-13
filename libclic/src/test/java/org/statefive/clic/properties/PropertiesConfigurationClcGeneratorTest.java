@@ -41,7 +41,7 @@ import org.statefive.clic.valuetype.ShortType;
  * @author rich
  */
 public class PropertiesConfigurationClcGeneratorTest {
-    
+
     /**
      * Initialise value types.
      */
@@ -49,7 +49,7 @@ public class PropertiesConfigurationClcGeneratorTest {
     public static void setUpClass() {
         Clc.initialiseValueTypeFactory();
     }
-    
+
     /**
      * Clear all value types.
      */
@@ -59,15 +59,17 @@ public class PropertiesConfigurationClcGeneratorTest {
     }
 
     /**
-     * Test of generateConfiguration method, of class PropertiesConfigurationClcGenerator.
+     * Test of generateConfiguration method, of class
+     * PropertiesConfigurationClcGenerator.
      */
     @Test
     public void testGenerateConfiguration() throws Exception {
         PropertiesConfiguration properties = new PropertiesConfiguration();
         properties.addProperty("host.name", "127.0.0.1");
-        PropertiesConfigurationClcGenerator instance = new PropertiesConfigurationClcGenerator();
-        ByteArrayOutputStream result = instance.generateConfiguration(properties,
-                null, null, true, null, false, false);
+        PropertiesConfigurationClcGenerator instance = (PropertiesConfigurationClcGenerator) PropertiesTestHelper.create(
+                properties, null, null, null,
+                null, true, false, false);
+        ByteArrayOutputStream result = instance.generateConfiguration();
         String data = new String(result.toByteArray());
         String[] lineData = data.split("\n");
         Set<String> lineSet = new LinkedHashSet<>();
@@ -81,22 +83,25 @@ public class PropertiesConfigurationClcGeneratorTest {
         PropertiesTestHelper.hasDefaultConfigComments(lineSet);
         PropertiesTestHelper.hasConfigOpts(lineSet, "host-name");
         PropertiesTestHelper.hasConfigArg(lineSet, "host-name");
-        PropertiesTestHelper.hasConfigDescription(lineSet, "host-name", 
+        PropertiesTestHelper.hasConfigDescription(lineSet, "host-name",
                 "Overrides property 'host.name', default value '127.0.0.1'");
     }
 
     /**
-     * Test of generateConfiguration method, of class PropertiesConfigurationClcGenerator.
+     * Test of generateConfiguration method, of class
+     * PropertiesConfigurationClcGenerator.
      */
     @Test
     public void testGenerateConfigurationWithHelpSort() throws Exception {
         PropertiesConfiguration properties = new PropertiesConfiguration();
         properties.addProperty("host.name", "127.0.0.1");
-        PropertiesConfigurationClcGenerator instance = new PropertiesConfigurationClcGenerator();
         Configuration config = new PropertiesConfiguration();
         config.addProperty(GlobalConfiguration.GLOBAL_HELP_FORMAT_SORT_OPTIONS, ClcParser.TRUE);
-        ByteArrayOutputStream result = instance.generateConfiguration(properties, 
-                config, null, true, null, false, false);
+        PropertiesConfigurationClcGenerator instance = (PropertiesConfigurationClcGenerator) PropertiesTestHelper.create(
+                properties, config, null, null,
+                null, true, false, false);
+        ByteArrayOutputStream result = instance.generateConfiguration();
+
         String data = new String(result.toByteArray());
         String[] lineData = data.split("\n");
         Set<String> lineSet = new LinkedHashSet<>();
@@ -108,18 +113,19 @@ public class PropertiesConfigurationClcGeneratorTest {
         Set<String> skip = new HashSet<>();
         skip.add(GLOBAL_HELP_FORMAT_SORT_OPTIONS + " = false");
         assertEquals(20, lineSet.size());
-        PropertiesTestHelper.containsProperty(lineData, 
+        PropertiesTestHelper.containsProperty(lineData,
                 GlobalConfiguration.GLOBAL_HELP_FORMAT_SORT_OPTIONS + " = true");
         PropertiesTestHelper.hasDefaultHelpConfigOptions(lineSet, skip);
         PropertiesTestHelper.hasDefaultConfigComments(lineSet);
         PropertiesTestHelper.hasConfigOpts(lineSet, "host-name");
         PropertiesTestHelper.hasConfigArg(lineSet, "host-name");
-        PropertiesTestHelper.hasConfigDescription(lineSet, "host-name", 
+        PropertiesTestHelper.hasConfigDescription(lineSet, "host-name",
                 "Overrides property 'host.name', default value '127.0.0.1'");
     }
 
     /**
-     * Test of generateConfiguration method, of class PropertiesConfigurationClcGenerator.
+     * Test of generateConfiguration method, of class
+     * PropertiesConfigurationClcGenerator.
      */
     @Test
     public void testGenerateConfigurationForByte() throws Exception {
@@ -128,9 +134,11 @@ public class PropertiesConfigurationClcGeneratorTest {
                 .withNaturalNumbersAs(ByteType.BYTE).build();
         PropertiesConfiguration properties = new PropertiesConfiguration();
         properties.addProperty("definitley-byte", "128");
-        PropertiesConfigurationClcGenerator instance = new PropertiesConfigurationClcGenerator();
-        ByteArrayOutputStream result = instance.generateConfiguration(properties, 
-                new PropertiesConfiguration(), null, true, typeInferralConfig, false, false);
+        PropertiesConfigurationClcGenerator instance = (PropertiesConfigurationClcGenerator) PropertiesTestHelper.create(
+                properties, new PropertiesConfiguration(), null, typeInferralConfig,
+                null, true, false, false);
+        ByteArrayOutputStream result = instance.generateConfiguration();
+
         String data = new String(result.toByteArray());
         String[] lineData = data.split("\n");
         Set<String> lineSet = new LinkedHashSet<>();
@@ -143,7 +151,8 @@ public class PropertiesConfigurationClcGeneratorTest {
     }
 
     /**
-     * Test of generateConfiguration method, of class PropertiesConfigurationClcGenerator.
+     * Test of generateConfiguration method, of class
+     * PropertiesConfigurationClcGenerator.
      */
     @Test
     public void testGenerateConfigurationForShort() throws Exception {
@@ -152,9 +161,11 @@ public class PropertiesConfigurationClcGeneratorTest {
                 .withNaturalNumbersAs(ShortType.SHORT).build();
         PropertiesConfiguration properties = new PropertiesConfiguration();
         properties.addProperty("definitley-short", "1000");
-        PropertiesConfigurationClcGenerator instance = new PropertiesConfigurationClcGenerator();
-        ByteArrayOutputStream result = instance.generateConfiguration(properties, 
-                new PropertiesConfiguration(), null, true, typeInferralConfig, false, false);
+        PropertiesConfigurationClcGenerator instance = (PropertiesConfigurationClcGenerator) PropertiesTestHelper.create(
+                properties, new PropertiesConfiguration(), null, typeInferralConfig,
+                null, true, false, false);
+        ByteArrayOutputStream result = instance.generateConfiguration();
+
         String data = new String(result.toByteArray());
         String[] lineData = data.split("\n");
         Set<String> lineSet = new LinkedHashSet<>();
@@ -167,7 +178,8 @@ public class PropertiesConfigurationClcGeneratorTest {
     }
 
     /**
-     * Test of generateConfiguration method, of class PropertiesConfigurationClcGenerator.
+     * Test of generateConfiguration method, of class
+     * PropertiesConfigurationClcGenerator.
      */
     @Test
     public void testGenerateConfigurationForInt() throws Exception {
@@ -175,9 +187,11 @@ public class PropertiesConfigurationClcGeneratorTest {
                 .withInferTypes().build();
         PropertiesConfiguration properties = new PropertiesConfiguration();
         properties.addProperty("definitley.int", "50000");
-        PropertiesConfigurationClcGenerator instance = new PropertiesConfigurationClcGenerator();
-        ByteArrayOutputStream result = instance.generateConfiguration(properties, 
-                new PropertiesConfiguration(), null, true, typeInferralConfig, false, false);
+        PropertiesConfigurationClcGenerator instance = (PropertiesConfigurationClcGenerator) PropertiesTestHelper.create(
+                properties, new PropertiesConfiguration(), null, typeInferralConfig,
+                null, true, false, false);
+        ByteArrayOutputStream result = instance.generateConfiguration();
+
         String data = new String(result.toByteArray());
         String[] lineData = data.split("\n");
         Set<String> lineSet = new LinkedHashSet<>();
@@ -190,7 +204,8 @@ public class PropertiesConfigurationClcGeneratorTest {
     }
 
     /**
-     * Test of generateConfiguration method, of class PropertiesConfigurationClcGenerator.
+     * Test of generateConfiguration method, of class
+     * PropertiesConfigurationClcGenerator.
      */
     @Test
     public void testGenerateConfigurationForLong() throws Exception {
@@ -198,9 +213,11 @@ public class PropertiesConfigurationClcGeneratorTest {
                 .withInferTypes().build();
         PropertiesConfiguration properties = new PropertiesConfiguration();
         properties.addProperty("definitley.long", "9223372036854775807");
-        PropertiesConfigurationClcGenerator instance = new PropertiesConfigurationClcGenerator();
-        ByteArrayOutputStream result = instance.generateConfiguration(properties, 
-                new PropertiesConfiguration(), null, true, typeInferralConfig, false, false);
+        PropertiesConfigurationClcGenerator instance = (PropertiesConfigurationClcGenerator) PropertiesTestHelper.create(
+                properties, new PropertiesConfiguration(), null, typeInferralConfig,
+                null, true, false, false);
+        ByteArrayOutputStream result = instance.generateConfiguration();
+
         String data = new String(result.toByteArray());
         String[] lineData = data.split("\n");
         Set<String> lineSet = new LinkedHashSet<>();
@@ -213,7 +230,8 @@ public class PropertiesConfigurationClcGeneratorTest {
     }
 
     /**
-     * Test of generateConfiguration method, of class PropertiesConfigurationClcGenerator.
+     * Test of generateConfiguration method, of class
+     * PropertiesConfigurationClcGenerator.
      */
     @Test
     public void testGenerateConfigurationForFloat() throws Exception {
@@ -221,9 +239,11 @@ public class PropertiesConfigurationClcGeneratorTest {
                 .withInferTypes().build();
         PropertiesConfiguration properties = new PropertiesConfiguration();
         properties.addProperty("definitley.float", "1.1");
-        PropertiesConfigurationClcGenerator instance = new PropertiesConfigurationClcGenerator();
-        ByteArrayOutputStream result = instance.generateConfiguration(properties, 
-                new PropertiesConfiguration(), null, true, typeInferralConfig, false, false);
+        PropertiesConfigurationClcGenerator instance = (PropertiesConfigurationClcGenerator) PropertiesTestHelper.create(
+                properties, new PropertiesConfiguration(), null, typeInferralConfig,
+                null, true, false, false);
+        ByteArrayOutputStream result = instance.generateConfiguration();
+
         String data = new String(result.toByteArray());
         String[] lineData = data.split("\n");
         Set<String> lineSet = new LinkedHashSet<>();
@@ -236,7 +256,8 @@ public class PropertiesConfigurationClcGeneratorTest {
     }
 
     /**
-     * Test of generateConfiguration method, of class PropertiesConfigurationClcGenerator.
+     * Test of generateConfiguration method, of class
+     * PropertiesConfigurationClcGenerator.
      */
     @Test
     public void testGenerateConfigurationForDouble() throws Exception {
@@ -247,9 +268,10 @@ public class PropertiesConfigurationClcGeneratorTest {
         // 3.40282346638528860e+38
         BigDecimal num = new BigDecimal(12.40282346638528860e+38);
         properties.addProperty("definitley.adouble", num.toString());
-        PropertiesConfigurationClcGenerator instance = new PropertiesConfigurationClcGenerator();
-        ByteArrayOutputStream result = instance.generateConfiguration(properties, 
-                new PropertiesConfiguration(), null, true, typeInferralConfig, false, false);
+        PropertiesConfigurationClcGenerator instance = (PropertiesConfigurationClcGenerator) PropertiesTestHelper.create(
+                properties, new PropertiesConfiguration(), null, typeInferralConfig,
+                null, true, false, false);
+        ByteArrayOutputStream result = instance.generateConfiguration();
         String data = new String(result.toByteArray());
         String[] lineData = data.split("\n");
         Set<String> lineSet = new LinkedHashSet<>();
@@ -262,7 +284,8 @@ public class PropertiesConfigurationClcGeneratorTest {
     }
 
     /**
-     * Test of generateConfiguration method, of class PropertiesConfigurationClcGenerator.
+     * Test of generateConfiguration method, of class
+     * PropertiesConfigurationClcGenerator.
      */
     @Test
     public void testGenerateConfigurationForString() throws Exception {
@@ -271,9 +294,10 @@ public class PropertiesConfigurationClcGeneratorTest {
         // 3.40282346638528860e+38
         String value = "some arbitrary string";
         properties.addProperty("definitley.astring", value);
-        PropertiesConfigurationClcGenerator instance = new PropertiesConfigurationClcGenerator();
-        ByteArrayOutputStream result = instance.generateConfiguration(properties, 
-                new PropertiesConfiguration(), null, true, null, false, false);
+        PropertiesConfigurationClcGenerator instance = (PropertiesConfigurationClcGenerator) PropertiesTestHelper.create(
+                properties, new PropertiesConfiguration(), null, null,
+                null, true, false, false);
+        ByteArrayOutputStream result = instance.generateConfiguration();
         String data = new String(result.toByteArray());
         String[] lineData = data.split("\n");
         Set<String> lineSet = new LinkedHashSet<>();
@@ -285,18 +309,20 @@ public class PropertiesConfigurationClcGeneratorTest {
     }
 
     /**
-     * Test of generateConfiguration method, of class PropertiesConfigurationClcGenerator.
+     * Test of generateConfiguration method, of class
+     * PropertiesConfigurationClcGenerator.
      */
     @Test
     public void testGenerateConfigurationForNumberAsDouble() throws Exception {
-        TypeInferralConfig typeInferralConfig =new TypeInferralConfigBuilder()
+        TypeInferralConfig typeInferralConfig = new TypeInferralConfigBuilder()
                 .withInferTypes().withRealNumbersAs(DoubleType.DOUBLE).build();
         PropertiesConfiguration properties = new PropertiesConfiguration();
         String value = "1.23";
         properties.addProperty("definitley.adouble", value);
-        PropertiesConfigurationClcGenerator instance = new PropertiesConfigurationClcGenerator();
-        ByteArrayOutputStream result = instance.generateConfiguration(properties, 
-                new PropertiesConfiguration(), null, true, typeInferralConfig, false, false);
+        PropertiesConfigurationClcGenerator instance = (PropertiesConfigurationClcGenerator) PropertiesTestHelper.create(
+                properties, new PropertiesConfiguration(), null, typeInferralConfig,
+                null, true, false, false);
+        ByteArrayOutputStream result = instance.generateConfiguration();
         String data = new String(result.toByteArray());
         String[] lineData = data.split("\n");
         Set<String> lineSet = new LinkedHashSet<>();
@@ -309,7 +335,8 @@ public class PropertiesConfigurationClcGeneratorTest {
     }
 
     /**
-     * Test of generateConfiguration method, of class PropertiesConfigurationClcGenerator.
+     * Test of generateConfiguration method, of class
+     * PropertiesConfigurationClcGenerator.
      */
     @Test
     public void testGenerateConfigurationForNumberAsLong() throws Exception {
@@ -318,8 +345,59 @@ public class PropertiesConfigurationClcGeneratorTest {
         PropertiesConfiguration properties = new PropertiesConfiguration();
         String value = "1234567890";
         properties.addProperty("definitley.along", value);
+        PropertiesConfigurationClcGenerator instance = (PropertiesConfigurationClcGenerator) PropertiesTestHelper.create(
+                properties, new PropertiesConfiguration(), null, typeInferralConfig,
+                null, true, false, false);
+        ByteArrayOutputStream result = instance.generateConfiguration();
+        String data = new String(result.toByteArray());
+        String[] lineData = data.split("\n");
+        Set<String> lineSet = new LinkedHashSet<>();
+        for (String line : lineData) {
+            if (!line.isEmpty()) {
+                lineSet.add(line);
+            }
+        }
+        PropertiesTestHelper.hasConfigType(lineSet, "definitley-along", "long");
+    }
+
+    /**
+     * Test of generateConfiguration method, of class
+     * PropertiesConfigurationClcGenerator.
+     */
+    @Test
+    public void testGenerateConfigurationForFloatWhenSameAs() throws Exception {
+        TypeInferralConfig typeInferralConfig = new TypeInferralConfigBuilder()
+                .withInferTypes().withRealNumbersAs(FloatingPointType.FLOAT).build();
+        PropertiesConfiguration properties = new PropertiesConfiguration();
+        properties.addProperty("definitley.float", "1.1");
+        PropertiesConfigurationClcGenerator instance = (PropertiesConfigurationClcGenerator) PropertiesTestHelper.create(
+                properties, new PropertiesConfiguration(), null, typeInferralConfig,
+                null, true, false, false);
+        ByteArrayOutputStream result = instance.generateConfiguration();
+        String data = new String(result.toByteArray());
+        String[] lineData = data.split("\n");
+        Set<String> lineSet = new LinkedHashSet<>();
+        for (String line : lineData) {
+            if (!line.isEmpty()) {
+                lineSet.add(line);
+            }
+        }
+        PropertiesTestHelper.hasConfigType(lineSet, "definitley-float", "float");
+    }
+
+    /**
+     * Test of deprecated generateConfiguration method, of class
+     * PropertiesConfigurationClcGenerator.
+     */
+    @Test
+    public void testGenerateConfigurationForNumberAsLongDeprecated() throws Exception {
+        TypeInferralConfig typeInferralConfig = new TypeInferralConfigBuilder()
+                .withInferTypes().withNaturalNumbersAs(LongType.LONG).build();
+        PropertiesConfiguration properties = new PropertiesConfiguration();
+        String value = "1234567890";
+        properties.addProperty("definitley.along", value);
         PropertiesConfigurationClcGenerator instance = new PropertiesConfigurationClcGenerator();
-        ByteArrayOutputStream result = instance.generateConfiguration(properties, 
+        ByteArrayOutputStream result = instance.generateConfiguration(properties,
                 new PropertiesConfiguration(), null, true, typeInferralConfig, false, false);
         String data = new String(result.toByteArray());
         String[] lineData = data.split("\n");
@@ -333,17 +411,19 @@ public class PropertiesConfigurationClcGeneratorTest {
     }
 
     /**
-     * Test of generateConfiguration method, of class PropertiesConfigurationClcGenerator.
+     * Test of deprecated generateConfiguration method, of class
+     * PropertiesConfigurationClcGenerator.
      */
     @Test
-    public void testGenerateConfigurationForFloatWhenSameAs() throws Exception {
+    public void testGenerateConfigurationNullConfigForNumberAsLongDeprecated() throws Exception {
         TypeInferralConfig typeInferralConfig = new TypeInferralConfigBuilder()
-                .withInferTypes().withRealNumbersAs(FloatingPointType.FLOAT).build();
+                .withInferTypes().withNaturalNumbersAs(LongType.LONG).build();
         PropertiesConfiguration properties = new PropertiesConfiguration();
-        properties.addProperty("definitley.float", "1.1");
+        String value = "1234567890";
+        properties.addProperty("definitley.along", value);
         PropertiesConfigurationClcGenerator instance = new PropertiesConfigurationClcGenerator();
-        ByteArrayOutputStream result = instance.generateConfiguration(properties, 
-                new PropertiesConfiguration(), null, true, typeInferralConfig, false, false);
+        ByteArrayOutputStream result = instance.generateConfiguration(properties,
+                null, null, true, typeInferralConfig, false, false);
         String data = new String(result.toByteArray());
         String[] lineData = data.split("\n");
         Set<String> lineSet = new LinkedHashSet<>();
@@ -352,7 +432,41 @@ public class PropertiesConfigurationClcGeneratorTest {
                 lineSet.add(line);
             }
         }
-        PropertiesTestHelper.hasConfigType(lineSet, "definitley-float", "float");
+        PropertiesTestHelper.hasConfigType(lineSet, "definitley-along", "long");
     }
-    
+
+    /**
+     * Test of deprecated generateConfiguration method, of class
+     * PropertiesConfigurationClcGenerator.
+     */
+    @Test
+    public void testGenerateConfigurationWithHelpSortDeprecated() throws Exception {
+        PropertiesConfiguration properties = new PropertiesConfiguration();
+        properties.addProperty("host.name", "127.0.0.1");
+        PropertiesConfigurationClcGenerator instance = new PropertiesConfigurationClcGenerator();
+        Configuration config = new PropertiesConfiguration();
+        config.addProperty(GlobalConfiguration.GLOBAL_HELP_FORMAT_SORT_OPTIONS, ClcParser.TRUE);
+        ByteArrayOutputStream result = instance.generateConfiguration(properties,
+                config, null, true, null, false, false);
+        String data = new String(result.toByteArray());
+        String[] lineData = data.split("\n");
+        Set<String> lineSet = new LinkedHashSet<>();
+        for (String line : lineData) {
+            if (!line.isEmpty()) {
+                lineSet.add(line);
+            }
+        }
+        Set<String> skip = new HashSet<>();
+        skip.add(GLOBAL_HELP_FORMAT_SORT_OPTIONS + " = false");
+        assertEquals(20, lineSet.size());
+        PropertiesTestHelper.containsProperty(lineData,
+                GlobalConfiguration.GLOBAL_HELP_FORMAT_SORT_OPTIONS + " = true");
+        PropertiesTestHelper.hasDefaultHelpConfigOptions(lineSet, skip);
+        PropertiesTestHelper.hasDefaultConfigComments(lineSet);
+        PropertiesTestHelper.hasConfigOpts(lineSet, "host-name");
+        PropertiesTestHelper.hasConfigArg(lineSet, "host-name");
+        PropertiesTestHelper.hasConfigDescription(lineSet, "host-name",
+                "Overrides property 'host.name', default value '127.0.0.1'");
+    }
+
 }

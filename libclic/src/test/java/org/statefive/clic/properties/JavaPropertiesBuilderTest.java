@@ -18,7 +18,6 @@ package org.statefive.clic.properties;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.HashSet;
 import java.util.LinkedHashSet;

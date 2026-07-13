@@ -27,7 +27,11 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
+import org.apache.commons.configuration2.Configuration;
+import org.apache.commons.configuration2.PropertiesConfiguration;
+import org.statefive.clic.ClcException;
 import org.statefive.clic.ClcParser;
 import static org.statefive.clic.GlobalConfiguration.GLOBAL_HELP_AUTO_USAGE;
 import static org.statefive.clic.GlobalConfiguration.GLOBAL_HELP_COMMAND_FOOTER;
@@ -626,5 +630,95 @@ public class PropertiesTestHelper {
             }
         }
         return hasImportOrigin;
+    }
+
+    /**
+     * Create a Java CLC generator from the given settings.
+     *
+     * @param properties non-{@code null} properties.
+     *
+     * @param clcOverrides CLC overrides; may be {@code null}.
+     *
+     * @param filter filter to apply; may be {@code null}.
+     *
+     * @param typeInferralConfig type inference configuration; may be
+     * {@code null}.
+     *
+     * @param propertyVersion property to use for versioning; may be
+     * {@code null}.
+     *
+     * @param globalHeader {@code true} to include the global header,
+     * {@code false} otherwise.
+     *
+     * @param pad {@code true} to include hash-commented lines of extra options,
+     * {@code false} otherwise.
+     *
+     * @param insertDefaults {@code true} to insert the property values as
+     * default values into the configuration, {@code false} otherwise.
+     *
+     * @return non-{@code null} CLC generator.
+     *
+     * @throws ClcException if the generator cannot be created; see
+     * {@link JavaPropertiesClcGeneratorBuilder#build()}.
+     */
+    public static ClcGenerator create(Properties properties,
+            Configuration clcOverrides, PropertyNameFilter filter,
+            TypeInferralConfig typeInferralConfig, String propertyVersion,
+            boolean globalHeader, boolean pad, boolean insertDefaults) throws ClcException {
+        return new JavaPropertiesClcGeneratorBuilder()
+                .globalHeader(globalHeader)
+                .insertDefaults(insertDefaults)
+                .pad(pad)
+                .properties(properties)
+                .propertyNameFilter(filter)
+                .propertyVersion(propertyVersion)
+                .typeInferralConfig(typeInferralConfig)
+                .build();
+    }
+
+    /**
+     * Create a Apache properties configuration CLC generator from the given
+     * settings.
+     *
+     * @param properties non-{@code null} properties.
+     *
+     * @param clcOverrides CLC overrides; may be {@code null}.
+     *
+     * @param filter filter to apply; may be {@code null}.
+     *
+     * @param typeInferralConfig type inference configuration; may be
+     * {@code null}.
+     *
+     * @param propertyVersion property to use for versioning; may be
+     * {@code null}.
+     *
+     * @param globalHeader {@code true} to include the global header,
+     * {@code false} otherwise.
+     *
+     * @param pad {@code true} to include hash-commented lines of extra options,
+     * {@code false} otherwise.
+     *
+     * @param insertDefaults {@code true} to insert the property values as
+     * default values into the configuration, {@code false} otherwise.
+     *
+     * @return non-{@code null} CLC generator.
+     *
+     * @throws ClcException if the generator cannot be created; see
+     * {@link PropertiesConfigurationClcGeneratorBuilder#build()}.
+     */
+    public static ClcGenerator create(PropertiesConfiguration properties,
+            Configuration clcOverrides, PropertyNameFilter filter,
+            TypeInferralConfig typeInferralConfig, String propertyVersion,
+            boolean globalHeader, boolean pad, boolean insertDefaults) throws ClcException {
+
+        return new PropertiesConfigurationClcGeneratorBuilder()
+                .globalHeader(globalHeader)
+                .insertDefaults(insertDefaults)
+                .pad(pad)
+                .properties(properties)
+                .propertyNameFilter(filter)
+                .propertyVersion(propertyVersion)
+                .typeInferralConfig(typeInferralConfig)
+                .build();
     }
 }

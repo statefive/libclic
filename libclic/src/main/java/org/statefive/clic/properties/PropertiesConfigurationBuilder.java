@@ -30,7 +30,6 @@ import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.statefive.clic.Clc;
 import org.statefive.clic.ClcException;
 import org.statefive.clic.ClcParser;
-import org.statefive.clic.GlobalConfiguration;
 import org.statefive.clic.valuetype.ValueType;
 
 /**
@@ -52,14 +51,7 @@ public class PropertiesConfigurationBuilder
      * property streams.
      */
     private PropertiesConfiguration properties = new PropertiesConfiguration();
-
-    /**
-     * Constructor.
-     */
-    public PropertiesConfigurationBuilder() {
-        configurationGenerator = new PropertiesConfigurationClcGenerator();
-    }
-
+    
     /**
      * Build with arguments inserted when the builder was made.
      *
@@ -93,7 +85,6 @@ public class PropertiesConfigurationBuilder
                         + " is not permitted.");
             }
             PropertyReader<Configuration> propertiesReader = new PropertiesConfigurationReader();
-            propertiesReader.setConfigurationGenerator(configurationGenerator);
             propertiesReader.setClcGlobalHeader(header);
             propertiesReader.setTypeInferralConfig(typeInferralConfig);
             readers.add((PropertiesConfigurationReader) propertiesReader);
@@ -128,12 +119,18 @@ public class PropertiesConfigurationBuilder
             }
             reader.close();
         }
-
+        configurationGenerator = new PropertiesConfigurationClcGeneratorBuilder()
+                .clcOverrides(configurationProperties)
+                .globalHeader(true)
+                .insertDefaults(isInsertDefaults())
+                .pad(isPad())
+                .properties(properties)
+                .propertyNameFilter(getFilter())
+                .propertyVersion(getPropertyVersion())
+                .typeInferralConfig(typeInferralConfig)
+                .build();
         // now generate a CLC from all the properties:
-        ByteArrayOutputStream baos = configurationGenerator.generateConfiguration(
-                properties, configurationProperties, getFilter(),
-                true, typeInferralConfig, isPad(), isInsertDefaults(),
-                getPropertyVersion());
+        ByteArrayOutputStream baos = configurationGenerator.generateConfiguration();
         String configData = new String(baos.toByteArray());
         ByteArrayInputStream bis = new ByteArrayInputStream(configData.getBytes());
         // the properties are the 'original' properties read from the streams;
@@ -209,10 +206,18 @@ public class PropertiesConfigurationBuilder
                 PropertiesCommandSource pcs = (PropertiesCommandSource) source;
                 generateCommandStart(pcs);
             }
-            ByteArrayOutputStream baos = configurationGenerator.generateConfiguration(
-                    c, configurationProperties, getFilter(),
-                    first, typeInferralConfig, isPad(), isInsertDefaults(),
-                    getPropertyVersion());
+            configurationGenerator = new PropertiesConfigurationClcGeneratorBuilder()
+                    .clcOverrides(configurationProperties)
+                    .globalHeader(first)
+                    .insertDefaults(isInsertDefaults())
+                    .pad(isPad())
+                    .properties(c)
+                    .propertyNameFilter(getFilter())
+                    .propertyVersion(getPropertyVersion())
+                    .typeInferralConfig(typeInferralConfig)
+                    .build();
+            // now generate a CLC from all the properties:
+            ByteArrayOutputStream baos = configurationGenerator.generateConfiguration();
             String configData = new String(baos.toByteArray());
             first = false;
             configurationData.append(configData).append(System.lineSeparator());

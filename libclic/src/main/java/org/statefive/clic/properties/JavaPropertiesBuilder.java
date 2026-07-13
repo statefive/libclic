@@ -45,13 +45,6 @@ public class JavaPropertiesBuilder
     private final Properties properties = new Properties();
 
     /**
-     * Constructor.
-     */
-    public JavaPropertiesBuilder() {
-        configurationGenerator = new JavaPropertiesClcGenerator();
-    }
-
-    /**
      * Build with arguments inserted when the builder was made.
      *
      * @param args non-{@code null} command line arguments (may be empty).
@@ -85,7 +78,6 @@ public class JavaPropertiesBuilder
                         + " is not permitted.");
             }
             PropertyReader<Properties> propertiesReader = new JavaPropertiesReader();
-            propertiesReader.setConfigurationGenerator(configurationGenerator);
             propertiesReader.setClcGlobalHeader(first);
             propertiesReader.setTypeInferralConfig(typeInferralConfig);
             Properties p = propertiesReader.read(source);
@@ -104,7 +96,6 @@ public class JavaPropertiesBuilder
             }
             first = false;
         }
-
         // add a custom CLC if defined:
         Configuration configProps = new PropertiesConfiguration();
         if (getConfigInputStream() != null) {
@@ -115,12 +106,18 @@ public class JavaPropertiesBuilder
                 throw new ClcException(ex.getMessage());
             }
         }
-
+        configurationGenerator = new JavaPropertiesClcGeneratorBuilder()
+                .clcOverrides(configProps)
+                .globalHeader(true)
+                .insertDefaults(isInsertDefaults())
+                .pad(isPad())
+                .properties(properties)
+                .propertyNameFilter(getFilter())
+                .propertyVersion(getPropertyVersion())
+                .typeInferralConfig(typeInferralConfig)
+                .build();
         // now generate a CLC from all the properties:
-        ByteArrayOutputStream baos = configurationGenerator.generateConfiguration(
-                properties, configProps, getFilter(), true,
-                typeInferralConfig, isPad(), isInsertDefaults(),
-                getPropertyVersion());
+        ByteArrayOutputStream baos = configurationGenerator.generateConfiguration();
         String configurationData = new String(baos.toByteArray());
         ByteArrayInputStream bis = new ByteArrayInputStream(configurationData.getBytes());
 
@@ -189,10 +186,18 @@ public class JavaPropertiesBuilder
                 PropertiesCommandSource pcs = (PropertiesCommandSource) source;
                 generateCommandStart(pcs);
             }
-            ByteArrayOutputStream baos = configurationGenerator.generateConfiguration(
-                    p, configurationProperties, getFilter(),
-                    header, typeInferralConfig, isPad(), isInsertDefaults(),
-                    getPropertyVersion());
+            configurationGenerator = new JavaPropertiesClcGeneratorBuilder()
+                    .clcOverrides(configurationProperties)
+                    .globalHeader(header)
+                    .insertDefaults(isInsertDefaults())
+                    .pad(isPad())
+                    .properties(p)
+                    .propertyNameFilter(getFilter())
+                    .propertyVersion(getPropertyVersion())
+                    .typeInferralConfig(typeInferralConfig)
+                    .build();
+            // now generate a CLC from all the properties:
+            ByteArrayOutputStream baos = configurationGenerator.generateConfiguration();
             String configData = new String(baos.toByteArray());
             header = false;
             configurationData.append(configData).append(System.lineSeparator());

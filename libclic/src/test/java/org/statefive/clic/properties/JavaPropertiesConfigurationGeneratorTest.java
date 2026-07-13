@@ -63,9 +63,11 @@ public class JavaPropertiesConfigurationGeneratorTest {
     public void testGenerateConfiguration() throws Exception {
         Properties properties = new Properties();
         properties.put("host.name", "127.0.0.1");
-        JavaPropertiesClcGenerator instance = new JavaPropertiesClcGenerator();
-        ByteArrayOutputStream result = instance.generateConfiguration(properties,
-                (Configuration) null, null, true, null, false, false);
+        JavaPropertiesClcGenerator instance = 
+                (JavaPropertiesClcGenerator) PropertiesTestHelper.create(
+                properties, null, null, null, 
+                null, true, false, false);
+        ByteArrayOutputStream result = instance.generateConfiguration();
         String data = new String(result.toByteArray());
         String[] lineData = data.split("\n");
         Set<String> lineSet = new LinkedHashSet<>();
@@ -91,14 +93,16 @@ public class JavaPropertiesConfigurationGeneratorTest {
     public void testGenerateConfigurationWithWholeNumbersAsByte() throws Exception {
         Properties properties = new Properties();
         properties.put("byte-val", "3");
-        JavaPropertiesClcGenerator instance = new JavaPropertiesClcGenerator();
         Configuration config = new PropertiesConfiguration();
-        ByteArrayOutputStream result = instance.generateConfiguration(properties,
-                config, (PropertyNameFilter) null, true, 
+        JavaPropertiesClcGenerator instance = 
+                (JavaPropertiesClcGenerator) PropertiesTestHelper.create(
+                properties, config, null, 
                 new TypeInferralConfigBuilder()
                         .withInferTypes()
-                        .withNaturalNumbersAs(ByteType.BYTE).build(),
-                false, false);
+                        .withNaturalNumbersAs(ByteType.BYTE).build(), 
+                null, true, false, false);
+        ByteArrayOutputStream result = instance.generateConfiguration();
+        
         String data = new String(result.toByteArray());
         String[] lineData = data.split("\n");
         Set<String> lineSet = new LinkedHashSet<>();
@@ -126,14 +130,16 @@ public class JavaPropertiesConfigurationGeneratorTest {
     public void testGenerateConfigurationWithWholeNumbersAsShort() throws Exception {
         Properties properties = new Properties();
         properties.put("short-val", "3");
-        JavaPropertiesClcGenerator instance = new JavaPropertiesClcGenerator();
         Configuration config = new PropertiesConfiguration();
-        ByteArrayOutputStream result = instance.generateConfiguration(properties,
-                config, (PropertyNameFilter) null, true, 
+        JavaPropertiesClcGenerator instance = 
+                (JavaPropertiesClcGenerator) PropertiesTestHelper.create(
+                properties, config, null, 
                 new TypeInferralConfigBuilder()
                         .withInferTypes()
-                        .withNaturalNumbersAs(ShortType.SHORT).build(),
-                false, false);
+                        .withNaturalNumbersAs(ShortType.SHORT).build(), 
+                null, true, false, false);
+        ByteArrayOutputStream result = instance.generateConfiguration();
+        
         String data = new String(result.toByteArray());
         String[] lineData = data.split("\n");
         Set<String> lineSet = new LinkedHashSet<>();
@@ -161,15 +167,17 @@ public class JavaPropertiesConfigurationGeneratorTest {
     public void testGenerateConfigurationWithHelpSortOptions() throws Exception {
         Properties properties = new Properties();
         properties.put("short-val", "3");
-        JavaPropertiesClcGenerator instance = new JavaPropertiesClcGenerator();
         Configuration config = new PropertiesConfiguration();
         config.addProperty(GlobalConfiguration.GLOBAL_HELP_FORMAT_SORT_OPTIONS, ClcParser.TRUE);
-        ByteArrayOutputStream result = instance.generateConfiguration(properties,
-                config, (PropertyNameFilter) null, true, 
+        JavaPropertiesClcGenerator instance = 
+                (JavaPropertiesClcGenerator) PropertiesTestHelper.create(
+                properties, config, null, 
                 new TypeInferralConfigBuilder()
                         .withInferTypes()
-                        .withNaturalNumbersAs(ShortType.SHORT).build(),
-                false, false);
+                        .withNaturalNumbersAs(ShortType.SHORT).build(), 
+                null, true, false, false);
+        ByteArrayOutputStream result = instance.generateConfiguration();
+        
         String data = new String(result.toByteArray());
         String[] lineData = data.split("\n");
         Set<String> lineSet = new LinkedHashSet<>();
@@ -192,4 +200,106 @@ public class JavaPropertiesConfigurationGeneratorTest {
                 "Overrides property 'short-val', default value '3'");
     }
 
+    /**
+     * Test of deprecated generateConfiguration method, of class
+     * PropertiesConfigurationGenerator.
+     */
+    @Test
+    public void testGenerateConfigurationWithWholeNumbersAsShortDeprecated() throws Exception {
+        Properties properties = new Properties();
+        properties.put("short-val", "3");
+        JavaPropertiesClcGenerator instance = new JavaPropertiesClcGenerator();
+        Configuration config = new PropertiesConfiguration();
+        ByteArrayOutputStream result = instance.generateConfiguration(properties,
+                config, (PropertyNameFilter) null, true, 
+                new TypeInferralConfigBuilder()
+                        .withInferTypes()
+                        .withNaturalNumbersAs(ShortType.SHORT).build(), 
+                false, false);
+        String data = new String(result.toByteArray());
+        String[] lineData = data.split("\n");
+        Set<String> lineSet = new LinkedHashSet<>();
+        for (String line : lineData) {
+            if (!line.isEmpty()) {
+                lineSet.add(line);
+            }
+        }
+        assertEquals(21, lineSet.size());
+        PropertiesTestHelper.hasDefaultHelpConfigOptions(lineSet);
+        PropertiesTestHelper.hasDefaultConfigComments(lineSet);
+        PropertiesTestHelper.hasConfigOpts(lineSet, "short-val");
+        PropertiesTestHelper.hasConfigArg(lineSet, "short-val");
+        PropertiesTestHelper.hasConfigType(lineSet, "short-val",  
+                ShortType.SHORT);
+        PropertiesTestHelper.hasConfigDescription(lineSet, "short-val", 
+                "Overrides property 'short-val', default value '3'");
+    }
+
+    /**
+     * Test of deprecated generateConfiguration method, of class
+     * PropertiesConfigurationGenerator.
+     */
+    @Test
+    public void testGenerateConfigurationWithNullConfigWholeNumbersAsShortDeprecated() throws Exception {
+        Properties properties = new Properties();
+        properties.put("short-val", "3");
+        JavaPropertiesClcGenerator instance = new JavaPropertiesClcGenerator();
+        ByteArrayOutputStream result = instance.generateConfiguration(properties,
+                (PropertiesConfiguration) null, (PropertyNameFilter) null, true, 
+                new TypeInferralConfigBuilder()
+                        .withInferTypes()
+                        .withNaturalNumbersAs(ShortType.SHORT).build(), 
+                false, false);
+        String data = new String(result.toByteArray());
+        String[] lineData = data.split("\n");
+        Set<String> lineSet = new LinkedHashSet<>();
+        for (String line : lineData) {
+            if (!line.isEmpty()) {
+                lineSet.add(line);
+            }
+        }
+        assertEquals(21, lineSet.size());
+        PropertiesTestHelper.hasDefaultHelpConfigOptions(lineSet);
+        PropertiesTestHelper.hasDefaultConfigComments(lineSet);
+        PropertiesTestHelper.hasConfigOpts(lineSet, "short-val");
+        PropertiesTestHelper.hasConfigArg(lineSet, "short-val");
+        PropertiesTestHelper.hasConfigType(lineSet, "short-val",  
+                ShortType.SHORT);
+        PropertiesTestHelper.hasConfigDescription(lineSet, "short-val", 
+                "Overrides property 'short-val', default value '3'");
+    }
+
+    /**
+     * Test of deprecated generateConfiguration method, of class PropertiesConfigurationClcGenerator.
+     */
+    @Test
+    public void testGenerateConfigurationWithHelpSortDeprecated() throws Exception {
+        Properties properties = new Properties();
+        properties.put("host.name", "127.0.0.1");
+        JavaPropertiesClcGenerator instance = new JavaPropertiesClcGenerator();
+        Configuration config = new PropertiesConfiguration();
+        config.addProperty(GlobalConfiguration.GLOBAL_HELP_FORMAT_SORT_OPTIONS, ClcParser.TRUE);
+        ByteArrayOutputStream result = instance.generateConfiguration(properties, 
+                config, null, true, null, false, false);
+        String data = new String(result.toByteArray());
+        String[] lineData = data.split("\n");
+        Set<String> lineSet = new LinkedHashSet<>();
+        for (String line : lineData) {
+            if (!line.isEmpty()) {
+                lineSet.add(line);
+            }
+        }
+        Set<String> skip = new HashSet<>();
+        skip.add(GLOBAL_HELP_FORMAT_SORT_OPTIONS + " = false");
+        assertEquals(20, lineSet.size());
+        PropertiesTestHelper.containsProperty(lineData, 
+                GlobalConfiguration.GLOBAL_HELP_FORMAT_SORT_OPTIONS + " = true");
+        PropertiesTestHelper.hasDefaultHelpConfigOptions(lineSet, skip);
+        PropertiesTestHelper.hasDefaultConfigComments(lineSet);
+        PropertiesTestHelper.hasConfigOpts(lineSet, "host-name");
+        PropertiesTestHelper.hasConfigArg(lineSet, "host-name");
+        PropertiesTestHelper.hasConfigDescription(lineSet, "host-name", 
+                "Overrides property 'host.name', default value '127.0.0.1'");
+    }
+    
 }

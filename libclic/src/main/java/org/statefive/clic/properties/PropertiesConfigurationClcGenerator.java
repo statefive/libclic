@@ -24,6 +24,7 @@ import java.util.Map;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.PropertiesConfiguration;
 import org.apache.commons.configuration2.ex.ConversionException;
+import org.statefive.clic.ClcException;
 import org.statefive.clic.ClcParser;
 import org.statefive.clic.valuetype.AbstractNumberType;
 import org.statefive.clic.valuetype.BooleanType;
@@ -50,18 +51,59 @@ public class PropertiesConfigurationClcGenerator<P extends Configuration>
         extends AbstractClcGenerator<PropertiesConfiguration> {
 
     /**
-     * Properties configuration.
+     * Properties configuration used to generate the configuration.
      */
     private PropertiesConfiguration propertiesConfiguration;
 
     /**
      * {@inheritDoc}
+     * 
+     * @since 1.1
      */
     @Override
-    public ByteArrayOutputStream generateConfiguration(PropertiesConfiguration properties, 
-            Configuration config, PropertyNameFilter propertyFilter, 
-            boolean clcGlobalHeader, TypeInferralConfig typeInferralConfig, 
-            boolean pad, boolean insertDefaults) throws IOException {
+    public void setProperties(PropertiesConfiguration properties) {
+        this.propertiesConfiguration = properties;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @since 1.1
+     */
+    @Override
+    public ByteArrayOutputStream generateConfiguration() throws ClcException, IOException {
+        clcOverrides = this.clcOverrides;
+        if (clcOverrides == null) {
+            clcOverrides = new PropertiesConfiguration();
+        }
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        Map<String, Object> propMap = new HashMap<>();
+        for (Iterator<String> it = propertiesConfiguration.getKeys(); it.hasNext();) {
+            String key = it.next();
+            String value = propertiesConfiguration.getString(key);
+            propMap.put(key, value);
+        }
+        Map<String, String> configMap = new LinkedHashMap<>();
+        for (Iterator<String> it = clcOverrides.getKeys(); it.hasNext();) {
+            String key = it.next();
+            Object value = clcOverrides.getString(key);
+            configMap.put(key, value.toString());
+        }
+        // keep a reference, used to infer value types:
+        os.write(generateConfiguration(propMap, configMap).getBytes());
+        return os;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @deprecated use {@link #generateConfiguration()}; deprecated since 1.1.
+     */
+    @Override
+    public ByteArrayOutputStream generateConfiguration(PropertiesConfiguration properties,
+            Configuration config, PropertyNameFilter propertyFilter,
+            boolean clcGlobalHeader, TypeInferralConfig typeInferralConfig,
+            boolean pad, boolean insertDefaults) throws ClcException, IOException {
         Configuration clcOverrides = config;
         if (clcOverrides == null) {
             clcOverrides = new PropertiesConfiguration();
@@ -74,7 +116,7 @@ public class PropertiesConfigurationClcGenerator<P extends Configuration>
             propMap.put(key, value);
         }
         Map<String, String> configMap = new LinkedHashMap<>();
-        for (Iterator<String> it = clcOverrides.getKeys(); it.hasNext(); ) {
+        for (Iterator<String> it = clcOverrides.getKeys(); it.hasNext();) {
             String key = it.next();
             Object value = clcOverrides.getString(key);
             configMap.put(key, value.toString());
@@ -86,42 +128,7 @@ public class PropertiesConfigurationClcGenerator<P extends Configuration>
                 insertDefaults).getBytes());
         return os;
     }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @since 1.1
-     */
-    @Override
-    public ByteArrayOutputStream generateConfiguration(PropertiesConfiguration properties,
-            Configuration config, PropertyNameFilter propertyFilter,
-            boolean clcGlobalHeader, TypeInferralConfig typeInferralConfig,
-            boolean pad, boolean insertDefaults, String propertyVersion) throws IOException {
-        Configuration clcOverrides = config;
-        if (clcOverrides == null) {
-            clcOverrides = new PropertiesConfiguration();
-        }
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        Map<String, Object> propMap = new HashMap<>();
-        for (Iterator<String> it = properties.getKeys(); it.hasNext();) {
-            String key = it.next();
-            String value = properties.getString(key);
-            propMap.put(key, value);
-        }
-        Map<String, String> configMap = new LinkedHashMap<>();
-        for (Iterator<String> it = clcOverrides.getKeys(); it.hasNext(); ) {
-            String key = it.next();
-            Object value = clcOverrides.getString(key);
-            configMap.put(key, value.toString());
-        }
-        // keep a reference, used to infer value types:
-        this.propertiesConfiguration = properties;
-        os.write(generateConfiguration(propMap, configMap,
-                propertyFilter, clcGlobalHeader, typeInferralConfig, pad,
-                insertDefaults, propertyVersion).getBytes());
-        return os;
-    }
-
+    
     /**
      * Get the {@link ValueType} for the given property name and value if
      * inferring of types is set to {@code true}. If the type is determined to

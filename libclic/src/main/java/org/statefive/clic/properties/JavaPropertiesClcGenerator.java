@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Properties;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.PropertiesConfiguration;
+import org.statefive.clic.ClcException;
 import org.statefive.clic.valuetype.ValueType;
 
 /**
@@ -36,17 +37,60 @@ import org.statefive.clic.valuetype.ValueType;
  */
 public class JavaPropertiesClcGenerator<P extends Properties>
         extends AbstractClcGenerator<Properties> {
+    
+    /**
+     * Properties used to generate the configuration.
+     */
+    private Properties properties;
 
     /**
      * {@inheritDoc}
+     * 
+     * @since 1.1
+     */
+    @Override
+    public void setProperties(Properties properties) {
+        this.properties = properties;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @since 1.1
+     */
+    @Override
+    public ByteArrayOutputStream generateConfiguration() throws ClcException, IOException {
+        if (clcOverrides == null) {
+            clcOverrides = new PropertiesConfiguration();
+        }
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        Map<String, Object> propMap = new HashMap<>();
+        for (Object key : properties.keySet()) {
+            Object value = properties.get(key.toString());
+            propMap.put(key.toString(), value.toString());
+        }
+        Map<String, String> configMap = new LinkedHashMap<>();
+        for (Iterator<String> it = clcOverrides.getKeys(); it.hasNext(); ) {
+            String key = it.next();
+            Object value = clcOverrides.getString(key);
+            configMap.put(key, value.toString());
+        }
+        os.write(generateConfiguration(propMap, configMap).getBytes());
+        return os;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @deprecated use {@link #generateConfiguration()}; deprecated since 1.1.
      */
     @Override
     public ByteArrayOutputStream generateConfiguration(Properties properties,
             Configuration config, PropertyNameFilter propertyFilter,
             boolean clcGlobalHeader, TypeInferralConfig typeInferralConfig,
-            boolean pad, boolean insertDefaults) throws IOException {
-        Configuration clcOverrides = config;
-        if (clcOverrides == null) {
+            boolean pad, boolean insertDefaults) throws ClcException, IOException {
+        clcOverrides = config;
+        if (config == null) {
             clcOverrides = new PropertiesConfiguration();
         }
         ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -64,38 +108,6 @@ public class JavaPropertiesClcGenerator<P extends Properties>
         os.write(generateConfiguration(propMap, configMap,
                 propertyFilter, clcGlobalHeader, typeInferralConfig,
                 pad, insertDefaults).getBytes());
-        return os;
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @since 1.1
-     */
-    @Override
-    public ByteArrayOutputStream generateConfiguration(Properties properties,
-            Configuration config, PropertyNameFilter propertyFilter,
-            boolean clcGlobalHeader, TypeInferralConfig typeInferralConfig,
-            boolean pad, boolean insertDefaults, String propertyVersion) throws IOException {
-        Configuration clcOverrides = config;
-        if (clcOverrides == null) {
-            clcOverrides = new PropertiesConfiguration();
-        }
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        Map<String, Object> propMap = new HashMap<>();
-        for (Object key : properties.keySet()) {
-            Object value = properties.get(key.toString());
-            propMap.put(key.toString(), value.toString());
-        }
-        Map<String, String> configMap = new LinkedHashMap<>();
-        for (Iterator<String> it = clcOverrides.getKeys(); it.hasNext(); ) {
-            String key = it.next();
-            Object value = clcOverrides.getString(key);
-            configMap.put(key, value.toString());
-        }
-        os.write(generateConfiguration(propMap, configMap,
-                propertyFilter, clcGlobalHeader, typeInferralConfig,
-                pad, insertDefaults, propertyVersion).getBytes());
         return os;
     }
 
