@@ -1,5 +1,4 @@
-#global.help.command.usage=${manifest:app-name} [options] <in-dir> <out-dir>
-global.help.command.usage=foo [options] <in-dir> <out-dir>
+global.help.command.usage=${manifest:app-name} [options] <in-dir> <out-dir>
 global.help.command.header = Process files in the given input directory and move them \
     to the specified output directory.
 global.help.command.footer = See some random URL for information
