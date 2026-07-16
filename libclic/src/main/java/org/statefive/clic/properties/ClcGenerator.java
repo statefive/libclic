@@ -21,6 +21,7 @@ import java.util.Map;
 import org.apache.commons.configuration2.Configuration;
 import org.statefive.clic.Clc;
 import org.statefive.clic.ClcException;
+import org.statefive.clic.ClcParser;
 import org.statefive.clic.GlobalConfiguration;
 import org.statefive.clic.OptionConfiguration;
 import org.statefive.clic.valuetype.ValueTypeCreationException;
@@ -204,9 +205,24 @@ public interface ClcGenerator<P> {
     /**
      * Get the map of command line keys mapped to the underlying property keys.
      *
-     * @return non-{@code null} map of property mappings.
+     * @return non-{@code null} map of property mappings; the key will be the
+     * option name as defined by the {@code option.<option-name>} value
+     * (<i>not</i> the option value entered on the command line) and the value
+     * will be the original property name that the option represents.
      */
     Map<String, String> getPropertyMappings();
+
+    /**
+     * Get the mappings of command line option value names. If no
+     * {@link ClcParser#OPTS} have been defined, all keys will map to the same
+     * value; otherwise the key will be the same as the {@link ClcParser#OPTS}
+     * mapping.
+     *
+     * @return non-{@code null} map of command line option names; the key will
+     * be the value used on the command line (without any leading hyphens)
+     * mapped to the name as defined by the {@code option.<option-name>} value.
+     */
+    Map<String, String> getOptsMappings();
 
     /**
      * Get the CLC mappings from the configuration properties (if supplied).

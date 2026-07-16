@@ -76,6 +76,15 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
     protected final Map<String, String> propertyMappings = new HashMap<>();
 
     /**
+     * Map of names of options (supplied via the command line without any hyphen
+     * prefixes) key to option name values (the {@code option.<option-name>}
+     * values used in the CLC configuration).
+     *
+     * @since 1.1
+     */
+    protected final Map<String, String> optsMappings = new HashMap<>();
+
+    /**
      * Configuration mappings (if supplied).
      */
     protected final Map<String, String> clcMappings = new HashMap<>();
@@ -204,6 +213,16 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
     @Override
     public Map<String, String> getPropertyMappings() {
         return propertyMappings;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @since 1.1
+     */
+    @Override
+    public Map<String, String> getOptsMappings() {
+        return optsMappings;
     }
 
     /**
@@ -352,7 +371,9 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
             }
             includes++;
             String optionName = AbstractPropertiesReader.convertToOptionName(propertyName);
+            String optsName = getOptName(clcOverrides, optionName);
             propertyMappings.put(optionName, propertyName);
+            optsMappings.put(optsName, optionName);
             ValueType valueType = getPropertyValueType(propertyName, value);
             if (typeInferralConfig != null && typeInferralConfig.isInferTypes()) {
                 // if valueType == null -> add string property value type?
@@ -526,7 +547,7 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
         processHelpKeyIgnoreCliArgs(sb, config, helpOptionName);
         return sb.append(System.lineSeparator()).toString();
     }
-    
+
     /**
      * Take all argument configurations beginning with {@link ClcParser#ARGS}
      * and return the results where each entry is separated by a newline. The
@@ -574,6 +595,26 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
                     .append(config.get(keyOpts))
                     .append(System.lineSeparator());
         }
+    }
+
+    /**
+     * Get the option name used on the command line.
+     *
+     * @param config non-{@code null} configuration to check; may be empty.
+     *
+     * @param optionName non-{@code null} option name.
+     *
+     * @return if no {@link ClcParser#OPTS} is defined in the configuration for
+     * the given option name, the return value will be the option name;
+     * otherwise the value determined by the given {@link ClcParser#OPTS} value.
+     */
+    private String getOptName(Map<String, String> config, String optionName) {
+        String optName = optionName;
+        String keyOpts = createOptionName(optionName, ClcParser.OPTS);
+        if (config.containsKey(keyOpts)) {
+            optName = config.get(keyOpts);
+        }
+        return optName;
     }
 
     /**

@@ -228,8 +228,9 @@ public class TypesafeConfigBuilder extends AbstractPropertiesBuilder<Config> {
      */
     @Override
     public void setProperty(String optionName, Object propertyValue) {
-        Object mapping = configurationGenerator.getPropertyMappings().get(optionName);
-        ValueType valueType = (ValueType) configurationGenerator.getPropertyValueTypes().get(optionName);
+        String longOptionName = (String) configurationGenerator.getOptsMappings().get(optionName);
+        Object mapping = configurationGenerator.getPropertyMappings().get(longOptionName);
+        ValueType valueType = (ValueType) configurationGenerator.getPropertyValueTypes().get(longOptionName);
         if (mapping != null && propertyValue != null) {
             String mapStr = mapping.toString();
             String propVal = propertyValue.toString();
