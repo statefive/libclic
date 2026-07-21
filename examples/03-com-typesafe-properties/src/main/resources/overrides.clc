@@ -1,20 +1,31 @@
-global.help.command.usage=${manifest:app-name} [options] <in-dir> <out-dir>
+global.options.opts-type = ANY
+
+global.help.command.usage = ${manifest:app-name} [options] <in-dir> <out-dir>
 global.help.command.header = Process files in the given input directory and move them \
     to the specified output directory.
 global.help.command.footer = See some random URL for information
 
-option.file-mimeTypes.argName=mimeTypes...
-option.file-mimeTypes.description=MIME types to consider; files that do not \
+global.version.name = v / version
+
+option.help.opts = h / help
+option.host-ip.opts = ip
+option.host-port.opts = p / port
+option.host-protocol.opts = P / protocol
+
+option.file-mimeTypes.opts = mimeTypes
+option.file-mimeTypes.argName = mimeTypes...
+option.file-mimeTypes.description = MIME types to consider; files that do not \
   match any of the given MIME types will be left in place. Separate multiple \
   MIME types with commas; if there are spaces in the list, surround the \
   arguments with double quotes.
 option.file-mimeTypes.type = list
 
+option.file-extensions.opts = extensions
 option.file-extensions.type = list
 
 # no need to specify type as int, as it it added by type inference; however, set
 # some limits for error checking:
-option.host-port.properties=min = 1025, max = 65535
+option.host-port.properties = min = 1025, max = 65535
 
 args.in-dir.length = 1
 args.in-dir.type = dir

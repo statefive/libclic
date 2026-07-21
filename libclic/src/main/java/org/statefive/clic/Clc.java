@@ -1149,7 +1149,7 @@ public class Clc implements ArgsListener, CommandArgsListener {
             }
             if (helpConfig.getLongOption() != null) {
                 if (helpConfig.getShortOption() != null) {
-                    helpOptions.append("/");
+                    helpOptions.append(ClcParser.OPTION_SEPARATOR);
                 }
                 helpOptions.append("--");
                 helpOptions.append(helpConfig.getLongOption());

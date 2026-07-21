@@ -31,6 +31,7 @@ import org.statefive.clic.Clc;
 import org.statefive.clic.ClcException;
 import org.statefive.clic.ClcParser;
 import org.statefive.clic.GlobalConfiguration;
+import org.statefive.clic.OptionsTypeEnum;
 
 /**
  *
@@ -898,5 +899,284 @@ public class JavaPropertiesBuilderTest
         String helpOutput = baos.toString();
         assertTrue(helpOutput.contains("--version"));
         assertTrue(helpOutput.contains("Print version then exit."));
+    }
+
+    /**
+     * Test that the long--name of the property can be changed using
+     * configuration.
+     */
+    @Test
+    public void testReadPropertiesWithOptionsTypeChangeLongName() throws Exception {
+        String methodName = name.getMethodName();
+        PropertiesTestHelper.createTestFileSet(JavaPropertiesBuilderTest.class.getSimpleName(),
+                methodName);
+        InputStream is = PropertiesTestHelper.create("application.name.short.value = this is a short option");
+        // change definition so it is shorter:
+        InputStream config = PropertiesTestHelper.create(
+                "option.application-name-short-value.opts = short");
+        String[] args = new String[]{"--short", "this is a short option"};
+        JavaPropertiesBuilder instance = new JavaPropertiesBuilder();
+        instance.addPropertiesSource(new PropertiesStreamSource(is));
+        instance.withClc(config);
+        Clc.getInstance().addDirUpdateListener(this);
+        Properties props = instance.build(args);
+        assertEquals("this is a short option", props.get("application.name.short.value"));
+    }
+
+    /**
+     * Test that when using both short and long options, a long option is
+     * supplied and is the correct value when reading arguments.
+     */
+    @Test
+    public void testReadPropertiesWithOptionsTypeBothForLongOptUsingLong() throws Exception {
+        String methodName = name.getMethodName();
+        PropertiesTestHelper.createTestFileSet(JavaPropertiesBuilderTest.class.getSimpleName(),
+                methodName);
+        InputStream is = PropertiesTestHelper.create("short = this is a short option");
+        InputStream config = PropertiesTestHelper.create(
+                GlobalConfiguration.GLOBAL_OPTIONS_OPTS_TYPE + " = " + OptionsTypeEnum.BOTH
+                + "\noption.short.opts = s / short");
+        String[] args = new String[]{"--short", "this is a short option"};
+        JavaPropertiesBuilder instance = new JavaPropertiesBuilder();
+        instance.addPropertiesSource(new PropertiesStreamSource(is));
+        instance.withClc(config);
+        Clc.getInstance().addDirUpdateListener(this);
+        Properties props = instance.build(args);
+        assertEquals("this is a short option", props.get("short"));
+    }
+
+    /**
+     * Test that when using both short and long options, a short option is
+     * supplied and is the correct value when reading arguments.
+     */
+    @Test
+    public void testReadPropertiesWithOptionsTypeBothForShprtOpt() throws Exception {
+        String methodName = name.getMethodName();
+        PropertiesTestHelper.createTestFileSet(JavaPropertiesBuilderTest.class.getSimpleName(),
+                methodName);
+        InputStream is = PropertiesTestHelper.create("short = this is a short option");
+        InputStream config = PropertiesTestHelper.create(
+                GlobalConfiguration.GLOBAL_OPTIONS_OPTS_TYPE + " = " + OptionsTypeEnum.SHORT
+                + "\noption.short.opts = s");
+        String[] args = new String[]{"-s", "this is a short option"};
+        JavaPropertiesBuilder instance = new JavaPropertiesBuilder();
+        instance.addPropertiesSource(new PropertiesStreamSource(is));
+        instance.withClc(config);
+        Clc.getInstance().addDirUpdateListener(this);
+        Properties props = instance.build(args);
+        assertEquals("this is a short option", props.get("short"));
+    }
+
+    /**
+     * Test that when using short options only, a short option is supplied and
+     * is the correct value when reading arguments.
+     */
+    @Test
+    public void testReadPropertiesWithOptionsTypeBothForShortOpt() throws Exception {
+        String methodName = name.getMethodName();
+        PropertiesTestHelper.createTestFileSet(JavaPropertiesBuilderTest.class.getSimpleName(),
+                methodName);
+        InputStream is = PropertiesTestHelper.create("short = this is a short option");
+        InputStream config = PropertiesTestHelper.create(
+                GlobalConfiguration.GLOBAL_OPTIONS_OPTS_TYPE + " = " + OptionsTypeEnum.BOTH
+                + "\noption.short.opts = s / short");
+        String[] args = new String[]{"-s", "this is a short option"};
+
+        JavaPropertiesBuilder instance = new JavaPropertiesBuilder();
+        instance.addPropertiesSource(new PropertiesStreamSource(is));
+        instance.withClc(config);
+        Clc.getInstance().addDirUpdateListener(this);
+        Properties props = instance.build(args);
+        assertEquals("this is a short option", props.get("short"));
+    }
+
+    /**
+     * Test that when an invalid option type is set the appropriate exception is
+     * thrown and caught.
+     */
+    @Test
+    public void testReadPropertiesWithOptionsTypeInvalidOpt() throws Exception {
+        String methodName = name.getMethodName();
+        PropertiesTestHelper.createTestFileSet(JavaPropertiesBuilderTest.class.getSimpleName(),
+                methodName);
+        InputStream is = PropertiesTestHelper.create("short = this is a short option");
+        InputStream config = PropertiesTestHelper.create(
+                GlobalConfiguration.GLOBAL_OPTIONS_OPTS_TYPE + " = NOT_VALID"
+                + "\noption.short.opts = s / short");
+        String[] args = new String[]{"-s", "this is a short option"};
+
+        JavaPropertiesBuilder instance = new JavaPropertiesBuilder();
+        instance.addPropertiesSource(new PropertiesStreamSource(is));
+        instance.withClc(config);
+        Clc.getInstance().addDirUpdateListener(this);
+        try {
+            instance.build(args);
+            fail("Expected an exception");
+        } catch (ClcException ex) {
+            assertEquals("Invalid option type: NOT_VALID", ex.getMessage());
+        }
+    }
+
+    /**
+     * Test that when using both options, no separator character for an option
+     * causes an error.
+     */
+    @Test
+    public void testReadPropertiesWithOptionsTypeBothNoSeparatorChar() throws Exception {
+        String methodName = name.getMethodName();
+        PropertiesTestHelper.createTestFileSet(JavaPropertiesBuilderTest.class.getSimpleName(),
+                methodName);
+        InputStream is = PropertiesTestHelper.create("short = this is a short option");
+        InputStream config = PropertiesTestHelper.create(
+                GlobalConfiguration.GLOBAL_OPTIONS_OPTS_TYPE + " = " + OptionsTypeEnum.BOTH
+                + "\noption.short.opts = short-without-separator-char");
+        String[] args = new String[]{"-s", "this is a short option"};
+
+        JavaPropertiesBuilder instance = new JavaPropertiesBuilder();
+        instance.addPropertiesSource(new PropertiesStreamSource(is));
+        instance.withClc(config);
+        Clc.getInstance().addDirUpdateListener(this);
+        try {
+            instance.build(args);
+        } catch (ClcException ex) {
+            assertEquals("Option type " + OptionsTypeEnum.BOTH.getType()
+                    + " requires separator character " + ClcParser.OPTION_SEPARATOR
+                    + "for defined options.", ex.getMessage());
+        }
+    }
+
+    /**
+     * Test that when using short options, a separator character for an option
+     * causes an error.
+     */
+    @Test
+    public void testReadPropertiesWithOptionsTypeShortNoSeparatorChar() throws Exception {
+        String methodName = name.getMethodName();
+        PropertiesTestHelper.createTestFileSet(JavaPropertiesBuilderTest.class.getSimpleName(),
+                methodName);
+        InputStream is = PropertiesTestHelper.create("short = this is a short option");
+        InputStream config = PropertiesTestHelper.create(
+                GlobalConfiguration.GLOBAL_OPTIONS_OPTS_TYPE + " = " + OptionsTypeEnum.SHORT
+                + "\noption.short.opts = s / short");
+        String[] args = new String[]{"-s", "this is a short option"};
+
+        JavaPropertiesBuilder instance = new JavaPropertiesBuilder();
+        instance.addPropertiesSource(new PropertiesStreamSource(is));
+        instance.withClc(config);
+        Clc.getInstance().addDirUpdateListener(this);
+        try {
+            instance.build(args);
+        } catch (ClcException ex) {
+            assertEquals("Option type " + OptionsTypeEnum.SHORT.getType()
+                    + " cannot contain a separator", ex.getMessage());
+        }
+    }
+
+    /**
+     * Test that when using short options, opts length greater than one causes
+     * an error.
+     */
+    @Test
+    public void testReadPropertiesWithOptionsTypeShortNoCharLengthTooGreat() throws Exception {
+        String methodName = name.getMethodName();
+        PropertiesTestHelper.createTestFileSet(JavaPropertiesBuilderTest.class.getSimpleName(),
+                methodName);
+        InputStream is = PropertiesTestHelper.create("short = this is a short option");
+        InputStream config = PropertiesTestHelper.create(
+                GlobalConfiguration.GLOBAL_OPTIONS_OPTS_TYPE + " = " + OptionsTypeEnum.SHORT
+                + "\noption.short.opts = short");
+        String[] args = new String[]{"-s", "this is a short option"};
+
+        JavaPropertiesBuilder instance = new JavaPropertiesBuilder();
+        instance.addPropertiesSource(new PropertiesStreamSource(is));
+        instance.withClc(config);
+        Clc.getInstance().addDirUpdateListener(this);
+        try {
+            instance.build(args);
+        } catch (ClcException ex) {
+            assertEquals("Option type " + OptionsTypeEnum.SHORT.getType()
+                    + " options cannot be more than one charracter in length",
+                    ex.getMessage());
+        }
+    }
+
+    /**
+     * Test that when using long options, a separator character for an option
+     * causes an error.
+     */
+    @Test
+    public void testReadPropertiesWithOptionsTypeLong() throws Exception {
+        String methodName = name.getMethodName();
+        PropertiesTestHelper.createTestFileSet(JavaPropertiesBuilderTest.class.getSimpleName(),
+                methodName);
+        InputStream is = PropertiesTestHelper.create("long = this is a long option");
+        InputStream config = PropertiesTestHelper.create(
+                GlobalConfiguration.GLOBAL_OPTIONS_OPTS_TYPE + " = " + OptionsTypeEnum.LONG
+                + "\noption.long.opts = long");
+        String[] args = new String[]{"--long", "this is a long option"};
+
+        JavaPropertiesBuilder instance = new JavaPropertiesBuilder();
+        instance.addPropertiesSource(new PropertiesStreamSource(is));
+        instance.withClc(config);
+        Clc.getInstance().addDirUpdateListener(this);
+        Properties props = instance.build(args);
+        assertEquals("this is a long option", props.get("long"));
+    }
+
+    /**
+     * Test that when using long options, a separator character for an option
+     * causes an error.
+     */
+    @Test
+    public void testReadPropertiesWithOptionsTypeLongWithSeparatorChar() throws Exception {
+        String methodName = name.getMethodName();
+        PropertiesTestHelper.createTestFileSet(JavaPropertiesBuilderTest.class.getSimpleName(),
+                methodName);
+        InputStream is = PropertiesTestHelper.create("long = this is a long option");
+        InputStream config = PropertiesTestHelper.create(
+                GlobalConfiguration.GLOBAL_OPTIONS_OPTS_TYPE + " = " + OptionsTypeEnum.LONG
+                + "\noption.long.opts = l / long");
+        String[] args = new String[]{"--long", "this is a long option"};
+
+        JavaPropertiesBuilder instance = new JavaPropertiesBuilder();
+        instance.addPropertiesSource(new PropertiesStreamSource(is));
+        instance.withClc(config);
+        Clc.getInstance().addDirUpdateListener(this);
+        try {
+            instance.build(args);
+        } catch (ClcException ex) {
+            assertEquals("Option type " + OptionsTypeEnum.LONG.getType()
+                    + " cannot contain a separator", ex.getMessage());
+        }
+    }
+
+    /**
+     * Test that when using 'any' options, options can contain a mix of option
+     * types.
+     */
+    @Test
+    public void testReadPropertiesWithOptionsTypeAny() throws Exception {
+        String methodName = name.getMethodName();
+        PropertiesTestHelper.createTestFileSet(JavaPropertiesBuilderTest.class.getSimpleName(),
+                methodName);
+        InputStream is = PropertiesTestHelper.create("long = this is a long option\n"
+                + "short = this is a short option\n"
+                + "short-and-long = this is a short and long option");
+        InputStream config = PropertiesTestHelper.create(
+                GlobalConfiguration.GLOBAL_OPTIONS_OPTS_TYPE + " = " + OptionsTypeEnum.ANY
+                + "\noption.short.opts = s\n"
+                + "option.long.opts = long\n"
+                + "option.short-and-long.opts = a / short-and-long");
+        String[] args = new String[]{"-s", "short-val", "--long", "long-val",
+            "-a", "short-and-long-val"};
+
+        JavaPropertiesBuilder instance = new JavaPropertiesBuilder();
+        instance.addPropertiesSource(new PropertiesStreamSource(is));
+        instance.withClc(config);
+        Clc.getInstance().addDirUpdateListener(this);
+        Properties props = instance.build(args);
+        assertEquals("short-val", props.get("short"));
+        assertEquals("long-val", props.get("long"));
+        assertEquals("short-and-long-val", props.get("short-and-long"));
     }
 }

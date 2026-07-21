@@ -118,6 +118,13 @@ public class ClcParser {
     public static final String FALSE = Boolean.FALSE.toString().toLowerCase();
 
     /**
+     * Option separator for short and long options.
+     *
+     * @since 1.1
+     */
+    public static final String OPTION_SEPARATOR = "/";
+
+    /**
      * All alphabetic character regular expression.
      */
     static final String A_Z = "a-zA-Z";
@@ -216,7 +223,7 @@ public class ClcParser {
             Integer currentLineNo) throws ClcException {
         Pair<String, String> optionValues = null;
         String error = null;
-        if (options.contains("/")) {
+        if (options.contains(OPTION_SEPARATOR)) {
             // both, also accept spaces between the options and the slash:
             final String forwardSlash = "\\s*/\\s*";
             final Pattern p = Pattern.compile(SHORT_OPTION_FORMAT
@@ -827,12 +834,12 @@ public class ClcParser {
      *
      * @param opt non-{@code null} options type.
      *
-     * @return option type if it could be detedted according to the above rules;
-     * {@code null} otherwise.
+     * @return option type if it could be determined according to the above
+     * rules; {@code null} otherwise.
      */
     private OptionsTypeEnum inferOptionsType(String opt) {
         OptionsTypeEnum optionsType = null;
-        if (opt.contains("/")) {
+        if (opt.contains(OPTION_SEPARATOR)) {
             optionsType = OptionsTypeEnum.BOTH;
         } else if (opt.length() == 1) {
             optionsType = OptionsTypeEnum.SHORT;
@@ -1097,10 +1104,11 @@ public class ClcParser {
     }
 
     /**
-     * Check that the option specified is of the correct type - short, long or
-     * both - according to what has been defined in the global configuration (if
-     * it has been defined), setting it if it hasn't and this is the first
-     * option in the configuration and the option conforms to the expected type.
+     * Check that the option specified is of the correct type - short, long,
+     * both or any - according to what has been defined in the global
+     * configuration (if it has been defined), setting it if it hasn't and this
+     * is the first option in the configuration and the option conforms to the
+     * expected type.
      *
      * @param expectedType non-{@code null} expected type.
      *
@@ -1151,12 +1159,29 @@ public class ClcParser {
                                     currentLineNo).getLeft());
                     break;
                 }
-                default: {
+                case LONG: {
                     currentOption.setShortOption(null);
                     currentOption.setLongOption(
                             parseShortLongOptions(option,
                                     currentLineNo).getRight());
                     break;
+                }
+                case ANY: {
+                    if (option.contains(OPTION_SEPARATOR)) {
+                        Pair<String, String> opts = parseShortLongOptions(option,
+                                currentLineNo);
+                        currentOption.setShortOption(opts.getLeft());
+                        currentOption.setLongOption(opts.getRight());
+                    } else if (option.length() == 1) {
+                        currentOption.setShortOption(
+                                parseShortLongOptions(option,
+                                        currentLineNo).getLeft());
+
+                    } else {
+                        currentOption.setLongOption(
+                                parseShortLongOptions(option,
+                                        currentLineNo).getRight());
+                    }
                 }
             }
         }

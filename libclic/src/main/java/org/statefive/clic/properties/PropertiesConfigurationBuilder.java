@@ -237,10 +237,10 @@ public class PropertiesConfigurationBuilder
     @Override
     public void setProperty(String optionName, Object propertyValue) {
         super.setProperty(optionName, propertyValue);
-        String longOptionName = (String) configurationGenerator.getOptsMappings().get(optionName);
-        Object mapping = configurationGenerator.getPropertyMappings().get(longOptionName);
+        String cliOption = configurationGenerator.getCliOptionName(optionName);
+        Object mapping = configurationGenerator.getPropertyMappings().get(cliOption);
         if (mapping != null && propertyValue != null) {
-            ValueType valueType = (ValueType) configurationGenerator.getPropertyValueTypes().get(longOptionName);
+            ValueType valueType = (ValueType) configurationGenerator.getPropertyValueTypes().get(cliOption);
             if (valueType != null) {
                 properties.setProperty(mapping.toString(), valueType.getValue(
                         valueType.render(propertyValue)));

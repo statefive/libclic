@@ -1199,13 +1199,9 @@ public class GlobalConfiguration {
                     + getOptionsType().getType()
                     + " but found second definition: " + data);
         }
-        if (OptionsTypeEnum.BOTH.getType().equals(data)) {
-            setOptionsType(OptionsTypeEnum.BOTH);
-        } else if (OptionsTypeEnum.SHORT.getType().equals(data)) {
-            setOptionsType(OptionsTypeEnum.SHORT);
-        } else if (OptionsTypeEnum.LONG.getType().equals(data)) {
-            setOptionsType(OptionsTypeEnum.LONG);
-        } else {
+        try {
+            setOptionsType(OptionsTypeEnum.valueOf(data));
+        } catch (IllegalArgumentException ex) {
             throw new ClcException("Unknown options type: " + data);
         }
     }

@@ -1288,4 +1288,27 @@ public class ClcParserTest {
                     "Option 'noargs', lines 17 - 19, is defined as having no argument (is a unary switch) but has the property 'default' set.\n");
         }
     }
+
+    /**
+     * Test that when using {@link OptionsTypeEnum#ANY} the values are parsed
+     * correctly.
+     */
+    @Test
+    public void testParseInputStreamAnyOption() throws Exception {
+        ClcParser configParser = new ClcParser();
+        InputStream is = ClcParserTest.class.getResourceAsStream(
+                "/config/config_051_any_options.clc");
+        GlobalConfiguration globalConfig = configParser.parse(is, "UTF-8");
+        Map<String, OptionConfiguration> optionConfig = globalConfig.getOptionConfigurations();
+        is.close();
+        OptionConfiguration optConfig = optionConfig.get("short-only");
+        checkOptionConfiguration(optConfig, "short-only", "s", null,
+                "This is a short option.", true);
+        optConfig = optionConfig.get("long-only");
+        checkOptionConfiguration(optConfig, "long-only", null, "long",
+                "This is a long option.", true);
+        optConfig = optionConfig.get("both");
+        checkOptionConfiguration(optConfig, "both", "a", "long-and-short",
+                "This is a long and short option.", true);
+    }
 }

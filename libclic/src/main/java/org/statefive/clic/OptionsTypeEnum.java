@@ -31,7 +31,11 @@ public enum OptionsTypeEnum {
     /**
      * Long options only.
      */
-    LONG("LONG");
+    LONG("LONG"),
+    /**
+     * Short, long or short and long options: Mix and match.
+     */
+    ANY("ANY");
 
     /**
      * One of BOTH, SHORT or LONG.

@@ -1,18 +1,3 @@
-/**
- * Copyright 2019 www.statefive.org
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
- */
 package org.statefive.clic.examples.example4;
 
 import java.io.File;
@@ -26,36 +11,40 @@ public class OptionHelper implements OptionListener, ArgsListener {
 
     private File args0InDir;
     private File args1OutDir;
-    private String hostIp;
-    private List<String> fileMimetypes;
-    private String hostProtocol;
-    private List<String> fileExtensions;
-    private Integer hostPort;
+    private String ip;
+    private List<String> mimetypes;
+    private String protocol;
+    private List<String> extensions;
+    private Integer port;
     private boolean stripExif;
 
     @Override
     public void option(String option, Object value) {
         switch (option) {
+            case "h":
             case "help":
                 System.exit(0);
-            case "host-ip":
-                hostIp = (String) value;
+            case "ip":
+                ip = (String) value;
                 break;
-            case "file-mimeTypes":
-                fileMimetypes = (List<String>) value;
+            case "mimeTypes":
+                mimetypes = (List<String>) value;
                 break;
-            case "host-protocol":
-                hostProtocol = (String) value;
+            case "P":
+            case "protocol":
+                protocol = (String) value;
                 break;
-            case "file-extensions":
-                fileExtensions = (List<String>) value;
+            case "extensions":
+                extensions = (List<String>) value;
                 break;
-            case "host-port":
-                hostPort = (int) value;
+            case "p":
+            case "port":
+                port = (int) value;
                 break;
             case "strip-exif":
                 stripExif = true;
                 break;
+            case "v":
             case "version":
                 System.exit(0);
         }
@@ -91,24 +80,24 @@ public class OptionHelper implements OptionListener, ArgsListener {
         return args1OutDir;
     }
 
-    public List<String> getFileExtensions() {
-        return fileExtensions;
+    public List<String> getExtensions() {
+        return extensions;
     }
 
-    public List<String> getFileMimetypes() {
-        return fileMimetypes;
+    public String getIp() {
+        return ip;
     }
 
-    public String getHostIp() {
-        return hostIp;
+    public List<String> getMimetypes() {
+        return mimetypes;
     }
 
-    public Integer getHostPort() {
-        return hostPort;
+    public Integer getPort() {
+        return port;
     }
 
-    public String getHostProtocol() {
-        return hostProtocol;
+    public String getProtocol() {
+        return protocol;
     }
 
     public boolean isStripExif() {

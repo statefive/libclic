@@ -213,16 +213,19 @@ public interface ClcGenerator<P> {
     Map<String, String> getPropertyMappings();
 
     /**
-     * Get the mappings of command line option value names. If no
-     * {@link ClcParser#OPTS} have been defined, all keys will map to the same
-     * value; otherwise the key will be the same as the {@link ClcParser#OPTS}
-     * mapping.
+     * Get the command line switch (short or long version) for the given option
+     * name defined in the CLC, without any leading hyphens.
      *
-     * @return non-{@code null} map of command line option names; the key will
-     * be the value used on the command line (without any leading hyphens)
-     * mapped to the name as defined by the {@code option.<option-name>} value.
+     * @param optionName non-{@code null} option name to get the command line
+     * switch for; this will be the {@code <option-name>} part of all
+     * {@code option.<option-name>} value of an option configuration.
+     * 
+     * @return non-{@code null} command line option name; either a short or long
+     * version, {@code null} if the option name is invalid.
+     * 
+     * @since 1.1
      */
-    Map<String, String> getOptsMappings();
+    String getCliOptionName(String optionName);
 
     /**
      * Get the CLC mappings from the configuration properties (if supplied).

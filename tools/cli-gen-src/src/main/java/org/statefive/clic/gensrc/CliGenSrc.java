@@ -310,6 +310,7 @@ public class CliGenSrc {
                         optionNameLong = optConfig.getLongOption();
                         break;
                     case BOTH:
+                    case ANY:
                         variableName = getVariableName(optConfig.getLongOption());
                         optionNameShort = optConfig.getShortOption();
                         optionNameLong = optConfig.getLongOption();

@@ -1,0 +1,32 @@
+# 
+# Copyright 2019 www.statefive.org
+# 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#     http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# 
+
+# Any options - options can be short (with no long option), long (with no short
+# option) or long and short together
+
+global.options.opts-type = ANY
+
+option.short-only.opts = s
+option.short-only.description = This is a short option.
+option.short-only.hasArg = true
+
+option.long-only.opts = long
+option.long-only.description = This is a long option.
+option.long-only.hasArg = true
+
+option.both.opts = a / long-and-short
+option.both.description= This is a long and short option.
+option.both.hasArg = true

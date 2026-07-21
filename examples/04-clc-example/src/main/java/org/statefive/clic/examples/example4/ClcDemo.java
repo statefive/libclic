@@ -54,11 +54,11 @@ public class ClcDemo {
         clc.addArgsListener(optionHelper);
         clc.process(is, "UTF-8", args);
 
-        System.out.println("IP address   : " + optionHelper.getHostIp());
-        System.out.println("Port         : " + optionHelper.getHostPort());
-        System.out.println("Protocol     : " + optionHelper.getHostProtocol());
-        System.out.println("MIME types   : " + optionHelper.getFileMimetypes());
-        System.out.println("Extensions   : " + optionHelper.getFileExtensions());
+        System.out.println("IP address   : " + optionHelper.getIp());
+        System.out.println("Port         : " + optionHelper.getPort());
+        System.out.println("Protocol     : " + optionHelper.getProtocol());
+        System.out.println("MIME types   : " + optionHelper.getMimetypes());
+        System.out.println("Extensions   : " + optionHelper.getExtensions());
         System.out.println("Strip EXIF   : " + optionHelper.isStripExif());
 
         File inDir = (File) optionHelper.getArgs0InDir();

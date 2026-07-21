@@ -22,10 +22,15 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import org.apache.commons.cli.help.HelpFormatter;
 import org.apache.commons.configuration2.Configuration;
+import org.apache.commons.lang3.tuple.Pair;
 import org.statefive.clic.ClcException;
 import org.statefive.clic.ClcParser;
 import org.statefive.clic.GlobalConfiguration;
 import org.statefive.clic.OptionsTypeEnum;
+import static org.statefive.clic.OptionsTypeEnum.ANY;
+import static org.statefive.clic.OptionsTypeEnum.BOTH;
+import static org.statefive.clic.OptionsTypeEnum.LONG;
+import static org.statefive.clic.OptionsTypeEnum.SHORT;
 import org.statefive.clic.valuetype.ValueType;
 import org.statefive.clic.valuetype.ValueTypeCreationException;
 import org.statefive.clic.valuetype.ValueTypeFactory;
@@ -76,13 +81,22 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
     protected final Map<String, String> propertyMappings = new HashMap<>();
 
     /**
-     * Map of names of options (supplied via the command line without any hyphen
-     * prefixes) key to option name values (the {@code option.<option-name>}
-     * values used in the CLC configuration).
+     * Map of long names of options (supplied via the command line without any
+     * hyphen prefixes) key to option name values (the
+     * {@code option.<option-name>} values used in the CLC configuration).
      *
      * @since 1.1
      */
-    protected final Map<String, String> optsMappings = new HashMap<>();
+    protected final Map<String, String> optsLongMappings = new HashMap<>();
+
+    /**
+     * Map of short names of options (supplied via the command line without any
+     * hyphen prefixes) key to option name values (the
+     * {@code option.<option-name>} values used in the CLC configuration).
+     *
+     * @since 1.1
+     */
+    protected final Map<String, String> optsShortMappings = new HashMap<>();
 
     /**
      * Configuration mappings (if supplied).
@@ -217,16 +231,6 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
 
     /**
      * {@inheritDoc}
-     *
-     * @since 1.1
-     */
-    @Override
-    public Map<String, String> getOptsMappings() {
-        return optsMappings;
-    }
-
-    /**
-     * {@inheritDoc}
      */
     @Override
     public Map<String, String> getClcMappings() {
@@ -239,6 +243,18 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
     @Override
     public Map<String, ValueType> getPropertyValueTypes() {
         return propertyValueTypes;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getCliOptionName(String optionName) {
+        String cliOption = (String) this.optsShortMappings.get(optionName);
+        if (cliOption == null) {
+            cliOption = (String) this.optsLongMappings.get(optionName);
+        }
+        return cliOption;
     }
 
     /**
@@ -345,18 +361,6 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
         StringBuilder sb = new StringBuilder();
         if (header) {
             sb.append("# Global options").append(System.lineSeparator());
-            // short options are not supported:
-            if (!clcOverrides.containsKey(GlobalConfiguration.GLOBAL_OPTIONS_OPTS_TYPE)) {
-                sb.append(GlobalConfiguration.GLOBAL_OPTIONS_OPTS_TYPE)
-                        .append(" = ")
-                        .append(OptionsTypeEnum.LONG.getType())
-                        .append(System.lineSeparator());
-            } else {
-                sb.append(GlobalConfiguration.GLOBAL_OPTIONS_OPTS_TYPE)
-                        .append(" = ")
-                        .append(clcOverrides.get(GlobalConfiguration.GLOBAL_OPTIONS_OPTS_TYPE))
-                        .append(System.lineSeparator());
-            }
             sb.append(generateGlobalConfiguration(clcOverrides, properties));
         }
         // keep track of number of generated options:
@@ -371,9 +375,14 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
             }
             includes++;
             String optionName = AbstractPropertiesReader.convertToOptionName(propertyName);
-            String optsName = getOptName(clcOverrides, optionName);
+            Pair<String, String> opts = getCliOptionNames(clcOverrides, optionName);
             propertyMappings.put(optionName, propertyName);
-            optsMappings.put(optsName, optionName);
+            if (opts.getLeft() != null) {
+                optsShortMappings.put(opts.getLeft(), optionName);
+            }
+            if (opts.getRight() != null) {
+                optsLongMappings.put(opts.getRight(), optionName);
+            }
             ValueType valueType = getPropertyValueType(propertyName, value);
             if (typeInferralConfig != null && typeInferralConfig.isInferTypes()) {
                 // if valueType == null -> add string property value type?
@@ -418,6 +427,87 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
         if (includes == 0) {
             throw new ClcException("Configuration not generated -"
                     + " bad filter or no properties?");
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Generate global default help and (optionally) version configuration,
+     * unless overridden by the specified configuration. Supplying the empty map
+     * of configuration values will generate defaults for all global help
+     * options. By default, all options will be considered to be
+     * {@link OptionsTypeEnum#LONG} but can be overridden using properties to be
+     * {@link OptionsTypeEnum#BOTH} or {@link OptionsTypeEnum#ANY}.
+     *
+     * @param config non-{@code null} configuration to override any default help
+     * options; may be empty.
+     *
+     * @param properties properties if property version information is required
+     * (via {@link #setPropertyVersion(java.lang.String)} and the manifest entry
+     * {@code Implementation-Version} is not present, use the the specified
+     * version property present in the properties; {@code null} if property
+     * versioning is not required (or is using the implementation version).
+     *
+     * @return non-{@code null} command line configuration output data for the
+     * help and versioning data.
+     *
+     * @throws ClcException if any help properties are not present or are
+     * invalid.
+     *
+     * @since 1.1
+     */
+    String generateGlobalConfiguration(Map<String, String> config,
+            Map<String, Object> properties) throws ClcException {
+        StringBuilder sb = new StringBuilder();
+        processOptionsType(sb, config);
+        String helpOptionName = HELP_DEFAULT;
+        String helpOptionNameOverride = processHelpCommandOptionName(sb, config);
+        if (helpOptionNameOverride != null) {
+            helpOptionName = helpOptionNameOverride;
+        }
+        processHelpCommandName(sb, config);
+        processHelpCommandHeader(sb, config);
+        processHelpCommandFooter(sb, config);
+        processHelpSwitchOpts(sb, config);
+        processHelpAutoUsage(sb, config);
+        processHelpFormatColumnSpacing(sb, config);
+        processHelpFormatLeftPad(sb, config);
+        processHelpFormatWidth(sb, config);
+        processHelpFormatWidthFromEnv(sb, config);
+        processHelpSortOptions(sb, config);
+        if (propertyVersion != null) {
+            // needs to be added in before any non-global options are generated:
+            addPropertyVersionInformation(sb, propertyVersion, properties);
+        }
+        // coment to separate global and standard options
+        sb.append(System.lineSeparator())
+                .append("# Options configuration:")
+                .append(System.lineSeparator());
+        processHelpOptionOpts(sb, config, helpOptionName);
+        processHelpOptionDescription(sb, config, helpOptionName);
+        processHelpKeyIgnoreCliArgs(sb, config, helpOptionName);
+        return sb.append(System.lineSeparator()).toString();
+    }
+
+    /**
+     * Take all argument configurations beginning with {@link ClcParser#ARGS}
+     * and return the results where each entry is separated by a newline. The
+     * entries must be valid argument configuration definitions.
+     *
+     * @param config non-{@code null} configuration.
+     *
+     * @return Non-empty string of argument configurations, if present; the
+     * empty string otherwise.
+     */
+    String generateArgsConfigurations(Map<String, String> config) {
+        StringBuilder sb = new StringBuilder();
+        for (String key : config.keySet()) {
+            if (key.startsWith(ClcParser.ARGS)) {
+                sb.append(key)
+                        .append(" = ")
+                        .append(config.get(key))
+                        .append(System.lineSeparator());
+            }
         }
         return sb.toString();
     }
@@ -494,84 +584,6 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
     }
 
     /**
-     * Generate global default help and (optionally) version configuration,
-     * unless overridden by the specified configuration. Supplying the empty map
-     * of configuration values will generate defaults for all global help
-     * options.
-     *
-     * @param config non-{@code null} configuration to override any default help
-     * options; may be empty.
-     *
-     * @param properties properties if property version information is required
-     * (via {@link #setPropertyVersion(java.lang.String)} and the manifest entry
-     * {@code Implementation-Version} is not present, use the the specified
-     * version property present in the properties; {@code null} if property
-     * versioning is not required (or is using the implementation version).
-     *
-     * @return non-{@code null} command line configuration output data for the
-     * help and versioning data.
-     *
-     * @throws ClcException if any help properties are not present or are
-     * invalid.
-     *
-     * @since 1.1
-     */
-    String generateGlobalConfiguration(Map<String, String> config,
-            Map<String, Object> properties) throws ClcException {
-        StringBuilder sb = new StringBuilder();
-        String helpOptionName = HELP_DEFAULT;
-        String helpOptionNameOverride = processHelpCommandOptionName(sb, config);
-        if (helpOptionNameOverride != null) {
-            helpOptionName = helpOptionNameOverride;
-        }
-        processHelpCommandName(sb, config);
-        processHelpCommandHeader(sb, config);
-        processHelpCommandFooter(sb, config);
-        processHelpSwitchOpts(sb, config);
-        processHelpAutoUsage(sb, config);
-        processHelpFormatColumnSpacing(sb, config);
-        processHelpFormatLeftPad(sb, config);
-        processHelpFormatWidth(sb, config);
-        processHelpFormatWidthFromEnv(sb, config);
-        processHelpSortOptions(sb, config);
-        if (propertyVersion != null) {
-            // needs to be added in before any non-global options are generated:
-            addPropertyVersionInformation(sb, propertyVersion, properties);
-        }
-        // coment to separate global and standard options
-        sb.append(System.lineSeparator())
-                .append("# Options configuration:")
-                .append(System.lineSeparator());
-        processHelpOptionOpts(sb, config, helpOptionName);
-        processHelpOptionDescription(sb, config, helpOptionName);
-        processHelpKeyIgnoreCliArgs(sb, config, helpOptionName);
-        return sb.append(System.lineSeparator()).toString();
-    }
-
-    /**
-     * Take all argument configurations beginning with {@link ClcParser#ARGS}
-     * and return the results where each entry is separated by a newline. The
-     * entries must be valid argument configuration definitions.
-     *
-     * @param config non-{@code null} configuration.
-     *
-     * @return Non-empty string of argument configurations, if present; the
-     * empty string otherwise.
-     */
-    String generateArgsConfigurations(Map<String, String> config) {
-        StringBuilder sb = new StringBuilder();
-        for (String key : config.keySet()) {
-            if (key.startsWith(ClcParser.ARGS)) {
-                sb.append(key)
-                        .append(" = ")
-                        .append(config.get(key))
-                        .append(System.lineSeparator());
-            }
-        }
-        return sb.toString();
-    }
-
-    /**
      * Generate a {@link ClcParser#OPTS} value for the specified option name; if
      * there is no user-defined value present in the supplied configuration map,
      * a default value will be added to the given builder; otherwise the
@@ -598,23 +610,88 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
     }
 
     /**
-     * Get the option name used on the command line.
+     * Get the option names (short, long or both) used on the command line for
+     * the given option name. If no
+     * {@link GlobalConfiguration#GLOBAL_OPTIONS_OPTS_TYPE} and, no
+     * corresponding {@link ClcParser#OPTS} configuration defined, the option
+     * name value will be used; otherwise, the value will be taken from the
+     * defined options value, according to the following rules:
+     *
+     * <ul>
+     * <li>For {@link OptionsTypeEnum#BOTH}, the value will consist of a pair of
+     * options separated by the separator of the form {@code <short>/<long>}
+     * where {@code <short>} will be a single character and {@code <long>} is a
+     * long option value;</li>
+     * <li>For {@link OptionsTypeEnum#SHORT}, the value will consist of a single
+     * character only;</li>
+     * <li>For {@link OptionsTypeEnum#LONG}, the value will consist of a long
+     * option only; and</li>
+     * <li>For {@link OptionsTypeEnum#ANY}, options can contain a mix of short,
+     * long, or short and long options.</li>
+     * </ul>
      *
      * @param config non-{@code null} configuration to check; may be empty.
      *
      * @param optionName non-{@code null} option name.
      *
-     * @return if no {@link ClcParser#OPTS} is defined in the configuration for
-     * the given option name, the return value will be the option name;
-     * otherwise the value determined by the given {@link ClcParser#OPTS} value.
+     * @return non-{@code null} pair of values; the left-side will be the short
+     * option (if present), the right side will be the long option (if present).
+     *
+     * @since 1.1
+     *
+     * @throws ClcException if {@link OptionsTypeEnum#BOTH} is defined but
+     * doesn't contain the separator character, or for any defined short-based
+     * options the option is length greater than one.
      */
-    private String getOptName(Map<String, String> config, String optionName) {
-        String optName = optionName;
+    private Pair<String, String> getCliOptionNames(Map<String, String> config,
+            String optionName) throws ClcException {
+        Pair<String, String> optNames = null;
         String keyOpts = createOptionName(optionName, ClcParser.OPTS);
-        if (config.containsKey(keyOpts)) {
-            optName = config.get(keyOpts);
+        if (config.containsKey(keyOpts)
+                && config.containsKey(GlobalConfiguration.GLOBAL_OPTIONS_OPTS_TYPE)) {
+            String optionType = config.get(GlobalConfiguration.GLOBAL_OPTIONS_OPTS_TYPE);
+            OptionsTypeEnum optionsTypeEnum = OptionsTypeEnum.valueOf(optionType);
+            String options = config.get(keyOpts).trim();
+            switch (optionsTypeEnum) {
+                case BOTH:
+                    if (!options.contains(ClcParser.OPTION_SEPARATOR)) {
+                        throw new ClcException("Option type "
+                                + OptionsTypeEnum.BOTH.getType()
+                                + " requires separator character "
+                                + ClcParser.OPTION_SEPARATOR + "for defined options.");
+                    }
+                    break;
+                case SHORT:
+                    if (options.contains(ClcParser.OPTION_SEPARATOR)) {
+                        throw new ClcException("Option type "
+                                + OptionsTypeEnum.SHORT.getType()
+                                + " cannot contain a separator");
+                    }
+                    if (options.trim().length() > 1) {
+                        throw new ClcException("Option type "
+                                + OptionsTypeEnum.SHORT.getType()
+                                + " options cannot be more than one charracter in length");
+                    }
+                    break;
+                case LONG:
+                    if (options.contains(ClcParser.OPTION_SEPARATOR)) {
+                        throw new ClcException("Option type "
+                                + OptionsTypeEnum.LONG.getType()
+                                + " cannot contain a separator");
+                    }
+                    break;
+                case ANY:
+                    // nothing to do, parsing options will check they're fine
+                    break;
+            }
+            optNames = ClcParser.parseShortLongOptions(options, null);
+        } else {
+            // treat as a long option - the default for properties-based command
+            // lines:
+            optNames = ClcParser.parseShortLongOptions(optionName,
+                    null);
         }
-        return optName;
+        return optNames;
     }
 
     /**
@@ -641,7 +718,7 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
      * @throws CLCException if any user-defined configuration with
      * {@link ClcParser#HAS_ARG} is set to {@code false} and the type inference
      * configuration does not have false-as-unary-switches set. If
-     * false-as-inary-switches is not set, <i>all</i> properties are treated as
+     * false-as-unary-switches is not set, <i>all</i> properties are treated as
      * requiring arguments.
      */
     private void processHasArg(StringBuilder sb, Map<String, String> clcOverrides,
@@ -816,6 +893,42 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
             sb.append(optionProperties)
                     .append(" = ")
                     .append(config.get(optionProperties))
+                    .append(System.lineSeparator());
+        }
+    }
+
+    /**
+     * Check to see if {@link ClcParser#TYPE} is set; if not set will be set to
+     * {@link OptionsTypeEnum#LONG} - otherwise, allowed values are
+     * {@link OptionsTypeEnum#LONG}, {@link OptionsTypeEnum#BOTH} or
+     * {@link OptionsTypeEnum#SHORT}.
+     *
+     * @param sb non-{@code null} builder to append to.
+     *
+     * @param config non-{@code null} configuration to check; may be empty.
+     *
+     * @throws ClcException if option type is set and is not one of
+     * {@link OptionsTypeEnum#LONG} or{@link OptionsTypeEnum#BOTH}
+     *
+     * @since 1.1
+     */
+    private void processOptionsType(StringBuilder sb,
+            Map<String, String> config) throws ClcException {
+        if (config.containsKey(GlobalConfiguration.GLOBAL_OPTIONS_OPTS_TYPE)) {
+            String optionType = config.get(GlobalConfiguration.GLOBAL_OPTIONS_OPTS_TYPE);
+            try {
+                OptionsTypeEnum optionsTypeEnum = OptionsTypeEnum.valueOf(optionType);
+                sb.append(GlobalConfiguration.GLOBAL_OPTIONS_OPTS_TYPE)
+                        .append(" = ")
+                        .append(optionsTypeEnum.getType())
+                        .append(System.lineSeparator());
+            } catch (IllegalArgumentException ex) {
+                throw new ClcException("Invalid option type: " + optionType);
+            }
+        } else {
+            sb.append(GlobalConfiguration.GLOBAL_OPTIONS_OPTS_TYPE)
+                    .append(" = ")
+                    .append(OptionsTypeEnum.LONG.getType())
                     .append(System.lineSeparator());
         }
     }
@@ -1280,7 +1393,7 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
             sb.append(optsKey)
                     .append(" = true")
                     .append(System.lineSeparator());
-        } else if (config.containsKey(optsKey)) {
+        } else {
             // user defined
             sb.append(optsKey)
                     .append(" = ")
@@ -1313,8 +1426,8 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
         if (!config.containsKey(optsKey)) {
             sb.append("# ")
                     .append(createOptionName(optionName,
-                            ClcParser.IGNORE_CLI_ARGS))
-                    .append(" = false")
+                            ClcParser.OPTS))
+                    .append(" = option-value")
                     .append(System.lineSeparator());
         }
         if (!unary) {
@@ -1350,6 +1463,14 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
                         .append(" = x")
                         .append(System.lineSeparator());
             }
+        }
+        optsKey = createOptionName(optionName, ClcParser.IGNORE_CLI_ARGS);
+        if (!config.containsKey(optsKey)) {
+            sb.append("# ")
+                    .append(createOptionName(optionName,
+                            ClcParser.IGNORE_CLI_ARGS))
+                    .append(" = false")
+                    .append(System.lineSeparator());
         }
     }
 
