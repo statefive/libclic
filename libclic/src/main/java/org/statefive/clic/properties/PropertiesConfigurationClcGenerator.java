@@ -72,7 +72,6 @@ public class PropertiesConfigurationClcGenerator<P extends Configuration>
      */
     @Override
     public ByteArrayOutputStream generateConfiguration() throws ClcException, IOException {
-        clcOverrides = this.clcOverrides;
         if (clcOverrides == null) {
             clcOverrides = new PropertiesConfiguration();
         }
@@ -104,7 +103,7 @@ public class PropertiesConfigurationClcGenerator<P extends Configuration>
             Configuration config, PropertyNameFilter propertyFilter,
             boolean clcGlobalHeader, TypeInferralConfig typeInferralConfig,
             boolean pad, boolean insertDefaults) throws ClcException, IOException {
-        Configuration clcOverrides = config;
+        clcOverrides = config;
         if (clcOverrides == null) {
             clcOverrides = new PropertiesConfiguration();
         }

@@ -90,7 +90,7 @@ public class JavaPropertiesClcGenerator<P extends Properties>
             boolean clcGlobalHeader, TypeInferralConfig typeInferralConfig,
             boolean pad, boolean insertDefaults) throws ClcException, IOException {
         clcOverrides = config;
-        if (config == null) {
+        if (clcOverrides == null) {
             clcOverrides = new PropertiesConfiguration();
         }
         ByteArrayOutputStream os = new ByteArrayOutputStream();

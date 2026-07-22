@@ -94,6 +94,34 @@ public class AbstractClcGeneratorTest {
     }
 
     /**
+     * Set the class generator fields with the given arguments.
+     *
+     * @param filter filter; may be {@code null}.
+     * 
+     * @param typeInferralConfig type inference configurationl if {@code null},
+     * a new default configuration will be created.
+     * 
+     * @param header {@code true} to set global header.
+     * 
+     * @param pad {@code true} to pad.
+     * 
+     * @param insertDefaults {@code true} to insert property defaults.
+     */
+    private void setFields(PropertyNameFilter filter,
+            TypeInferralConfig typeInferralConfig, boolean header, boolean pad,
+            boolean insertDefaults) {
+        generator.setPropertyNameFilter(filter);
+        if (typeInferralConfig != null) {
+            generator.setTypeInferralConfig(typeInferralConfig);
+        } else {
+            generator.setTypeInferralConfig(new TypeInferralConfig());
+        }
+        generator.setHeader(header);
+        generator.setPad(pad);
+        generator.setInsertDefault(insertDefaults);
+    }
+
+    /**
      * Test of getPropertyMappings method, of class
      * AbstractConfigurationGenerator.
      */
@@ -101,9 +129,9 @@ public class AbstractClcGeneratorTest {
     public void testGenerateConfigurationOverrideLongOptions() throws Exception {
         Map<String, String> config = new HashMap<>();
         config.put(GlobalConfiguration.GLOBAL_OPTIONS_OPTS_TYPE, "BOTH");
+        setFields(null, null, true, false, false);
         String data = generator.generateConfiguration(
-                getBasicPropertyMap(), config, null, true, 
-                null, false, false);
+                getBasicPropertyMap(), config);
         String[] lines = data.split(System.lineSeparator());
         boolean defined = isDefined(lines, "global.options.opts-type", "BOTH");
         if (!defined) {
@@ -120,9 +148,9 @@ public class AbstractClcGeneratorTest {
     public void testGenerateConfigurationOverrideHelpSwitchOpts() throws Exception {
         Map<String, String> config = new HashMap<>();
         config.put(GlobalConfiguration.GLOBAL_HELP_SWITCH_OPTS, "H/RTFM");
+        setFields(null, null, true, false, false);
         String data = generator.generateConfiguration(
-                getBasicPropertyMap(), config, null, true, 
-                null, false, false);
+                getBasicPropertyMap(), config);
         String[] lines = data.split(System.lineSeparator());
         boolean defined = isDefined(lines,
                 GlobalConfiguration.GLOBAL_HELP_SWITCH_OPTS, "H/RTFM");
@@ -140,9 +168,9 @@ public class AbstractClcGeneratorTest {
     public void testGenerateConfigurationOverrideOpts() throws Exception {
         Map<String, String> config = new HashMap<>();
         config.put("option.foo-bar.opts", "f/foo-bar");
+        setFields(null, null, true, false, false);
         String data = generator.generateConfiguration(
-                getBasicPropertyMap(), config, null, true, 
-                null, false, false);
+                getBasicPropertyMap(), config);
         String[] lines = data.split(System.lineSeparator());
         boolean defined = isDefined(lines, "option.foo-bar.opts", "f/foo-bar");
         if (!defined) {
@@ -160,9 +188,9 @@ public class AbstractClcGeneratorTest {
     public void testGenerateConfigurationOverride() throws Exception {
         Map<String, String> config = new HashMap<>();
         config.put("option.help.ignoreCliArgs", ClcParser.FALSE);
+        setFields(null, null, true, false, false);
         String data = generator.generateConfiguration(
-                getBasicPropertyMap(), config, null, true, 
-                null, false, false);
+                getBasicPropertyMap(), config);
         String[] lines = data.split(System.lineSeparator());
         boolean defined = isDefined(lines, "option.help.ignoreCliArgs", ClcParser.FALSE);
         if (!defined) {
@@ -179,9 +207,9 @@ public class AbstractClcGeneratorTest {
     public void testGenerateConfigurationOverrideHasArg() throws Exception {
         Map<String, String> config = new HashMap<>();
         config.put("option.foo-bar.hasArg", ClcParser.TRUE);
+        setFields(null, null, true, false, false);
         String data = generator.generateConfiguration(
-                getBasicPropertyMap(), config, null, true, 
-                null, false, false);
+                getBasicPropertyMap(), config);
         String[] lines = data.split(System.lineSeparator());
         boolean defined = isDefined(lines, "option.foo-bar.hasArg", ClcParser.TRUE);
         if (!defined) {
@@ -198,9 +226,9 @@ public class AbstractClcGeneratorTest {
     public void testGenerateConfigurationOverrideArgValue() throws Exception {
         Map<String, String> config = new HashMap<>();
         config.put("option.foo-bar.argName", "abc");
+        setFields(null, null, true, false, false);
         String data = generator.generateConfiguration(
-                getBasicPropertyMap(), config, null, true, 
-                null, false, false);
+                getBasicPropertyMap(), config);
         String[] lines = data.split(System.lineSeparator());
         boolean defined = isDefined(lines, "option.foo-bar.argName", "abc");
         if (!defined) {
@@ -218,8 +246,9 @@ public class AbstractClcGeneratorTest {
         Map<String, String> config = new HashMap<>();
         config.put("option.foo-bar.hasArg", ClcParser.FALSE);
         try {
-            generator.generateConfiguration(getBasicPropertyMap(), config, null, true, 
-                null, false, false);
+            setFields(null, null, true, false, false);
+            generator.generateConfiguration(
+                    getBasicPropertyMap(), config);
             fail("Expected an exception");
         } catch (ClcException ex) {
             assertEquals(ex.getMessage(), "Configuration"
@@ -239,8 +268,9 @@ public class AbstractClcGeneratorTest {
         config.put("option.foo-bar.hasArg", ClcParser.FALSE);
         TypeInferralConfig typeConfig = new TypeInferralConfigBuilder()
                 .withFalseAsUnarySwitch().build();
-        String data = generator.generateConfiguration(getMultiplePropertiesMap(),
-                config, null, false, typeConfig, false, false);
+        setFields(null, typeConfig, false, false, false);
+        String data = generator.generateConfiguration(
+                getMultiplePropertiesMap(), config);
         String[] lines = data.split(System.lineSeparator());
         assertTrue(isDefined(lines, "option.verbose.hasArg", ClcParser.FALSE));
     }
@@ -253,8 +283,9 @@ public class AbstractClcGeneratorTest {
     public void testGenerateConfigurationOverrideDescription() throws Exception {
         Map<String, String> config = new HashMap<>();
         config.put("option.foo-bar.description", "foo has no bar");
-        String data = generator.generateConfiguration(getBasicPropertyMap(), config, null, true, 
-                null, false, false);
+        setFields(null, null, true, false, false);
+        String data = generator.generateConfiguration(
+                getBasicPropertyMap(), config);
         String[] lines = data.split(System.lineSeparator());
         boolean defined = false;
         for (String line : lines) {
@@ -277,8 +308,9 @@ public class AbstractClcGeneratorTest {
     public void testGenerateConfigurationOverrideHelpCommandName() throws Exception {
         Map<String, String> config = new HashMap<>();
         config.put(GlobalConfiguration.GLOBAL_HELP_COMMAND_NAME, "program-foo");
-        String data = generator.generateConfiguration(getBasicPropertyMap(), config, null, true, 
-                null, false, false);
+        setFields(null, null, true, false, false);
+        String data = generator.generateConfiguration(
+                getBasicPropertyMap(), config);
         String[] lines = data.split(System.lineSeparator());
         boolean defined = isDefined(lines, GlobalConfiguration.GLOBAL_HELP_COMMAND_NAME, "program-foo");
         if (!defined) {
@@ -296,8 +328,9 @@ public class AbstractClcGeneratorTest {
         Map<String, String> config = new HashMap<>();
         config.put(GlobalConfiguration.GLOBAL_HELP_COMMAND_HEADER,
                 "Important header information");
-        String data = generator.generateConfiguration(getBasicPropertyMap(), config, null, true, 
-                null, false, false);
+        setFields(null, null, true, false, false);
+        String data = generator.generateConfiguration(
+                getBasicPropertyMap(), config);
         String[] lines = data.split(System.lineSeparator());
         boolean defined = isDefined(lines, GlobalConfiguration.GLOBAL_HELP_COMMAND_HEADER,
                 "Important header information");
@@ -317,8 +350,9 @@ public class AbstractClcGeneratorTest {
         Map<String, String> config = new HashMap<>();
         config.put(GlobalConfiguration.GLOBAL_HELP_COMMAND_FOOTER,
                 "Important footer information");
-        String data = generator.generateConfiguration(getBasicPropertyMap(), config, null, true, 
-                null, false, false);
+        setFields(null, null, true, false, false);
+        String data = generator.generateConfiguration(
+                getBasicPropertyMap(), config);
         String[] lines = data.split(System.lineSeparator());
         boolean defined = isDefined(lines, GlobalConfiguration.GLOBAL_HELP_COMMAND_FOOTER,
                 "Important footer information");
@@ -338,8 +372,9 @@ public class AbstractClcGeneratorTest {
         Map<String, String> config = new HashMap<>();
         config.put(GlobalConfiguration.GLOBAL_HELP_AUTO_USAGE,
                 ClcParser.TRUE);
-        String data = generator.generateConfiguration(getBasicPropertyMap(), config, null, true, 
-                null, false, false);
+        setFields(null, null, true, false, false);
+        String data = generator.generateConfiguration(
+                getBasicPropertyMap(), config);
         String[] lines = data.split(System.lineSeparator());
         boolean defined = isDefined(lines, GlobalConfiguration.GLOBAL_HELP_AUTO_USAGE,
                 ClcParser.TRUE);
@@ -359,8 +394,9 @@ public class AbstractClcGeneratorTest {
         Map<String, String> config = new HashMap<>();
         config.put(GlobalConfiguration.GLOBAL_HELP_FORMAT_COLUMN_SPACING,
                 "1");
-        String data = generator.generateConfiguration(getBasicPropertyMap(), config, null, true, 
-                null, false, false);
+        setFields(null, null, true, false, false);
+        String data = generator.generateConfiguration(
+                getBasicPropertyMap(), config);
         String[] lines = data.split(System.lineSeparator());
         boolean defined = isDefined(lines, GlobalConfiguration.GLOBAL_HELP_FORMAT_COLUMN_SPACING,
                 "1");
@@ -380,8 +416,9 @@ public class AbstractClcGeneratorTest {
         Map<String, String> config = new HashMap<>();
         config.put(GlobalConfiguration.GLOBAL_HELP_FORMAT_LEFT_PAD,
                 "1");
-        String data = generator.generateConfiguration(getBasicPropertyMap(), config, null, true, 
-                null, false, false);
+        setFields(null, null, true, false, false);
+        String data = generator.generateConfiguration(
+                getBasicPropertyMap(), config);
         String[] lines = data.split(System.lineSeparator());
         boolean defined = isDefined(lines, GlobalConfiguration.GLOBAL_HELP_FORMAT_LEFT_PAD,
                 "1");
@@ -401,8 +438,9 @@ public class AbstractClcGeneratorTest {
         Map<String, String> config = new HashMap<>();
         config.put(GlobalConfiguration.GLOBAL_HELP_FORMAT_WIDTH,
                 "100");
-        String data = generator.generateConfiguration(getBasicPropertyMap(), config, null, true, 
-                null, false, false);
+        setFields(null, null, true, false, false);
+        String data = generator.generateConfiguration(
+                getBasicPropertyMap(), config);
         String[] lines = data.split(System.lineSeparator());
         boolean defined = isDefined(lines, GlobalConfiguration.GLOBAL_HELP_FORMAT_WIDTH,
                 "100");
@@ -422,8 +460,9 @@ public class AbstractClcGeneratorTest {
         Map<String, String> config = new HashMap<>();
         config.put(GlobalConfiguration.GLOBAL_HELP_FORMAT_WIDTH_FROM_ENV,
                 ClcParser.TRUE);
-        String data = generator.generateConfiguration(getBasicPropertyMap(), config, null, true, 
-                null, false, false);
+        setFields(null, null, true, false, false);
+        String data = generator.generateConfiguration(
+                getBasicPropertyMap(), config);
         String[] lines = data.split(System.lineSeparator());
         boolean defined = isDefined(lines, GlobalConfiguration.GLOBAL_HELP_FORMAT_WIDTH_FROM_ENV,
                 ClcParser.TRUE);
@@ -444,8 +483,9 @@ public class AbstractClcGeneratorTest {
         config.put(GlobalConfiguration.GLOBAL_HELP_OPTION_NAME, "get-some-help");
         config.put("option.get-some-help.opts", "get-some-help");
         config.put("option.get-some-help.description", "This is what you want, this is what you get");
-        String data = generator.generateConfiguration(getBasicPropertyMap(), config, null, true, 
-                null, false, false);
+        setFields(null, null, true, false, false);
+        String data = generator.generateConfiguration(
+                getBasicPropertyMap(), config);
         String[] lines = data.split(System.lineSeparator());
         boolean defined = isDefined(lines, GlobalConfiguration.GLOBAL_HELP_OPTION_NAME, "get-some-help");
         if (!defined) {
@@ -465,8 +505,9 @@ public class AbstractClcGeneratorTest {
         config.put("option.get-some-help.opts", "get-some-help");
         config.put("option.get-some-help.description",
                 "This is what you want, this is what you get");
-        String data = generator.generateConfiguration(getBasicPropertyMap(), config, null, true, 
-                null, false, false);
+        setFields(null, null, true, false, false);
+        String data = generator.generateConfiguration(
+                getBasicPropertyMap(), config);
         String[] lines = data.split(System.lineSeparator());
         boolean defined = isDefined(lines, "option.get-some-help.opts", "get-some-help");
         if (!defined) {
@@ -485,8 +526,9 @@ public class AbstractClcGeneratorTest {
         config.put(GlobalConfiguration.GLOBAL_HELP_OPTION_NAME, "get-some-help");
         config.put("option.get-some-help-x.opts", "get-some-help");
         try {
-            generator.generateConfiguration(getBasicPropertyMap(), config, null, true, 
-                null, false, false);
+            setFields(null, null, true, false, false);
+            generator.generateConfiguration(
+                    getBasicPropertyMap(), config);
             fail("Expected an exception");
         } catch (ClcException ex) {
             assertEquals(ex.getMessage(),
@@ -505,11 +547,12 @@ public class AbstractClcGeneratorTest {
         config.put("option.get-some-help.opts", "get-some-help");
         config.put("option.get-some-help.description",
                 "This is what you want, this is what you get");
-        String data = generator.generateConfiguration(getBasicPropertyMap(), config, null, true, 
-                null, false, false);
+        setFields(null, null, true, false, false);
+        String data = generator.generateConfiguration(
+                getBasicPropertyMap(), config);
         String[] lines = data.split(System.lineSeparator());
         boolean defined = isDefined(lines, "option.get-some-help.description",
-                    "This is what you want, this is what you get");
+                "This is what you want, this is what you get");
         if (!defined) {
             fail("Expected to find overridden default value for"
                     + " 'option.get-some-help.description' but was not present.");
@@ -527,8 +570,9 @@ public class AbstractClcGeneratorTest {
         config.put("option.get-some-help.opts", "get-some-help");
         config.put("option.get-some-help-x.description", "get-some-help");
         try {
-            generator.generateConfiguration(getBasicPropertyMap(), config, null, true, 
-                null, false, false);
+            setFields(null, null, true, false, false);
+            String data = generator.generateConfiguration(
+                    getBasicPropertyMap(), config);
             fail("Expected an exception");
         } catch (ClcException ex) {
             assertEquals(ex.getMessage(), "No definition for option.get-some-help.description");
@@ -544,8 +588,9 @@ public class AbstractClcGeneratorTest {
         Map<String, String> config = new HashMap<>();
         config.put("option.foo-bar.default", "123");
         try {
-            generator.generateConfiguration(getBasicPropertyMap(), config, null, true, 
-                null, false, false);
+            setFields(null, null, true, false, false);
+            generator.generateConfiguration(
+                    getBasicPropertyMap(), config);
             fail("Expected an exception");
         } catch (ClcException ex) {
             assertEquals(ex.getMessage(), "Configuration cannot contain"
@@ -561,8 +606,9 @@ public class AbstractClcGeneratorTest {
     public void testGenerateConfigurationWithIncludes() throws Exception {
         Map<String, String> config = new HashMap<>();
         PropertyNameFilter filter = PropertiesTestHelper.createPropertyNameFilter(".*port.*", true);
+        setFields(filter, null, true, false, false);
         String data = generator.generateConfiguration(
-                getMultiplePropertiesMap(), config, filter, true, null, false, false);
+                getMultiplePropertiesMap(), config);
         String[] lines = data.split(System.lineSeparator());
         Set<String> results = new HashSet<>();
         for (String line : lines) {
@@ -585,8 +631,9 @@ public class AbstractClcGeneratorTest {
     public void testGenerateConfigurationWithExcludes() throws Exception {
         Map<String, String> config = new HashMap<>();
         PropertyNameFilter filter = PropertiesTestHelper.createPropertyNameFilter(".*port.*", false);
+        setFields(filter, null, true, false, false);
         String data = generator.generateConfiguration(
-                getMultiplePropertiesMap(), config, filter, true, null, false, false);
+                getMultiplePropertiesMap(), config);
         String[] lines = data.split(System.lineSeparator());
         Set<String> results = new HashSet<>();
         for (String line : lines) {
@@ -610,9 +657,9 @@ public class AbstractClcGeneratorTest {
         Map<String, String> config = new HashMap<>();
         TypeInferralConfig typeInferralConfig = new TypeInferralConfigBuilder()
                 .withInferTypes().build();
+        setFields(null, typeInferralConfig, true, false, false);
         String data = generator.generateConfiguration(
-                PropertiesTestHelper.getMultipleValueTypePropertiesMap(),
-                config, null, true, typeInferralConfig, false, false);
+                PropertiesTestHelper.getMultipleValueTypePropertiesMap(), config);
         String[] lines = data.split(System.lineSeparator());
         Set<String> results = new HashSet<>();
         for (String line : lines) {
@@ -638,8 +685,9 @@ public class AbstractClcGeneratorTest {
     public void testGenerateConfigurationWithEmptyFilter() throws Exception {
         Map<String, String> config = new HashMap<>();
         PropertyNameFilter filter = PropertiesTestHelper.createPropertyNameFilter("", false);
+        setFields(filter, null, true, false, false);
         String data = generator.generateConfiguration(
-                getMultiplePropertiesMap(), config, filter, true, null, false, false);
+                getMultiplePropertiesMap(), config);
         String[] lines = data.split(System.lineSeparator());
         Set<String> results = new HashSet<>();
         for (String line : lines) {
@@ -663,8 +711,9 @@ public class AbstractClcGeneratorTest {
         Map<String, String> config = new HashMap<>();
         PropertyNameFilter filter = PropertiesTestHelper.createPropertyNameFilter(".*", false);
         try {
+            setFields(filter, null, true, false, false);
             generator.generateConfiguration(
-                    getMultiplePropertiesMap(), config, filter, true, null, false, false);
+                    getMultiplePropertiesMap(), config);
             fail("Expected an exception");
         } catch (ClcException ex) {
             assertEquals(ex.getMessage(), "Configuration not generated -"
@@ -681,8 +730,9 @@ public class AbstractClcGeneratorTest {
         Map<String, String> config = new HashMap<>();
         PropertyNameFilter filter = PropertiesTestHelper.createPropertyNameFilter("[a-z*", false);
         try {
+            setFields(filter, null, true, false, false);
             generator.generateConfiguration(
-                    getMultiplePropertiesMap(), config, filter, true, null, false, false);
+                    getMultiplePropertiesMap(), config);
             fail("Expected an exception");
         } catch (ClcException ex) {
             assertEquals(ex.getMessage(), "Bad regular expression: [a-z*");
@@ -698,10 +748,9 @@ public class AbstractClcGeneratorTest {
         Map<String, String> config = new HashMap<>();
         TypeInferralConfig typeInferralConfig = new TypeInferralConfigBuilder()
                 .withInferTypes().build();
+        setFields(null, typeInferralConfig, true, false, true);
         String data = generator.generateConfiguration(
-                PropertiesTestHelper.getMultipleValueTypePropertiesMap(),
-                config, null, true, typeInferralConfig,
-                false, true);
+                PropertiesTestHelper.getMultipleValueTypePropertiesMap(), config);
         String[] lines = data.split(System.lineSeparator());
         Set<String> results = new HashSet<>();
         for (String line : lines) {
@@ -725,8 +774,8 @@ public class AbstractClcGeneratorTest {
         Map<String, String> config = new HashMap<>();
         Map<String, String> props = new HashMap<>();
         props.put("foo", "");
-        String data = generator.generateConfiguration(props, config,
-                null, false, null, false, true);
+        setFields(null, null, false, false, true);
+        String data = generator.generateConfiguration(props, config);
         String[] lines = data.split(System.lineSeparator());
         for (String line : lines) {
             String expected = "option.foo.default";
@@ -746,8 +795,8 @@ public class AbstractClcGeneratorTest {
         config.put("option.foo.default", "");
         Map<String, String> props = new HashMap<>();
         props.put("foo", "");
-        String data = generator.generateConfiguration(props, config,
-                null, false, null, false, true);
+        setFields(null, null, false, false, true);
+        String data = generator.generateConfiguration(props, config);
         String[] lines = data.split(System.lineSeparator());
         for (String line : lines) {
             String expected = "option.foo.default";
@@ -766,8 +815,8 @@ public class AbstractClcGeneratorTest {
         Map<String, String> config = new HashMap<>();
         Map<String, String> props = new HashMap<>();
         props.put("foo", "bar");
-        String data = generator.generateConfiguration(props, config,
-                null, false, null, true, false);
+        setFields(null, null, false, true, false);
+        String data = generator.generateConfiguration(props, config);
         String[] lines = data.split(System.lineSeparator());
         boolean defined = false;
         String expected = "# option.foo.ignoreCliArgs = false";
@@ -792,8 +841,8 @@ public class AbstractClcGeneratorTest {
         config.put("option.foo.ignoreCliArgs", ClcParser.FALSE);
         Map<String, String> props = new HashMap<>();
         props.put("foo", "bar");
-        String data = generator.generateConfiguration(props, config,
-                null, false, null, true, false);
+        setFields(null, null, false, true, false);
+        String data = generator.generateConfiguration(props, config);
         String[] lines = data.split(System.lineSeparator());
         String expected = "# option.foo.ignoreCliArgs = false";
         for (String line : lines) {
@@ -812,8 +861,8 @@ public class AbstractClcGeneratorTest {
         Map<String, String> config = new HashMap<>();
         Map<String, String> props = new HashMap<>();
         props.put("foo", "bar");
-        String data = generator.generateConfiguration(props, config,
-                null, false, null, true, false);
+        setFields(null, null, false, true, false);
+        String data = generator.generateConfiguration(props, config);
         String[] lines = data.split(System.lineSeparator());
         boolean defined = false;
         String expected = "# option.foo.argName = argName";
@@ -838,8 +887,8 @@ public class AbstractClcGeneratorTest {
         config.put("option.foo.argName", "arg");
         Map<String, String> props = new HashMap<>();
         props.put("foo", "bar");
-        String data = generator.generateConfiguration(props, config,
-                null, false, null, true, false);
+        setFields(null, null, false, true, false);
+        String data = generator.generateConfiguration(props, config);
         String[] lines = data.split(System.lineSeparator());
         String expected = "# option.foo.argName = arg";
         for (String line : lines) {
@@ -858,8 +907,8 @@ public class AbstractClcGeneratorTest {
         Map<String, String> config = new HashMap<>();
         Map<String, String> props = new HashMap<>();
         props.put("foo", "bar");
-        String data = generator.generateConfiguration(props, config,
-                null, false, null, true, false);
+        setFields(null, null, false, true, false);
+        String data = generator.generateConfiguration(props, config);
         String[] lines = data.split(System.lineSeparator());
         boolean defined = false;
         String expected = "# option.foo.type = type";
@@ -884,8 +933,8 @@ public class AbstractClcGeneratorTest {
         config.put("option.foo.type", "int");
         Map<String, String> props = new HashMap<>();
         props.put("foo", "bar");
-        String data = generator.generateConfiguration(props, config,
-                null, false, null, true, false);
+        setFields(null, null, false, true, false);
+        String data = generator.generateConfiguration(props, config);
         String[] lines = data.split(System.lineSeparator());
         String expected = "# option.foo.type = type";
         for (String line : lines) {
@@ -904,8 +953,8 @@ public class AbstractClcGeneratorTest {
         Map<String, String> config = new HashMap<>();
         Map<String, String> props = new HashMap<>();
         props.put("foo", "bar");
-        String data = generator.generateConfiguration(props, config,
-                null, false, null, true, false);
+        setFields(null, null, false, true, false);
+        String data = generator.generateConfiguration(props, config);
         String[] lines = data.split(System.lineSeparator());
         boolean defined = false;
         String expected = "# option.foo.properties = p1 = x, p2 = y, p3 = z";
@@ -930,8 +979,8 @@ public class AbstractClcGeneratorTest {
         config.put("option.foo.properties", " p1 = x, p2 = y, p3 = z");
         Map<String, String> props = new HashMap<>();
         props.put("foo", "bar");
-        String data = generator.generateConfiguration(props, config,
-                null, false, null, true, false);
+        setFields(null, null, false, true, false);
+        String data = generator.generateConfiguration(props, config);
         String[] lines = data.split(System.lineSeparator());
         String expected = "# option.foo.properties = p1 = x, p2 = y, p3 = z";
         for (String line : lines) {
@@ -950,8 +999,8 @@ public class AbstractClcGeneratorTest {
         Map<String, String> config = new HashMap<>();
         Map<String, String> props = new HashMap<>();
         props.put("foo", "bar");
-        String data = generator.generateConfiguration(props, config,
-                null, false, null, true, false);
+        setFields(null, null, false, true, false);
+        String data = generator.generateConfiguration(props, config);
         String[] lines = data.split(System.lineSeparator());
         boolean defined = false;
         String expected = "# option.foo.default = x";
@@ -976,8 +1025,8 @@ public class AbstractClcGeneratorTest {
         config.put("option.foo.default", "x");
         Map<String, String> props = new HashMap<>();
         props.put("foo", "bar");
-        String data = generator.generateConfiguration(props, config,
-                null, false, null, true, true);
+        setFields(null, null, false, true, true);
+        String data = generator.generateConfiguration(props, config);
         String[] lines = data.split(System.lineSeparator());
         String expected = "# option.foo.default = x";
         for (String line : lines) {
