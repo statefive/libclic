@@ -61,9 +61,10 @@ import org.statefive.clic.properties.PropertiesBuilder;
  * <li>{@code global.options.opts-type=[GLOBAL_OPTIONS_OPTS_TYPE]}: where
  * {@code [GLOBAL_OPTIONS_OPTS_TYPE]} is one of {@code BOTH} where both short
  * and long options are used, specified as {@code [char]/[text]}, {@code SHORT}
- * where only short options are specified as a single character, and
- * {@code LONG} where only long options are specified. However,
- * {@code code global.options.opts-type} is not strictly required so long as the
+ * where only short options are specified as a single character, {@code LONG}
+ * where only long options are specified or {@code ANY} where options can be a
+ * mix of short, long or long and short values. However,
+ * {@code global.options.opts-type} is not strictly required so long as the
  * options specified are all consistent (although it aids readability for others
  * maintaining the file to implicitly define
  * {@code code global.options.opts-type});</li>
@@ -868,8 +869,8 @@ public class GlobalConfiguration {
     }
 
     /**
-     * Get the minimum length of arguments for root-level command line
-     * arguments.
+     * Get the minimum length of arguments for the specified command's command
+     * line arguments.
      *
      * @param command non-{@code null} existing command to check.
      *
@@ -899,8 +900,8 @@ public class GlobalConfiguration {
     }
 
     /**
-     * Get the minimum length of arguments for root-level command line
-     * arguments.
+     * Get the maximum length of arguments for the specified command's command
+     * line arguments.
      *
      * @param command non-{@code null} existing command to check.
      *
