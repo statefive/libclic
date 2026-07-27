@@ -144,6 +144,11 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
     protected PropertyNameFilter propertyNameFilter;
 
     /**
+     * Options type; defaults to {@link OptionsTypeEnum#LONG} unless overridden.
+     */
+    protected OptionsTypeEnum optionsType;
+
+    /**
      * Used to determine if to attempt to coerce underlying property values to a
      * {@link ValueType}.
      */
@@ -917,6 +922,7 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
         if (config.containsKey(GlobalConfiguration.GLOBAL_OPTIONS_OPTS_TYPE)) {
             String optionType = config.get(GlobalConfiguration.GLOBAL_OPTIONS_OPTS_TYPE);
             try {
+                optionsType = OptionsTypeEnum.valueOf(optionType);
                 OptionsTypeEnum optionsTypeEnum = OptionsTypeEnum.valueOf(optionType);
                 sb.append(GlobalConfiguration.GLOBAL_OPTIONS_OPTS_TYPE)
                         .append(" = ")
@@ -926,9 +932,10 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
                 throw new ClcException("Invalid option type: " + optionType);
             }
         } else {
+            optionsType = LONG;
             sb.append(GlobalConfiguration.GLOBAL_OPTIONS_OPTS_TYPE)
                     .append(" = ")
-                    .append(OptionsTypeEnum.LONG.getType())
+                    .append(optionsType.getType())
                     .append(System.lineSeparator());
         }
     }
@@ -1028,6 +1035,14 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
      * a default value will be added to the given builder; otherwise the
      * user-defined option will be used.
      *
+     * <p>
+     * If a default value is generated the value will be generated from the
+     * options type. Thus, for options type {@link OptionsTypeEnum#BOTH} and
+     * {@link OptionsTypeEnum#ANY} a short and long option will be used, for
+     * {@link OptionsTypeEnum#SHORT} a short option will be used and for
+     * {@link OptionsTypeEnum#LONG} a long option will be used. If no options
+     * type was overridden, the default will be {@link OptionsTypeEnum#LONG}.
+     *
      * @param sb non-{@code null} builder to append to.
      *
      * @param config non-{@code null} configuration to check; may be empty.
@@ -1035,20 +1050,40 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
     private void processHelpSwitchOpts(StringBuilder sb,
             Map<String, String> config) {
         if (!config.containsKey(GlobalConfiguration.GLOBAL_HELP_SWITCH_OPTS)) {
-            // add default
-            sb.append(GlobalConfiguration.GLOBAL_HELP_SWITCH_OPTS)
-                    .append(" = ")
-                    .append(GlobalConfiguration.GLOBAL_HELP_OPTION_LONG_DEFAULT)
-                    .append(System.lineSeparator());
-            clcMappings.put(GlobalConfiguration.GLOBAL_HELP_SWITCH_OPTS,
-                    GlobalConfiguration.GLOBAL_HELP_OPTION_LONG_DEFAULT);
+            // add defaults, depending on options type:
+            switch (optionsType) {
+                case SHORT:
+                    sb.append(GlobalConfiguration.GLOBAL_HELP_SWITCH_OPTS)
+                            .append(" = ")
+                            .append(GlobalConfiguration.GLOBAL_HELP_OPTION_SHORT_DEFAULT);
+                    break;
+                case LONG:
+                    sb.append(GlobalConfiguration.GLOBAL_HELP_SWITCH_OPTS)
+                            .append(" = ")
+                            .append(GlobalConfiguration.GLOBAL_HELP_OPTION_LONG_DEFAULT);
+                    break;
+                case BOTH:
+                case ANY:
+                    sb.append(GlobalConfiguration.GLOBAL_HELP_SWITCH_OPTS)
+                            .append(" = ")
+                            .append(GlobalConfiguration.GLOBAL_HELP_OPTION_SHORT_DEFAULT)
+                            .append(" ")
+                            .append(ClcParser.OPTION_SEPARATOR)
+                            .append(" ")
+                            .append(GlobalConfiguration.GLOBAL_HELP_OPTION_LONG_DEFAULT);
+                    break;
+
+            }
         } else {
-            // user defined
+            // user-defined:
+            String helpOpts = config.get(GlobalConfiguration.GLOBAL_HELP_SWITCH_OPTS);
+            clcMappings.put(GlobalConfiguration.GLOBAL_HELP_SWITCH_OPTS,
+                    helpOpts);
             sb.append(GlobalConfiguration.GLOBAL_HELP_SWITCH_OPTS)
                     .append(" = ")
-                    .append(config.get(GlobalConfiguration.GLOBAL_HELP_SWITCH_OPTS))
-                    .append(System.lineSeparator());
+                    .append(helpOpts);
         }
+        sb.append(System.lineSeparator());
     }
 
     /**

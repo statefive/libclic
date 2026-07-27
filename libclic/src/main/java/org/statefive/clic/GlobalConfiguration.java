@@ -1018,7 +1018,12 @@ public class GlobalConfiguration {
     }
 
     /**
-     * Add default option values for help.
+     * Add default option values for help. If no options type is defined, both
+     * short and long options for help will be used. Otherwise for
+     * {@link OptionsTypeEnum#SHORT} short options will be used, for
+     * {@link OptionsTypeEnum#LONG} long options will be used and for both
+     * {@link OptionsTypeEnum#BOTH} and {@link OptionsTypeEnum#ANY} short and
+     * long options will be used.
      */
     public void addDefaultHelp() {
         String globalHelpOptionName = getHelpOptionName();
@@ -1039,6 +1044,7 @@ public class GlobalConfiguration {
                     optConfigHelp.setLongOption(getHelpOptionLong());
                     break;
                 case BOTH:
+                case ANY:
                 default:
                     optConfigHelp.setShortOption(getHelpOptionShort());
                     optConfigHelp.setLongOption(getHelpOptionLong());
@@ -1050,7 +1056,12 @@ public class GlobalConfiguration {
     }
 
     /**
-     * Add default option values for version.
+     * Add default option values for version. If no options type is defined,
+     * both short and log options for help will be used. Otherwise for
+     * {@link OptionsTypeEnum#SHORT} short options will be used, for
+     * {@link OptionsTypeEnum#LONG} long options will be used and for both
+     * {@link OptionsTypeEnum#BOTH} and {@link OptionsTypeEnum#ANY} short and
+     * long options will be used.
      */
     public void addDefaultVersion() {
         String globalVersionOptionName = getVersionOptionName();
@@ -1071,6 +1082,7 @@ public class GlobalConfiguration {
                     optConfigVersion.setLongOption(getVersionOptionLong());
                     break;
                 case BOTH:
+                case ANY:
                 default:
                     optConfigVersion.setShortOption(getVersionOptionShort());
                     optConfigVersion.setLongOption(getVersionOptionLong());
@@ -1086,7 +1098,7 @@ public class GlobalConfiguration {
      * contains either substitutions they will be performed. Resources
      * containing {@code ${manifest:&lt;key&gt;}} entries will also be parsed,
      * although {@code ${resource:&lt;key&gt;}} entries may not contain nested
-     * {@code ${resource:&lt;key&gt;}} declarations.
+     * in {@code ${resource:&lt;key&gt;}} declarations.
      *
      * @param input non-{@code null} input to convert.
      *
@@ -1095,7 +1107,7 @@ public class GlobalConfiguration {
      * will be the same as the input.
      *
      * @throws ClcException if any manifest declarations are not present in the
-     * manifest file, the manifest file doesn't exist or the resource doesn't
+     * manifest file, the manifest file doesn't exist or any resources don't
      * exist.
      */
     String makeSubstitutions(String input) throws ClcException {
@@ -1152,7 +1164,7 @@ public class GlobalConfiguration {
      * corresponding value from the given embedded resource file.
      *
      * @throws ClcException if the resource does not exist or the content of the
-     * resource references any non-existant manifest entries, or when a manifest
+     * resource references any non-existent manifest entries, or when a manifest
      * entry is present the manifest file is not present.
      */
     private String substituteResourceEntries(String input) throws ClcException {
@@ -1187,8 +1199,8 @@ public class GlobalConfiguration {
      * Parse the option type.
      *
      * @param data data containing the option type - one of
-     * {@link #GLOBAL_OPTION_TYPE_SHORT}, {@link #GLOBAL_OPTION_TYPE_LONG}, or
-     * {@link #GLOBAL_OPTION_TYPE_BOTH}.
+     * {@link OptionsTypeEnum#SHORT}, {@link #OptionsTypeEnum#LONG},
+     * {@link OptionsTypeEnum#BOTH} or {@link #OptionsTypeEnum#ANY}.
      *
      * @throws ClcException if the global options type has already been set, or
      * if the options type did not match a known type.

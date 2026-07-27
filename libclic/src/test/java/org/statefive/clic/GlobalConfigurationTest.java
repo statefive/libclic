@@ -66,7 +66,7 @@ public class GlobalConfigurationTest {
 
     /**
      * Test of updateGlobalConfiguration method, of class GlobalConfiguration,
-     * for option type {@link GlobalConfiguration#GLOBAL_OPTION_TYPE_BOTH}.
+     * for option type {@link OptionsTypeEnum#BOTH}.
      */
     @Test
     public void testUpdateGlobalConfigurationOptionTypeBoth() throws Exception {
@@ -79,7 +79,20 @@ public class GlobalConfigurationTest {
 
     /**
      * Test of updateGlobalConfiguration method, of class GlobalConfiguration,
-     * for option type {@link GlobalConfiguration#GLOBAL_OPTION_TYPE_SHORT}.
+     * for option type {@link OptionsTypeEnum#Any}.
+     */
+    @Test
+    public void testUpdateGlobalConfigurationOptionTypeAny() throws Exception {
+        final String data = GlobalConfiguration.GLOBAL_OPTIONS_OPTS_TYPE + "="
+                + OptionsTypeEnum.ANY.getType();
+        globalConfig.updateGlobalConfiguration(generateHelpOptionName());
+        globalConfig.updateGlobalConfiguration(data);
+        assertEquals(OptionsTypeEnum.ANY, globalConfig.getOptionsType());
+    }
+
+    /**
+     * Test of updateGlobalConfiguration method, of class GlobalConfiguration,
+     * for option type {@link OptionsTypeEnum#SHORT}.
      */
     @Test
     public void testUpdateGlobalConfigurationOptionTypeShort() throws Exception {
@@ -92,7 +105,7 @@ public class GlobalConfigurationTest {
 
     /**
      * Test of updateGlobalConfiguration method, of class GlobalConfiguration,
-     * for option type {@link GlobalConfiguration#GLOBAL_OPTION_TYPE_LONG}.
+     * for option type OptionsTypeEnum#LONG}.
      */
     @Test
     public void testUpdateGlobalConfigurationOptionTypeLong() throws Exception {
@@ -104,8 +117,7 @@ public class GlobalConfigurationTest {
     }
 
     /**
-     * Test of updateGlobalConfiguration method, of class GlobalConfiguration,
-     * for option type {@link GlobalConfiguration#GLOBAL_OPTION_TYPE_LONG}.
+     * Test the global footer can be set.
      */
     @Test
     public void testUpdateGlobalConfigurationCommandFooter() throws Exception {
@@ -118,8 +130,7 @@ public class GlobalConfigurationTest {
     }
 
     /**
-     * Test of updateGlobalConfiguration method, of class GlobalConfiguration,
-     * for option type {@link GlobalConfiguration#GLOBAL_OPTION_TYPE_LONG}.
+     * Test that the global header can be set.
      */
     @Test
     public void testUpdateGlobalConfigurationCommandHeader() throws Exception {
@@ -132,8 +143,7 @@ public class GlobalConfigurationTest {
     }
 
     /**
-     * Test of updateGlobalConfiguration method, of class GlobalConfiguration,
-     * for option type {@link GlobalConfiguration#GLOBAL_OPTION_TYPE_LONG}.
+     * Test that setting an invalid options type creates the correct exception.
      */
     @Test
     public void testUpdateGlobalConfigurationOptionTypeUnknown() throws Exception {
@@ -150,8 +160,7 @@ public class GlobalConfigurationTest {
     }
 
     /**
-     * Test of updateGlobalConfiguration method, of class GlobalConfiguration,
-     * for option type {@link GlobalConfiguration#GLOBAL_OPTION_TYPE_LONG}.
+     * Test that an invalid global declaration creates the correct exception.
      */
     @Test
     public void testUpdateGlobalConfigurationUnknownOptionType() throws Exception {
