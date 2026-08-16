@@ -125,6 +125,27 @@ public class ClcParser {
     public static final String OPTION_SEPARATOR = "/";
 
     /**
+     * Assignment character.
+     *
+     * @since 1.1
+     */
+    public static final String ASSIGNMENT = "=";
+
+    /**
+     * Space character.
+     *
+     * @since 1.1
+     */
+    public static final String SPACE = " ";
+
+    /**
+     * Period character.
+     *
+     * @since 1.1
+     */
+    public static final String PERIOD = ".";
+
+    /**
      * All alphabetic character regular expression.
      */
     static final String A_Z = "a-zA-Z";

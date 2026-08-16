@@ -117,6 +117,18 @@ public interface PropertiesBuilder<P> extends OptionListener {
     PropertiesBuilder pad(boolean pad);
 
     /**
+     * Set whether to add auto-generated help.
+     *
+     * @param help {@code true} to add help automatically, {@code false}
+     * otherwise.
+     *
+     * @return this.
+     *
+     * @since 1.1
+     */
+    PropertiesBuilder help(boolean help);
+
+    /**
      * Set whether to insert the default value of an option configuration for a
      * given property, if the property is not the empty string.
      *

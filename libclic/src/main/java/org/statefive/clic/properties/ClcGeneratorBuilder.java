@@ -81,6 +81,16 @@ public interface ClcGeneratorBuilder<G extends ClcGenerator<P>, P> {
      * @return this.
      */
     ClcGeneratorBuilder insertDefaults(boolean insertDefaults);
+    
+    /**
+     * Set whether to automate generate help output.
+     * 
+     * @param help {@code true} to automate generated help output, {@code false}
+     * otherwise.
+     * 
+     * @return this.
+     */
+    ClcGeneratorBuilder help(boolean help);
 
     /**
      * Override properties with the given configuration.

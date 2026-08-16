@@ -79,6 +79,13 @@ public abstract class AbstractPropertiesBuilder<P> implements PropertiesBuilder<
     private boolean insertDefaults;
 
     /**
+     * Set whether to auto-generate help or not.
+     *
+     * @since 1.1
+     */
+    private boolean help = true;
+
+    /**
      * Command keys used to check for duplicates.
      */
     private final Set<String> optionNames = new HashSet<>();
@@ -104,10 +111,10 @@ public abstract class AbstractPropertiesBuilder<P> implements PropertiesBuilder<
      * Property name filter.
      */
     private PropertyNameFilter filter;
-    
+
     /**
      * Property key for versioning.
-     * 
+     *
      * @since 1.1
      */
     private String propertyVersion;
@@ -198,7 +205,7 @@ public abstract class AbstractPropertiesBuilder<P> implements PropertiesBuilder<
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * @since 1.1
      */
     @Override
@@ -209,7 +216,7 @@ public abstract class AbstractPropertiesBuilder<P> implements PropertiesBuilder<
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * @since 1.1
      */
     @Override
@@ -256,6 +263,17 @@ public abstract class AbstractPropertiesBuilder<P> implements PropertiesBuilder<
 
     /**
      * {@inheritDoc}
+     *
+     * @since 1.1
+     */
+    @Override
+    public PropertiesBuilder help(boolean help) {
+        this.help = help;
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
      */
     @Override
     public PropertiesBuilder withTypeInferralConfig(TypeInferralConfig typeInferralConfig) {
@@ -282,9 +300,9 @@ public abstract class AbstractPropertiesBuilder<P> implements PropertiesBuilder<
     /**
      * Check whether global help or version is defined; if they are, parsing of
      * arguments will be set to {@code false}.
-     * 
+     *
      * @param optionName option name; may be {@code null}.
-     * 
+     *
      * @param propertyValue property value; may be {@code null}.
      */
     @Override
@@ -296,7 +314,7 @@ public abstract class AbstractPropertiesBuilder<P> implements PropertiesBuilder<
             if (optionName.equals(clcMappings.get(
                     GlobalConfiguration.GLOBAL_HELP_SWITCH_OPTS))) {
                 Clc.getInstance().setParseArgs(false);
-            } else if  (optionName.equals(clcMappings.get(
+            } else if (optionName.equals(clcMappings.get(
                     GlobalConfiguration.GLOBAL_VERSION_SWITCH_OPTS))) {
                 Clc.getInstance().setParseArgs(false);
             }
@@ -304,24 +322,45 @@ public abstract class AbstractPropertiesBuilder<P> implements PropertiesBuilder<
     }
 
     /**
-     * {@inheritDoc}
+     * Determine if duplicated are permitted.
+     *
+     * @return {@code true} to enable duplicates, {@code false} otherwise.
      */
     public boolean isDuplicatesAllowed() {
         return duplicatesAllowed;
     }
 
     /**
-     * {@inheritDoc}
+     * Determine if padding is enabled.
+     *
+     * @return {@code true} if padding is enabled; {@code false} otherwise.
+     *
      */
     public boolean isPad() {
         return pad;
     }
 
     /**
-     * {@inheritDoc}
+     * Determine if default values - the values of the original properties from
+     * any given properties source - should be included.
+     *
+     * @return {@code true} to insert original property values as default values
+     * {@code false} otherwise.
+     *
      */
     public boolean isInsertDefaults() {
         return insertDefaults;
+    }
+
+    /**
+     * Determine if auto-generated help is available.
+     *
+     * @return {@code true} if help is available; {@code false} otherwise.
+     *
+     * @since 1.1
+     */
+    public boolean isHelp() {
+        return help;
     }
 
     /**
@@ -364,10 +403,10 @@ public abstract class AbstractPropertiesBuilder<P> implements PropertiesBuilder<
      * Get the named property representing the version. The given property once
      * transformed to a command line switch will undergo the same transformation
      * as all other properties.
-     * 
+     *
      * @return the property key value of the version, if present; {@code null}
      * otherwise.
-     * 
+     *
      * @since 1.1
      */
     public String getPropertyVersion() {

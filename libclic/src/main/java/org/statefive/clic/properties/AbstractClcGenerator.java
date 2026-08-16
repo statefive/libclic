@@ -128,6 +128,13 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
     protected boolean header;
 
     /**
+     * Determine if to automate help output; defaults to {@code true}.
+     * 
+     * @since 1.1
+     */
+    protected boolean help = true;
+
+    /**
      * Treat the named property as the text to use for the application version,
      * if present; otherwise use the manifest implementation version.
      */
@@ -182,6 +189,16 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
     @Override
     public void setHeader(boolean header) {
         this.header = header;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @since 1.1
+     */
+    @Override
+    public void setHelp(boolean help) {
+        this.help = help;
     }
 
     /**
@@ -417,7 +434,9 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
                 } else if (!clcOverrides.containsKey(keyDefault) && !"".equals(valueStr)) {
                     String optsKey = createOptionName(optionName, ClcParser.DEFAULT);
                     sb.append(optsKey)
-                            .append(" = ")
+                            .append(ClcParser.SPACE)
+                            .append(ClcParser.ASSIGNMENT)
+                            .append(ClcParser.SPACE)
                             .append(valueStr)
                             .append(System.lineSeparator());
                     clcOverrides.put(optsKey, valueStr);
@@ -466,20 +485,22 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
         StringBuilder sb = new StringBuilder();
         processOptionsType(sb, config);
         String helpOptionName = HELP_DEFAULT;
-        String helpOptionNameOverride = processHelpCommandOptionName(sb, config);
-        if (helpOptionNameOverride != null) {
-            helpOptionName = helpOptionNameOverride;
+        if (this.help) {
+            String helpOptionNameOverride = processHelpCommandOptionName(sb, config);
+            if (helpOptionNameOverride != null) {
+                helpOptionName = helpOptionNameOverride;
+            }
+            processHelpCommandName(sb, config);
+            processHelpCommandHeader(sb, config);
+            processHelpCommandFooter(sb, config);
+            processHelpSwitchOpts(sb, config);
+            processHelpAutoUsage(sb, config);
+            processHelpFormatColumnSpacing(sb, config);
+            processHelpFormatLeftPad(sb, config);
+            processHelpFormatWidth(sb, config);
+            processHelpFormatWidthFromEnv(sb, config);
+            processHelpSortOptions(sb, config);
         }
-        processHelpCommandName(sb, config);
-        processHelpCommandHeader(sb, config);
-        processHelpCommandFooter(sb, config);
-        processHelpSwitchOpts(sb, config);
-        processHelpAutoUsage(sb, config);
-        processHelpFormatColumnSpacing(sb, config);
-        processHelpFormatLeftPad(sb, config);
-        processHelpFormatWidth(sb, config);
-        processHelpFormatWidthFromEnv(sb, config);
-        processHelpSortOptions(sb, config);
         if (propertyVersion != null) {
             // needs to be added in before any non-global options are generated:
             addPropertyVersionInformation(sb, propertyVersion, properties);
@@ -488,9 +509,11 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
         sb.append(System.lineSeparator())
                 .append("# Options configuration:")
                 .append(System.lineSeparator());
-        processHelpOptionOpts(sb, config, helpOptionName);
-        processHelpOptionDescription(sb, config, helpOptionName);
-        processHelpKeyIgnoreCliArgs(sb, config, helpOptionName);
+        if (this.help) {
+            processHelpOptionOpts(sb, config, helpOptionName);
+            processHelpOptionDescription(sb, config, helpOptionName);
+            processHelpKeyIgnoreCliArgs(sb, config, helpOptionName);
+        }
         return sb.append(System.lineSeparator()).toString();
     }
 
@@ -509,7 +532,9 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
         for (String key : config.keySet()) {
             if (key.startsWith(ClcParser.ARGS)) {
                 sb.append(key)
-                        .append(" = ")
+                        .append(ClcParser.SPACE)
+                        .append(ClcParser.ASSIGNMENT)
+                        .append(ClcParser.SPACE)
                         .append(config.get(key))
                         .append(System.lineSeparator());
             }
@@ -604,11 +629,17 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
             String optionName) {
         String keyOpts = createOptionName(optionName, ClcParser.OPTS);
         if (!config.containsKey(keyOpts)) {
-            sb.append(keyOpts).append(" = ")
+            sb.append(keyOpts)
+                    .append(ClcParser.SPACE)
+                    .append(ClcParser.ASSIGNMENT)
+                    .append(ClcParser.SPACE)
                     .append(optionName)
                     .append(System.lineSeparator());
         } else {
-            sb.append(keyOpts).append(" = ")
+            sb.append(keyOpts)
+                    .append(ClcParser.SPACE)
+                    .append(ClcParser.ASSIGNMENT)
+                    .append(ClcParser.SPACE)
                     .append(config.get(keyOpts))
                     .append(System.lineSeparator());
         }
@@ -742,7 +773,9 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
                 hasArg = ClcParser.FALSE;
             }
             sb.append(createOptionName(optionName, ClcParser.HAS_ARG))
-                    .append(" = ")
+                    .append(ClcParser.SPACE)
+                    .append(ClcParser.ASSIGNMENT)
+                    .append(ClcParser.SPACE)
                     .append(hasArg)
                     .append(System.lineSeparator());
             clcOverrides.put(optionHasArg, hasArg);
@@ -778,7 +811,9 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
                 + "." + ClcParser.ARG_NAME;
         if (config.containsKey(optionArgName)) {
             sb.append(createOptionName(optionName, ClcParser.ARG_NAME))
-                    .append(" = ")
+                    .append(ClcParser.SPACE)
+                    .append(ClcParser.ASSIGNMENT)
+                    .append(ClcParser.SPACE)
                     .append(config.get(optionArgName))
                     .append(System.lineSeparator());
         }
@@ -809,7 +844,9 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
                     .append(System.lineSeparator());
         } else {
             sb.append(createOptionName(optionName, ClcParser.DESCRIPTION))
-                    .append(" = ")
+                    .append(ClcParser.SPACE)
+                    .append(ClcParser.ASSIGNMENT)
+                    .append(ClcParser.SPACE)
                     .append(config.get(optionDescription))
                     .append(System.lineSeparator());
         }
@@ -852,7 +889,9 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
         if (config.containsKey(optionType)) {
             // user defined; however, the key type must be a valid API key type:
             sb.append(optionType)
-                    .append(" = ")
+                    .append(ClcParser.SPACE)
+                    .append(ClcParser.ASSIGNMENT)
+                    .append(ClcParser.SPACE)
                     .append(config.get(optionType))
                     .append(System.lineSeparator());
             ValueType valueType = ValueTypeFactory.getInstance().create(config.get(optionType));
@@ -869,7 +908,9 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
                 }
                 if (valueTypeName != null) {
                     sb.append(optionType)
-                            .append(" = ")
+                            .append(ClcParser.SPACE)
+                            .append(ClcParser.ASSIGNMENT)
+                            .append(ClcParser.SPACE)
                             .append(valueTypeName)
                             .append(System.lineSeparator());
                     config.put(optionType, config.get(optionType));
@@ -896,7 +937,9 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
                 ClcParser.PROPERTIES);
         if (config.containsKey(optionProperties)) {
             sb.append(optionProperties)
-                    .append(" = ")
+                    .append(ClcParser.SPACE)
+                    .append(ClcParser.ASSIGNMENT)
+                    .append(ClcParser.SPACE)
                     .append(config.get(optionProperties))
                     .append(System.lineSeparator());
         }
@@ -925,7 +968,9 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
                 optionsType = OptionsTypeEnum.valueOf(optionType);
                 OptionsTypeEnum optionsTypeEnum = OptionsTypeEnum.valueOf(optionType);
                 sb.append(GlobalConfiguration.GLOBAL_OPTIONS_OPTS_TYPE)
-                        .append(" = ")
+                        .append(ClcParser.SPACE)
+                        .append(ClcParser.ASSIGNMENT)
+                        .append(ClcParser.SPACE)
                         .append(optionsTypeEnum.getType())
                         .append(System.lineSeparator());
             } catch (IllegalArgumentException ex) {
@@ -934,7 +979,9 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
         } else {
             optionsType = LONG;
             sb.append(GlobalConfiguration.GLOBAL_OPTIONS_OPTS_TYPE)
-                    .append(" = ")
+                    .append(ClcParser.SPACE)
+                    .append(ClcParser.ASSIGNMENT)
+                    .append(ClcParser.SPACE)
                     .append(optionsType.getType())
                     .append(System.lineSeparator());
         }
@@ -957,7 +1004,9 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
         if (!config.containsKey(GlobalConfiguration.GLOBAL_HELP_COMMAND_NAME)) {
             // add default
             sb.append(GlobalConfiguration.GLOBAL_HELP_COMMAND_NAME)
-                    .append(" = ")
+                    .append(ClcParser.SPACE)
+                    .append(ClcParser.ASSIGNMENT)
+                    .append(ClcParser.SPACE)
                     .append("Default generated property help.")
                     .append(System.lineSeparator());
             clcMappings.put(GlobalConfiguration.GLOBAL_HELP_COMMAND_NAME,
@@ -965,7 +1014,9 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
         } else {
             // user defined
             sb.append(GlobalConfiguration.GLOBAL_HELP_COMMAND_NAME)
-                    .append(" = ")
+                    .append(ClcParser.SPACE)
+                    .append(ClcParser.ASSIGNMENT)
+                    .append(ClcParser.SPACE)
                     .append(config.get(GlobalConfiguration.GLOBAL_HELP_COMMAND_NAME))
                     .append(System.lineSeparator());
         }
@@ -986,7 +1037,9 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
         if (!config.containsKey(GlobalConfiguration.GLOBAL_HELP_COMMAND_HEADER)) {
             // add default
             sb.append(GlobalConfiguration.GLOBAL_HELP_COMMAND_HEADER)
-                    .append(" = ")
+                    .append(ClcParser.SPACE)
+                    .append(ClcParser.ASSIGNMENT)
+                    .append(ClcParser.SPACE)
                     .append("Auto-generated content.")
                     .append(System.lineSeparator());
             clcMappings.put(GlobalConfiguration.GLOBAL_HELP_COMMAND_HEADER,
@@ -994,7 +1047,9 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
         } else {
             // user defined
             sb.append(GlobalConfiguration.GLOBAL_HELP_COMMAND_HEADER)
-                    .append(" = ")
+                    .append(ClcParser.SPACE)
+                    .append(ClcParser.ASSIGNMENT)
+                    .append(ClcParser.SPACE)
                     .append(config.get(GlobalConfiguration.GLOBAL_HELP_COMMAND_HEADER))
                     .append(System.lineSeparator());
         }
@@ -1015,7 +1070,9 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
         if (!config.containsKey(GlobalConfiguration.GLOBAL_HELP_COMMAND_FOOTER)) {
             // add default
             sb.append(GlobalConfiguration.GLOBAL_HELP_COMMAND_FOOTER)
-                    .append(" = ")
+                    .append(ClcParser.SPACE)
+                    .append(ClcParser.ASSIGNMENT)
+                    .append(ClcParser.SPACE)
                     .append("End of auto-generated content.")
                     .append(System.lineSeparator());
             clcMappings.put(GlobalConfiguration.GLOBAL_HELP_COMMAND_FOOTER,
@@ -1023,7 +1080,9 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
         } else {
             // user defined
             sb.append(GlobalConfiguration.GLOBAL_HELP_COMMAND_FOOTER)
-                    .append(" = ")
+                    .append(ClcParser.SPACE)
+                    .append(ClcParser.ASSIGNMENT)
+                    .append(ClcParser.SPACE)
                     .append(config.get(GlobalConfiguration.GLOBAL_HELP_COMMAND_FOOTER))
                     .append(System.lineSeparator());
         }
@@ -1054,23 +1113,34 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
             switch (optionsType) {
                 case SHORT:
                     sb.append(GlobalConfiguration.GLOBAL_HELP_SWITCH_OPTS)
-                            .append(" = ")
+                            .append(ClcParser.SPACE)
+                            .append(ClcParser.ASSIGNMENT)
+                            .append(ClcParser.SPACE)
                             .append(GlobalConfiguration.GLOBAL_HELP_OPTION_SHORT_DEFAULT);
+                    clcMappings.put(GlobalConfiguration.GLOBAL_HELP_SWITCH_OPTS,
+                            GlobalConfiguration.GLOBAL_HELP_OPTION_SHORT_DEFAULT);
                     break;
                 case LONG:
                     sb.append(GlobalConfiguration.GLOBAL_HELP_SWITCH_OPTS)
-                            .append(" = ")
+                            .append(ClcParser.SPACE)
+                            .append(ClcParser.ASSIGNMENT)
+                            .append(ClcParser.SPACE)
                             .append(GlobalConfiguration.GLOBAL_HELP_OPTION_LONG_DEFAULT);
+                    clcMappings.put(GlobalConfiguration.GLOBAL_HELP_SWITCH_OPTS,
+                            GlobalConfiguration.GLOBAL_HELP_OPTION_LONG_DEFAULT);
                     break;
                 case BOTH:
                 case ANY:
+                    String options = GlobalConfiguration.GLOBAL_HELP_OPTION_SHORT_DEFAULT
+                            + ClcParser.OPTION_SEPARATOR
+                            + GlobalConfiguration.GLOBAL_HELP_OPTION_LONG_DEFAULT;
                     sb.append(GlobalConfiguration.GLOBAL_HELP_SWITCH_OPTS)
-                            .append(" = ")
-                            .append(GlobalConfiguration.GLOBAL_HELP_OPTION_SHORT_DEFAULT)
-                            .append(" ")
-                            .append(ClcParser.OPTION_SEPARATOR)
-                            .append(" ")
-                            .append(GlobalConfiguration.GLOBAL_HELP_OPTION_LONG_DEFAULT);
+                            .append(ClcParser.SPACE)
+                            .append(ClcParser.ASSIGNMENT)
+                            .append(ClcParser.SPACE)
+                            .append(options);
+                    clcMappings.put(GlobalConfiguration.GLOBAL_HELP_SWITCH_OPTS,
+                            options);
                     break;
 
             }
@@ -1080,7 +1150,9 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
             clcMappings.put(GlobalConfiguration.GLOBAL_HELP_SWITCH_OPTS,
                     helpOpts);
             sb.append(GlobalConfiguration.GLOBAL_HELP_SWITCH_OPTS)
-                    .append(" = ")
+                    .append(ClcParser.SPACE)
+                    .append(ClcParser.ASSIGNMENT)
+                    .append(ClcParser.SPACE)
                     .append(helpOpts);
         }
         sb.append(System.lineSeparator());
@@ -1101,7 +1173,9 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
         if (!config.containsKey(GlobalConfiguration.GLOBAL_HELP_AUTO_USAGE)) {
             // add default
             sb.append(GlobalConfiguration.GLOBAL_HELP_AUTO_USAGE)
-                    .append(" = ")
+                    .append(ClcParser.SPACE)
+                    .append(ClcParser.ASSIGNMENT)
+                    .append(ClcParser.SPACE)
                     .append(ClcParser.FALSE)
                     .append(System.lineSeparator());
             clcMappings.put(GlobalConfiguration.GLOBAL_HELP_AUTO_USAGE,
@@ -1109,7 +1183,9 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
         } else {
             // user defined
             sb.append(GlobalConfiguration.GLOBAL_HELP_AUTO_USAGE)
-                    .append(" = ")
+                    .append(ClcParser.SPACE)
+                    .append(ClcParser.ASSIGNMENT)
+                    .append(ClcParser.SPACE)
                     .append(config.get(GlobalConfiguration.GLOBAL_HELP_AUTO_USAGE))
                     .append(System.lineSeparator());
         }
@@ -1130,7 +1206,9 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
         if (!config.containsKey(GlobalConfiguration.GLOBAL_HELP_FORMAT_COLUMN_SPACING)) {
             // add default
             sb.append(GlobalConfiguration.GLOBAL_HELP_FORMAT_COLUMN_SPACING)
-                    .append(" = ")
+                    .append(ClcParser.SPACE)
+                    .append(ClcParser.ASSIGNMENT)
+                    .append(ClcParser.SPACE)
                     .append(HelpFormatter.DEFAULT_COLUMN_SPACING)
                     .append(System.lineSeparator());
             clcMappings.put(GlobalConfiguration.GLOBAL_HELP_FORMAT_COLUMN_SPACING,
@@ -1138,7 +1216,9 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
         } else {
             // user defined
             sb.append(GlobalConfiguration.GLOBAL_HELP_FORMAT_COLUMN_SPACING)
-                    .append(" = ")
+                    .append(ClcParser.SPACE)
+                    .append(ClcParser.ASSIGNMENT)
+                    .append(ClcParser.SPACE)
                     .append(config.get(GlobalConfiguration.GLOBAL_HELP_FORMAT_COLUMN_SPACING))
                     .append(System.lineSeparator());
         }
@@ -1159,7 +1239,9 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
         if (!config.containsKey(GlobalConfiguration.GLOBAL_HELP_FORMAT_LEFT_PAD)) {
             // add default
             sb.append(GlobalConfiguration.GLOBAL_HELP_FORMAT_LEFT_PAD)
-                    .append(" = ")
+                    .append(ClcParser.SPACE)
+                    .append(ClcParser.ASSIGNMENT)
+                    .append(ClcParser.SPACE)
                     .append(HelpFormatter.DEFAULT_LEFT_PAD)
                     .append(System.lineSeparator());
             clcMappings.put(GlobalConfiguration.GLOBAL_HELP_FORMAT_LEFT_PAD,
@@ -1167,7 +1249,9 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
         } else {
             // user defined
             sb.append(GlobalConfiguration.GLOBAL_HELP_FORMAT_LEFT_PAD)
-                    .append(" = ")
+                    .append(ClcParser.SPACE)
+                    .append(ClcParser.ASSIGNMENT)
+                    .append(ClcParser.SPACE)
                     .append(config.get(GlobalConfiguration.GLOBAL_HELP_FORMAT_LEFT_PAD))
                     .append(System.lineSeparator());
         }
@@ -1188,7 +1272,9 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
         if (!config.containsKey(GlobalConfiguration.GLOBAL_HELP_FORMAT_WIDTH)) {
             // add default
             sb.append(GlobalConfiguration.GLOBAL_HELP_FORMAT_WIDTH)
-                    .append(" = ")
+                    .append(ClcParser.SPACE)
+                    .append(ClcParser.ASSIGNMENT)
+                    .append(ClcParser.SPACE)
                     .append(HelpFormatter.DEFAULT_WIDTH)
                     .append(System.lineSeparator());
             clcMappings.put(GlobalConfiguration.GLOBAL_HELP_FORMAT_WIDTH,
@@ -1196,7 +1282,9 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
         } else {
             // user defined
             sb.append(GlobalConfiguration.GLOBAL_HELP_FORMAT_WIDTH)
-                    .append(" = ")
+                    .append(ClcParser.SPACE)
+                    .append(ClcParser.ASSIGNMENT)
+                    .append(ClcParser.SPACE)
                     .append(config.get(GlobalConfiguration.GLOBAL_HELP_FORMAT_WIDTH))
                     .append(System.lineSeparator());
         }
@@ -1217,7 +1305,9 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
         if (!config.containsKey(GlobalConfiguration.GLOBAL_HELP_FORMAT_WIDTH_FROM_ENV)) {
             // add default
             sb.append(GlobalConfiguration.GLOBAL_HELP_FORMAT_WIDTH_FROM_ENV)
-                    .append(" = ")
+                    .append(ClcParser.SPACE)
+                    .append(ClcParser.ASSIGNMENT)
+                    .append(ClcParser.SPACE)
                     .append(ClcParser.FALSE)
                     .append(System.lineSeparator());
             clcMappings.put(GlobalConfiguration.GLOBAL_HELP_FORMAT_WIDTH_FROM_ENV,
@@ -1225,7 +1315,9 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
         } else {
             // user defined
             sb.append(GlobalConfiguration.GLOBAL_HELP_FORMAT_WIDTH_FROM_ENV)
-                    .append(" = ")
+                    .append(ClcParser.SPACE)
+                    .append(ClcParser.ASSIGNMENT)
+                    .append(ClcParser.SPACE)
                     .append(config.get(GlobalConfiguration.GLOBAL_HELP_FORMAT_WIDTH_FROM_ENV))
                     .append(System.lineSeparator());
         }
@@ -1246,7 +1338,9 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
         if (!config.containsKey(GlobalConfiguration.GLOBAL_HELP_FORMAT_SORT_OPTIONS)) {
             // add default
             sb.append(GlobalConfiguration.GLOBAL_HELP_FORMAT_SORT_OPTIONS)
-                    .append(" = ")
+                    .append(ClcParser.SPACE)
+                    .append(ClcParser.ASSIGNMENT)
+                    .append(ClcParser.SPACE)
                     .append(ClcParser.FALSE)
                     .append(System.lineSeparator());
             clcMappings.put(GlobalConfiguration.GLOBAL_HELP_FORMAT_SORT_OPTIONS,
@@ -1254,7 +1348,9 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
         } else {
             // user defined
             sb.append(GlobalConfiguration.GLOBAL_HELP_FORMAT_SORT_OPTIONS)
-                    .append(" = ")
+                    .append(ClcParser.SPACE)
+                    .append(ClcParser.ASSIGNMENT)
+                    .append(ClcParser.SPACE)
                     .append(config.get(GlobalConfiguration.GLOBAL_HELP_FORMAT_SORT_OPTIONS))
                     .append(System.lineSeparator());
         }
@@ -1287,11 +1383,15 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
             properties.remove(propertyVersion);
         }
         sb.append(GlobalConfiguration.GLOBAL_VERSION_OPTION_NAME)
-                .append(" = ")
+                .append(ClcParser.SPACE)
+                .append(ClcParser.ASSIGNMENT)
+                .append(ClcParser.SPACE)
                 .append(propertyVersion)
                 .append(System.lineSeparator());
         sb.append(GlobalConfiguration.GLOBAL_VERSION_OPTION_TEXT)
-                .append(" = ")
+                .append(ClcParser.SPACE)
+                .append(ClcParser.ASSIGNMENT)
+                .append(ClcParser.SPACE)
                 .append(value)
                 .append(System.lineSeparator());
     }
@@ -1315,7 +1415,9 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
         if (!config.containsKey(GlobalConfiguration.GLOBAL_HELP_OPTION_NAME)) {
             // add default
             sb.append(GlobalConfiguration.GLOBAL_HELP_OPTION_NAME)
-                    .append(" = ")
+                    .append(ClcParser.SPACE)
+                    .append(ClcParser.ASSIGNMENT)
+                    .append(ClcParser.SPACE)
                     .append(HELP_DEFAULT)
                     .append(System.lineSeparator());
             clcMappings.put(GlobalConfiguration.GLOBAL_HELP_OPTION_NAME,
@@ -1323,7 +1425,9 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
         } else {
             // user defined
             sb.append(GlobalConfiguration.GLOBAL_HELP_OPTION_NAME)
-                    .append(" = ")
+                    .append(ClcParser.SPACE)
+                    .append(ClcParser.ASSIGNMENT)
+                    .append(ClcParser.SPACE)
                     .append(config.get(GlobalConfiguration.GLOBAL_HELP_OPTION_NAME))
                     .append(System.lineSeparator());
             helpOptionNameOverride = config.get(GlobalConfiguration.GLOBAL_HELP_OPTION_NAME);
@@ -1352,21 +1456,28 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
         if (!config.containsKey(optsKey) && HELP_DEFAULT.equals(helpOptionKey)) {
             // add default
             sb.append(ClcParser.OPTION)
-                    .append(".").append(HELP_DEFAULT).append(".")
+                    .append(ClcParser.PERIOD)
+                    .append(helpOptionKey)
+                    .append(ClcParser.PERIOD)
                     .append(ClcParser.OPTS)
-                    .append(" = ").append(HELP_DEFAULT)
+                    .append(ClcParser.SPACE)
+                    .append(ClcParser.ASSIGNMENT)
+                    .append(ClcParser.SPACE)
+                    .append(clcMappings.get(GlobalConfiguration.GLOBAL_HELP_SWITCH_OPTS))
                     .append(System.lineSeparator());
         } else if (config.containsKey(optsKey)) {
             // user defined
             String helpOptsValue = config.get(optsKey);
             sb.append(optsKey)
-                    .append(" = ")
+                    .append(ClcParser.SPACE)
+                    .append(ClcParser.ASSIGNMENT)
+                    .append(ClcParser.SPACE)
                     .append(helpOptsValue)
                     .append(System.lineSeparator());
         } else {
             // no such definition, throw error:
             throw new ClcException("No definition for option."
-                    + helpOptionKey + "." + ClcParser.OPTS);
+                    + helpOptionKey + ClcParser.PERIOD + ClcParser.OPTS);
         }
     }
 
@@ -1393,10 +1504,13 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
             sb.append(optsKey)
                     .append(" = Print this help then exit.")
                     .append(System.lineSeparator());
+
         } else if (config.containsKey(optsKey)) {
             // user defined
             sb.append(optsKey)
-                    .append(" = ")
+                    .append(ClcParser.SPACE)
+                    .append(ClcParser.ASSIGNMENT)
+                    .append(ClcParser.SPACE)
                     .append(config.get(optsKey))
                     .append(System.lineSeparator());
         } else {
@@ -1431,7 +1545,9 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
         } else {
             // user defined
             sb.append(optsKey)
-                    .append(" = ")
+                    .append(ClcParser.SPACE)
+                    .append(ClcParser.ASSIGNMENT)
+                    .append(ClcParser.SPACE)
                     .append(config.get(optsKey))
                     .append(System.lineSeparator());
         }
@@ -1461,8 +1577,8 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
         if (!config.containsKey(optsKey)) {
             sb.append("# ")
                     .append(createOptionName(optionName,
-                            ClcParser.OPTS))
-                    .append(" = option-value")
+                            ClcParser.IGNORE_CLI_ARGS))
+                    .append(" = false")
                     .append(System.lineSeparator());
         }
         if (!unary) {
@@ -1499,14 +1615,6 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
                         .append(System.lineSeparator());
             }
         }
-        optsKey = createOptionName(optionName, ClcParser.IGNORE_CLI_ARGS);
-        if (!config.containsKey(optsKey)) {
-            sb.append("# ")
-                    .append(createOptionName(optionName,
-                            ClcParser.IGNORE_CLI_ARGS))
-                    .append(" = false")
-                    .append(System.lineSeparator());
-        }
     }
 
     /**
@@ -1521,7 +1629,7 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
      * {@code option.<commandName>.<suffix>}
      */
     private String createOptionName(String optionName, String suffix) {
-        return ClcParser.OPTION + "." + optionName + "." + suffix;
+        return ClcParser.OPTION + ClcParser.PERIOD + optionName + ClcParser.PERIOD + suffix;
     }
 
 }

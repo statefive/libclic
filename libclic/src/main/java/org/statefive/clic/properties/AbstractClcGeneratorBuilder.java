@@ -48,6 +48,11 @@ public abstract class AbstractClcGeneratorBuilder<G extends ClcGenerator<P>, P> 
     protected boolean insertDefaults;
 
     /**
+     * Determine if to automate help output; defaults to {@code true}.
+     */
+    protected boolean help = true;
+
+    /**
      * Global property version.
      */
     protected String propertyVersion;
@@ -128,6 +133,20 @@ public abstract class AbstractClcGeneratorBuilder<G extends ClcGenerator<P>, P> 
     @Override
     public ClcGeneratorBuilder insertDefaults(boolean insertDefaults) {
         this.insertDefaults = insertDefaults;
+        return this;
+    }
+
+    /**
+     * Set whether to automate generated help content.
+     *
+     * @param help {@code true} to automate help output, {@code false}
+     * otherwise.
+     * 
+     * @return this.
+     */
+    @Override
+    public ClcGeneratorBuilder help(boolean help) {
+        this.help = help;
         return this;
     }
 

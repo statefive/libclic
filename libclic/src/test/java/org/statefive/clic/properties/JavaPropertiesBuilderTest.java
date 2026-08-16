@@ -1018,8 +1018,8 @@ public class JavaPropertiesBuilderTest
     }
 
     /**
-     * Test that when using both options, no separator character for an option
-     * causes an error.
+     * Test that when using both options, separator characters are required for
+     * all option configurations.
      */
     @Test
     public void testReadPropertiesWithOptionsTypeBothNoSeparatorChar() throws Exception {
@@ -1046,8 +1046,8 @@ public class JavaPropertiesBuilderTest
     }
 
     /**
-     * Test that when using short options, a separator character for an option
-     * causes an error.
+     * Test that when using short options only, a separator character for an
+     * option causes an error.
      */
     @Test
     public void testReadPropertiesWithOptionsTypeShortNoSeparatorChar() throws Exception {
@@ -1101,8 +1101,7 @@ public class JavaPropertiesBuilderTest
     }
 
     /**
-     * Test that when using long options, a separator character for an option
-     * causes an error.
+     * Test that a long option can be overridden using the correct arguments.
      */
     @Test
     public void testReadPropertiesWithOptionsTypeLong() throws Exception {
@@ -1124,8 +1123,8 @@ public class JavaPropertiesBuilderTest
     }
 
     /**
-     * Test that when using long options, a separator character for an option
-     * causes an error.
+     * Test that when using long options only, a separator character for an
+     * option causes an error.
      */
     @Test
     public void testReadPropertiesWithOptionsTypeLongWithSeparatorChar() throws Exception {
@@ -1178,5 +1177,60 @@ public class JavaPropertiesBuilderTest
         assertEquals("short-val", props.get("short"));
         assertEquals("long-val", props.get("long"));
         assertEquals("short-and-long-val", props.get("short-and-long"));
+    }
+
+    /**
+     * Test that default help can be overridden.
+     */
+    @Test
+    public void testBuildWithCustomHelpNoArgs() throws Exception {
+        JavaPropertiesBuilder instance = new JavaPropertiesBuilder();
+        InputStream isProps = PropertiesTestHelper.create("some.arg = y\n"
+                + "help = false");
+        String[] args = "--help".split(" ");
+        instance.addPropertiesSource(new PropertiesStreamSource(isProps))
+                .help(false)
+                .withTypeInferralConfig(
+                        new TypeInferralConfigBuilder()
+                                .withFalseAsUnarySwitch()
+                                .withInferTypes()
+                                .build())
+                .withClc(PropertiesTestHelper.create("option.help.opts = help\n"
+                        + "option.help.description = show some help\n"
+                ));
+        Clc.getInstance().addOptionListener(new HelpImplementationListener());
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(baos));
+        instance.build(args);
+        assertEquals("Use the internet to find the answers you are looking for.",
+                baos.toString().trim());
+    }
+
+    /**
+     * Test that default help can be overridden for a topic-based help.
+     */
+    @Test
+    public void testBuildWithCustomHelpWithArgs() throws Exception {
+        JavaPropertiesBuilder instance = new JavaPropertiesBuilder();
+        InputStream isProps = PropertiesTestHelper.create("some.arg = y\n"
+                + "help = Display help on a selected topic.");
+        String[] args = "--help foo".split(" ");
+        instance.addPropertiesSource(new PropertiesStreamSource(isProps))
+                .help(false)
+                .withTypeInferralConfig(
+                        new TypeInferralConfigBuilder()
+                                .withInferTypes()
+                                .build())
+                .withClc(PropertiesTestHelper.create("option.help.opts = help\n"
+                        + "option.help.description = show some help\n"
+                        + "option.help.hasArg = true\n"
+                        + "option.help.argName = topic"
+                ));
+        Clc.getInstance().addOptionListener(new HelpImplementationListener());
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(baos));
+        instance.build(args);
+        assertEquals("Important information about topic 'foo'",
+                baos.toString().trim());
     }
 }

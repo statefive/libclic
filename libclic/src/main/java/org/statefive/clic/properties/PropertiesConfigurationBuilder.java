@@ -51,7 +51,7 @@ public class PropertiesConfigurationBuilder
      * property streams.
      */
     private PropertiesConfiguration properties = new PropertiesConfiguration();
-    
+
     /**
      * Build with arguments inserted when the builder was made.
      *
@@ -124,6 +124,7 @@ public class PropertiesConfigurationBuilder
                 .globalHeader(true)
                 .insertDefaults(isInsertDefaults())
                 .pad(isPad())
+                .help(isHelp())
                 .properties(properties)
                 .propertyNameFilter(getFilter())
                 .propertyVersion(getPropertyVersion())
@@ -211,6 +212,7 @@ public class PropertiesConfigurationBuilder
                     .globalHeader(first)
                     .insertDefaults(isInsertDefaults())
                     .pad(isPad())
+                    .help(isHelp())
                     .properties(c)
                     .propertyNameFilter(getFilter())
                     .propertyVersion(getPropertyVersion())

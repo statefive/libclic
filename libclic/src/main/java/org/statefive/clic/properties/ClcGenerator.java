@@ -21,7 +21,6 @@ import java.util.Map;
 import org.apache.commons.configuration2.Configuration;
 import org.statefive.clic.Clc;
 import org.statefive.clic.ClcException;
-import org.statefive.clic.ClcParser;
 import org.statefive.clic.GlobalConfiguration;
 import org.statefive.clic.OptionConfiguration;
 import org.statefive.clic.valuetype.ValueTypeCreationException;
@@ -121,7 +120,7 @@ public interface ClcGenerator<P> {
     public void setProperties(P properties);
 
     /**
-     * Pad the generated CLC format with HASH-commented-out (hash-prefixed)
+     * Pad the generated CLC format with hash-commented-out (hash-prefixed)
      * CLC-based options that were <i>not</i> included in the generated output.
      *
      * @param pad {@code true} to pad CLC data with commented-out sections of
@@ -131,6 +130,16 @@ public interface ClcGenerator<P> {
      * @since 1.1
      */
     public void setPad(boolean pad);
+
+    /**
+     * Set whether to support help out of the box.
+     *
+     * @param help {@code true} to automate help, {@code false} to not provide
+     * help.
+     *
+     * @since 1.1
+     */
+    public void setHelp(boolean help);
 
     /**
      * For properties that are not the empty string (or {@code null}), ensure
@@ -219,10 +228,10 @@ public interface ClcGenerator<P> {
      * @param optionName non-{@code null} option name to get the command line
      * switch for; this will be the {@code <option-name>} part of all
      * {@code option.<option-name>} value of an option configuration.
-     * 
+     *
      * @return non-{@code null} command line option name; either a short or long
      * version, {@code null} if the option name is invalid.
-     * 
+     *
      * @since 1.1
      */
     String getCliOptionName(String optionName);

@@ -7,7 +7,6 @@ global.help.command.footer = See some random URL for information
 
 global.version.name = v / version
 
-option.help.opts = h / help
 option.host-ip.opts = ip
 option.host-port.opts = p / port
 option.host-protocol.opts = P / protocol

@@ -37,7 +37,7 @@ import org.statefive.clic.valuetype.ValueType;
  */
 public class JavaPropertiesClcGenerator<P extends Properties>
         extends AbstractClcGenerator<Properties> {
-    
+
     /**
      * Properties used to generate the configuration.
      */
@@ -45,7 +45,7 @@ public class JavaPropertiesClcGenerator<P extends Properties>
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * @since 1.1
      */
     @Override
@@ -70,7 +70,7 @@ public class JavaPropertiesClcGenerator<P extends Properties>
             propMap.put(key.toString(), value.toString());
         }
         Map<String, String> configMap = new LinkedHashMap<>();
-        for (Iterator<String> it = clcOverrides.getKeys(); it.hasNext(); ) {
+        for (Iterator<String> it = clcOverrides.getKeys(); it.hasNext();) {
             String key = it.next();
             Object value = clcOverrides.getString(key);
             configMap.put(key, value.toString());
@@ -100,7 +100,7 @@ public class JavaPropertiesClcGenerator<P extends Properties>
             propMap.put(key.toString(), value.toString());
         }
         Map<String, String> configMap = new LinkedHashMap<>();
-        for (Iterator<String> it = clcOverrides.getKeys(); it.hasNext(); ) {
+        for (Iterator<String> it = clcOverrides.getKeys(); it.hasNext();) {
             String key = it.next();
             Object value = clcOverrides.getString(key);
             configMap.put(key, value.toString());
@@ -124,8 +124,11 @@ public class JavaPropertiesClcGenerator<P extends Properties>
      */
     @Override
     public ValueType getPropertyValueType(String propertyName, Object value) {
-        ValueType valueType = RegexPropertyValueTypeExtractor.getPropertyValueType(
-                propertyName, value, typeInferralConfig);
+        ValueType valueType = null;
+        if (this.typeInferralConfig.isInferTypes()) {
+            valueType = RegexPropertyValueTypeExtractor.getPropertyValueType(
+                    propertyName, value, typeInferralConfig);
+        }
         if (valueType != null) {
             propertyValueTypes.put(propertyName, valueType);
         }

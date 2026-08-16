@@ -21,7 +21,6 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.Properties;
 import java.util.Set;
 import org.apache.commons.configuration2.Configuration;
 import org.junit.Test;
@@ -1042,6 +1041,60 @@ public class PropertiesConfigurationBuilderTest
         } catch (ClcException ex) {
             assertEquals("Invalid option type: NOT_VALID", ex.getMessage());
         }
+    }
+
+    /**
+     * Test that default help can be overridden.
+     */
+    @Test
+    public void testBuildWithCustomHelpNoArgs() throws Exception {
+        PropertiesConfigurationBuilder instance = new PropertiesConfigurationBuilder();
+        InputStream isProps = PropertiesTestHelper.create("some.arg = y\n"
+                + "help = false");
+        String[] args = "--help".split(" ");
+        instance.addPropertiesSource(new PropertiesStreamSource(isProps))
+                .help(false)
+                .withTypeInferralConfig(
+                        new TypeInferralConfigBuilder()
+                                .withFalseAsUnarySwitch()
+                                .withInferTypes()
+                                .build())
+                .withClc(PropertiesTestHelper.create("option.help.opts = help\n"
+                        + "option.help.description = show some help\n"
+                        ));
+        Clc.getInstance().addOptionListener(new HelpImplementationListener());
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(baos));
+        instance.build(args);
+        assertEquals("Use the internet to find the answers you are looking for.", 
+                baos.toString().trim());
+    }
+
+    /**
+     * Test that default help can be overridden for a topic-based help.
+     */
+    @Test
+    public void testBuildWithCustomHelpWithArgs() throws Exception {
+        PropertiesConfigurationBuilder instance = new PropertiesConfigurationBuilder();
+        InputStream isProps = PropertiesTestHelper.create("some.arg = y\n"
+                + "help = Display help on a selected topic.");
+        String[] args = "--help foo".split(" ");
+        instance.addPropertiesSource(new PropertiesStreamSource(isProps))
+                .help(false)
+                .withTypeInferralConfig(
+                        new TypeInferralConfigBuilder()
+                                .withInferTypes()
+                                .build())
+                .withClc(PropertiesTestHelper.create("option.help.opts = help\n"
+                        + "option.help.description = show some help\n"
+                        + "option.help.hasArg = true\n"
+                        + "option.help.argName = topic"));
+        Clc.getInstance().addOptionListener(new HelpImplementationListener());
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(baos));
+        instance.build(args);
+        assertEquals("Important information about topic 'foo'", 
+                baos.toString().trim());
     }
 
 }

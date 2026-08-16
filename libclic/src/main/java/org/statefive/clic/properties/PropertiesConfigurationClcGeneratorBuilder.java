@@ -50,6 +50,7 @@ public class PropertiesConfigurationClcGeneratorBuilder
         clcGenerator.setHeader(globalHeader);
         clcGenerator.setInsertDefault(insertDefaults);
         clcGenerator.setPad(pad);
+        clcGenerator.setHelp(help);
         clcGenerator.setProperties(configuration);
         if (this.propertyNameFilter != null) {
             clcGenerator.setPropertyNameFilter(propertyNameFilter);

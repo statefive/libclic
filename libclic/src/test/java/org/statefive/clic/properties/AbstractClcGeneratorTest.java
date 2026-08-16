@@ -97,19 +97,41 @@ public class AbstractClcGeneratorTest {
      * Set the class generator fields with the given arguments.
      *
      * @param filter filter; may be {@code null}.
-     * 
+     *
      * @param typeInferralConfig type inference configurationl if {@code null},
      * a new default configuration will be created.
-     * 
+     *
      * @param header {@code true} to set global header.
-     * 
+     *
      * @param pad {@code true} to pad.
-     * 
+     *
      * @param insertDefaults {@code true} to insert property defaults.
      */
     private void setFields(PropertyNameFilter filter,
             TypeInferralConfig typeInferralConfig, boolean header, boolean pad,
             boolean insertDefaults) {
+        setFields(filter, typeInferralConfig, header, pad, insertDefaults, true);
+    }
+
+    /**
+     * Set the class generator fields with the given arguments.
+     *
+     * @param filter filter; may be {@code null}.
+     *
+     * @param typeInferralConfig type inference configurationl if {@code null},
+     * a new default configuration will be created.
+     *
+     * @param header {@code true} to set global header.
+     *
+     * @param pad {@code true} to pad.
+     *
+     * @param insertDefaults {@code true} to insert property defaults.
+     *
+     * @param {@code true} to set help (the default), {@code false} for no help.
+     */
+    private void setFields(PropertyNameFilter filter,
+            TypeInferralConfig typeInferralConfig, boolean header, boolean pad,
+            boolean insertDefaults, boolean help) {
         generator.setPropertyNameFilter(filter);
         if (typeInferralConfig != null) {
             generator.setTypeInferralConfig(typeInferralConfig);
@@ -119,6 +141,7 @@ public class AbstractClcGeneratorTest {
         generator.setHeader(header);
         generator.setPad(pad);
         generator.setInsertDefault(insertDefaults);
+        generator.setHelp(help);
     }
 
     /**
@@ -126,7 +149,7 @@ public class AbstractClcGeneratorTest {
      * AbstractConfigurationGenerator.
      */
     @Test
-    public void testGenerateConfigurationOverrideLongOptions() throws Exception {
+    public void testGenerateConfigurationOverrideLongOptionsUsingBOTH() throws Exception {
         Map<String, String> config = new HashMap<>();
         config.put(GlobalConfiguration.GLOBAL_OPTIONS_OPTS_TYPE, "BOTH");
         setFields(null, null, true, false, false);
@@ -134,6 +157,24 @@ public class AbstractClcGeneratorTest {
                 getBasicPropertyMap(), config);
         String[] lines = data.split(System.lineSeparator());
         boolean defined = isDefined(lines, "global.options.opts-type", "BOTH");
+        if (!defined) {
+            fail("Expected to find overridden default value for"
+                    + " 'global.options.opts-type' but was not present.");
+        }
+    }
+
+    /**
+     * 
+     */
+    @Test
+    public void testGenerateConfigurationOverrideLongOptionsUsingANY() throws Exception {
+        Map<String, String> config = new HashMap<>();
+        config.put(GlobalConfiguration.GLOBAL_OPTIONS_OPTS_TYPE, "ANY");
+        setFields(null, null, true, false, false);
+        String data = generator.generateConfiguration(
+                getBasicPropertyMap(), config);
+        String[] lines = data.split(System.lineSeparator());
+        boolean defined = isDefined(lines, "global.options.opts-type", "ANY");
         if (!defined) {
             fail("Expected to find overridden default value for"
                     + " 'global.options.opts-type' but was not present.");
@@ -517,6 +558,28 @@ public class AbstractClcGeneratorTest {
     }
 
     /**
+     * Test that default help configuration generation can be disabled; this
+     * results in no global help configuration being defined and no option
+     * configurations for help being defined.
+     */
+    @Test
+    public void testGenerateConfigurationNoHelp() throws Exception {
+        Map<String, String> config = new HashMap<>();
+        config.put("foo", "bar");
+        setFields(null, null, true, false, false, false);
+        String data = generator.generateConfiguration(
+                getBasicPropertyMap(), config);
+        String[] lines = data.split(System.lineSeparator());
+        for (String line : lines) {
+            if (line.startsWith("global.help")) {
+                fail("Error: global help must not be defined: " + line);
+            } else if (line.startsWith("option.help.")) {
+                fail("Error: help configuration must not be defined: " + line);
+            }
+        }
+    }
+
+    /**
      * Test of getPropertyMappings method, of class
      * AbstractConfigurationGenerator.
      */
@@ -526,7 +589,7 @@ public class AbstractClcGeneratorTest {
         config.put(GlobalConfiguration.GLOBAL_HELP_OPTION_NAME, "get-some-help");
         config.put("option.get-some-help-x.opts", "get-some-help");
         try {
-            setFields(null, null, true, false, false);
+        setFields(null, null, true, false, false);
             generator.generateConfiguration(
                     getBasicPropertyMap(), config);
             fail("Expected an exception");
@@ -536,6 +599,27 @@ public class AbstractClcGeneratorTest {
         }
     }
 
+    /**
+     * Test of getPropertyMappings method, of class
+     * AbstractConfigurationGenerator.
+     */
+    @Test
+    public void testGenerateConfigurationOverrideHelpDescriptionThrowsException() throws Exception {
+        Map<String, String> config = new HashMap<>();
+        config.put(GlobalConfiguration.GLOBAL_HELP_OPTION_NAME, "get-some-help");
+        config.put("option.get-some-help.opts", "get-some-help");
+        config.put("option.get-some-help-x.descripton", "Complex description here");
+        try {
+        setFields(null, null, true, false, false);
+            generator.generateConfiguration(
+                    getBasicPropertyMap(), config);
+            fail("Expected an exception");
+        } catch (ClcException ex) {
+            assertEquals(ex.getMessage(),
+                    "No definition for option.get-some-help.description");
+        }
+    }
+    
     /**
      * Test of getPropertyMappings method, of class
      * AbstractConfigurationGenerator.
@@ -558,27 +642,7 @@ public class AbstractClcGeneratorTest {
                     + " 'option.get-some-help.description' but was not present.");
         }
     }
-
-    /**
-     * Test of getPropertyMappings method, of class
-     * AbstractConfigurationGenerator.
-     */
-    @Test
-    public void testGenerateConfigurationOverrideHelpDescriptionThrowsException() throws Exception {
-        Map<String, String> config = new HashMap<>();
-        config.put(GlobalConfiguration.GLOBAL_HELP_OPTION_NAME, "get-some-help");
-        config.put("option.get-some-help.opts", "get-some-help");
-        config.put("option.get-some-help-x.description", "get-some-help");
-        try {
-            setFields(null, null, true, false, false);
-            String data = generator.generateConfiguration(
-                    getBasicPropertyMap(), config);
-            fail("Expected an exception");
-        } catch (ClcException ex) {
-            assertEquals(ex.getMessage(), "No definition for option.get-some-help.description");
-        }
-    }
-
+    
     /**
      * Test of getPropertyMappings method, of class
      * AbstractConfigurationGenerator.
@@ -1082,7 +1146,6 @@ public class AbstractClcGeneratorTest {
             Matcher m = p.matcher(line);
             if (m.matches()) {
                 defined = true;
-                break;
             }
         }
         return defined;
