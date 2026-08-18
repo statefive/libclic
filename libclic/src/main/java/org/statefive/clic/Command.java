@@ -121,8 +121,7 @@ public class Command {
 
     /**
      * {@link OptionConfiguration} for this command; the key is the actual name
-     * part of the {@code option.[name].*} declaration, in other words the
-     * option name.
+     * part of the {@code option.<config-name>.*} declaration.
      */
     private final Map<String, OptionConfiguration> optionMap = new LinkedHashMap<>();
 
@@ -239,7 +238,7 @@ public class Command {
      * @return path of the command to the root command; sub-commands of a parent
      * will be separated by forward slashes, the {@code null} root command will
      * not be printed.
-     * 
+     *
      * @throws NullPointerException if the command is the root command.
      */
     private String getPath(Command command) {

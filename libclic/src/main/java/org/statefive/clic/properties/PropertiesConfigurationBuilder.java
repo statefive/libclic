@@ -237,9 +237,9 @@ public class PropertiesConfigurationBuilder
      * {@inheritDoc}
      */
     @Override
-    public void setProperty(String optionName, Object propertyValue) {
-        super.setProperty(optionName, propertyValue);
-        String cliOption = configurationGenerator.getCliOptionName(optionName);
+    public void setProperty(String configName, Object propertyValue) {
+        super.setProperty(configName, propertyValue);
+        String cliOption = configurationGenerator.getCliOptionName(configName);
         Object mapping = configurationGenerator.getPropertyMappings().get(cliOption);
         if (mapping != null && propertyValue != null) {
             ValueType valueType = (ValueType) configurationGenerator.getPropertyValueTypes().get(cliOption);
@@ -251,7 +251,7 @@ public class PropertiesConfigurationBuilder
             }
         } else if (mapping != null) {
             // it's a boolean property - not a default help or version
-            ValueType valueType = (ValueType) configurationGenerator.getPropertyValueTypes().get(optionName);
+            ValueType valueType = (ValueType) configurationGenerator.getPropertyValueTypes().get(configName);
             properties.setProperty(mapping.toString(), valueType.getValue(ClcParser.TRUE));
         }
     }

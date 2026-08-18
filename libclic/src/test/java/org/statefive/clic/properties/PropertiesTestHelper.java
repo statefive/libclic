@@ -295,12 +295,13 @@ public class PropertiesTestHelper {
     }
 
     /**
-     * Check that the given name is present in the form
-     * {@code option.<name>.type=<type>}.
+     * Check that the given configuration name is present in the form
+     * {@code option.<config-name>.type=<type>}.
      *
      * @param config non-{@code null}, non-empty configurations.
      *
-     * @param name non-{@code null} option name to check for the presence of.
+     * @param name non-{@code null} option configuration name to check for the
+     * presence of.
      *
      * @param type non-{@code null} valid {@link ValueType} type string.
      *

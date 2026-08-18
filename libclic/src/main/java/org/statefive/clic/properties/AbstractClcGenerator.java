@@ -82,8 +82,8 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
 
     /**
      * Map of long names of options (supplied via the command line without any
-     * hyphen prefixes) key to option name values (the
-     * {@code option.<option-name>} values used in the CLC configuration).
+     * hyphen prefixes) key to configuration name values (the
+     * {@code option.<config-name>} values used in the CLC configuration).
      *
      * @since 1.1
      */
@@ -91,8 +91,8 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
 
     /**
      * Map of short names of options (supplied via the command line without any
-     * hyphen prefixes) key to option name values (the
-     * {@code option.<option-name>} values used in the CLC configuration).
+     * hyphen prefixes) key to configuration name values (the
+     * {@code option.<config-name>} values used in the CLC configuration).
      *
      * @since 1.1
      */
@@ -105,8 +105,8 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
 
     /**
      * Map of (original) property names to value types - that is, the names of
-     * the properties from the original property file, NOT the option name names
-     * that properties are mapped to.
+     * the properties from the original property file, NOT the option
+     * configuration names that properties are mapped to.
      */
     protected final Map<String, ValueType> propertyValueTypes = new HashMap<>();
 
@@ -129,7 +129,7 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
 
     /**
      * Determine if to automate help output; defaults to {@code true}.
-     * 
+     *
      * @since 1.1
      */
     protected boolean help = true;
@@ -271,19 +271,16 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
      * {@inheritDoc}
      */
     @Override
-    public String getCliOptionName(String optionName) {
-        String cliOption = (String) this.optsShortMappings.get(optionName);
+    public String getCliOptionName(String configName) {
+        String cliOption = (String) this.optsShortMappings.get(configName);
         if (cliOption == null) {
-            cliOption = (String) this.optsLongMappings.get(optionName);
+            cliOption = (String) this.optsLongMappings.get(configName);
         }
         return cliOption;
     }
 
     /**
-     * Generate a command line configuration from the given properties. The
-     * generated data will include a help option with the help data displaying
-     * what command line options override a given property along with the
-     * default value of the property.
+     * Generate a command line configuration from the given properties.
      *
      * <p>
      * The configuration can be used to override default values of both the
@@ -337,10 +334,7 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
     }
 
     /**
-     * Generate a command line configuration from the given properties. The
-     * generated data will include a help option with the help data displaying
-     * what command line options override a given property along with the
-     * default value of the property.
+     * Generate a command line configuration from the given properties.
      *
      * <p>
      * The configuration can be used to override default values of both the
@@ -614,26 +608,26 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
     }
 
     /**
-     * Generate a {@link ClcParser#OPTS} value for the specified option name; if
-     * there is no user-defined value present in the supplied configuration map,
-     * a default value will be added to the given builder; otherwise the
-     * user-defined option will be used.
+     * Generate a {@link ClcParser#OPTS} value for the specified option
+     * configuration name; if there is no user-defined value present in the
+     * supplied configuration map, a default value will be added to the given
+     * builder; otherwise the user-defined option will be used.
      *
      * @param sb non-{@code null} builder to append to.
      *
      * @param config non-{@code null} configuration to check; may be empty.
      *
-     * @param optionName non-{@code null} option name.
+     * @param configName non-{@code null} option configuration name.
      */
     private void processOpts(StringBuilder sb, Map<String, String> config,
-            String optionName) {
-        String keyOpts = createOptionName(optionName, ClcParser.OPTS);
+            String configName) {
+        String keyOpts = createOptionName(configName, ClcParser.OPTS);
         if (!config.containsKey(keyOpts)) {
             sb.append(keyOpts)
                     .append(ClcParser.SPACE)
                     .append(ClcParser.ASSIGNMENT)
                     .append(ClcParser.SPACE)
-                    .append(optionName)
+                    .append(configName)
                     .append(System.lineSeparator());
         } else {
             sb.append(keyOpts)
@@ -647,11 +641,11 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
 
     /**
      * Get the option names (short, long or both) used on the command line for
-     * the given option name. If no
-     * {@link GlobalConfiguration#GLOBAL_OPTIONS_OPTS_TYPE} and, no
-     * corresponding {@link ClcParser#OPTS} configuration defined, the option
-     * name value will be used; otherwise, the value will be taken from the
-     * defined options value, according to the following rules:
+     * the given option configuration name. If no
+     * {@link GlobalConfiguration#GLOBAL_OPTIONS_OPTS_TYPE} and no corresponding
+     * {@link ClcParser#OPTS} configuration defined, the option name value will
+     * be used; otherwise, the value will be taken from the defined options
+     * value, according to the following rules:
      *
      * <ul>
      * <li>For {@link OptionsTypeEnum#BOTH}, the value will consist of a pair of
@@ -668,7 +662,7 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
      *
      * @param config non-{@code null} configuration to check; may be empty.
      *
-     * @param optionName non-{@code null} option name.
+     * @param configName non-{@code null} option configuration name.
      *
      * @return non-{@code null} pair of values; the left-side will be the short
      * option (if present), the right side will be the long option (if present).
@@ -680,9 +674,9 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
      * options the option is length greater than one.
      */
     private Pair<String, String> getCliOptionNames(Map<String, String> config,
-            String optionName) throws ClcException {
+            String configName) throws ClcException {
         Pair<String, String> optNames = null;
-        String keyOpts = createOptionName(optionName, ClcParser.OPTS);
+        String keyOpts = createOptionName(configName, ClcParser.OPTS);
         if (config.containsKey(keyOpts)
                 && config.containsKey(GlobalConfiguration.GLOBAL_OPTIONS_OPTS_TYPE)) {
             String optionType = config.get(GlobalConfiguration.GLOBAL_OPTIONS_OPTS_TYPE);
@@ -724,17 +718,17 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
         } else {
             // treat as a long option - the default for properties-based command
             // lines:
-            optNames = ClcParser.parseShortLongOptions(optionName,
+            optNames = ClcParser.parseShortLongOptions(configName,
                     null);
         }
         return optNames;
     }
 
     /**
-     * Generate a {@link ClcParser#HAS_ARG} value for the specified option name;
-     * if there is no user-defined value present in the supplied configuration
-     * map, {@link ClcParser#TRUE}; otherwise the user-defined option will be
-     * used.
+     * Generate a {@link ClcParser#HAS_ARG} value for the specified option
+     * configuration name; if there is no user-defined value present in the
+     * supplied configuration map, {@link ClcParser#TRUE}; otherwise the
+     * user-defined option will be used.
      *
      * <p>
      * Properties are <i>always</i> considered to have an argument by their very
@@ -749,7 +743,7 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
      *
      * @param value non-{@code null} property value.
      *
-     * @param optionName non-{@code null} option name.
+     * @param configName non-{@code null} option configuration name.
      *
      * @throws CLCException if any user-defined configuration with
      * {@link ClcParser#HAS_ARG} is set to {@code false} and the type inference
@@ -758,8 +752,8 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
      * requiring arguments.
      */
     private void processHasArg(StringBuilder sb, Map<String, String> clcOverrides,
-            String optionName, String value) throws ClcException {
-        String optionHasArg = createOptionName(optionName, ClcParser.HAS_ARG);
+            String configName, String value) throws ClcException {
+        String optionHasArg = createOptionName(configName, ClcParser.HAS_ARG);
         if (!clcOverrides.containsKey(optionHasArg)) {
             // properties always have 'hasArg' as true, since by definition a
             // property always comes in the form x=y, even if y is the empty
@@ -772,7 +766,7 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
             if (unary && ClcParser.FALSE.equals(value.toLowerCase())) {
                 hasArg = ClcParser.FALSE;
             }
-            sb.append(createOptionName(optionName, ClcParser.HAS_ARG))
+            sb.append(createOptionName(configName, ClcParser.HAS_ARG))
                     .append(ClcParser.SPACE)
                     .append(ClcParser.ASSIGNMENT)
                     .append(ClcParser.SPACE)
@@ -787,7 +781,7 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
                         + optionHasArg + " can only be 'true', use type inference"
                         + " to override false ss unary switches.");
             } else {
-                sb.append(createOptionName(optionName, ClcParser.HAS_ARG))
+                sb.append(createOptionName(configName, ClcParser.HAS_ARG))
                         .append(" = true")
                         .append(System.lineSeparator());
                 clcOverrides.put(optionHasArg, ClcParser.TRUE);
@@ -796,21 +790,22 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
     }
 
     /**
-     * Generate a {@link ClcParser#ARG_NAME} value for the specified command
-     * key; if they key is present the user-defined option will be used.
+     * Generate a {@link ClcParser#ARG_NAME} value for the specified
+     * configuration name; if they key is present the user-defined option will
+     * be used.
      *
      * @param sb non-{@code null} builder to append to.
      *
      * @param config non-{@code null} configuration to check; may be empty.
      *
-     * @param optionName non-{@code null} option name.
+     * @param configName non-{@code null} option configuration name.
      */
     private void processArgName(StringBuilder sb, Map<String, String> config,
-            String optionName) {
-        String optionArgName = ClcParser.OPTION + "." + optionName
+            String configName) {
+        String optionArgName = ClcParser.OPTION + "." + configName
                 + "." + ClcParser.ARG_NAME;
         if (config.containsKey(optionArgName)) {
-            sb.append(createOptionName(optionName, ClcParser.ARG_NAME))
+            sb.append(createOptionName(configName, ClcParser.ARG_NAME))
                     .append(ClcParser.SPACE)
                     .append(ClcParser.ASSIGNMENT)
                     .append(ClcParser.SPACE)
@@ -820,22 +815,22 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
     }
 
     /**
-     * Generate a {@link ClcParser#DESCRIPTION} value for the specified command
-     * key; if there is no user-defined value present in the supplied
-     * configuration map, a default value will be added to the given builder;
-     * otherwise the user-defined option will be used.
+     * Generate a {@link ClcParser#DESCRIPTION} value for the specified option
+     * configuration name; if there is no user-defined value present in the
+     * supplied configuration map, a default value will be added to the given
+     * builder; otherwise the user-defined option will be used.
      *
      * @param sb non-{@code null} builder to append to.
      *
      * @param config non-{@code null} configuration to check; may be empty.
      *
-     * @param optionName non-{@code null} option name.
+     * @param configName non-{@code null} option configuration name.
      */
     private void processDescription(StringBuilder sb,
-            Map<String, String> config, String optionName, String key, String value) {
-        String optionDescription = createOptionName(optionName, ClcParser.DESCRIPTION);
+            Map<String, String> config, String configName, String key, String value) {
+        String optionDescription = createOptionName(configName, ClcParser.DESCRIPTION);
         if (!config.containsKey(optionDescription)) {
-            sb.append(createOptionName(optionName, ClcParser.DESCRIPTION))
+            sb.append(createOptionName(configName, ClcParser.DESCRIPTION))
                     .append(" = Overrides property '")
                     .append(key)
                     .append("', default value '")
@@ -843,7 +838,7 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
                     .append("'")
                     .append(System.lineSeparator());
         } else {
-            sb.append(createOptionName(optionName, ClcParser.DESCRIPTION))
+            sb.append(createOptionName(configName, ClcParser.DESCRIPTION))
                     .append(ClcParser.SPACE)
                     .append(ClcParser.ASSIGNMENT)
                     .append(ClcParser.SPACE)
@@ -853,9 +848,9 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
     }
 
     /**
-     * Generate a {@link ClcParser#TYPE} value for the specified option name.
-     * One of two methods will be used to determine if such a value will be
-     * defined:
+     * Generate a {@link ClcParser#TYPE} value for the specified option
+     * configuration name. One of two methods will be used to determine if such
+     * a value will be defined:
      *
      * <ul>
      * <li>if there is a user-defined value present in the supplied
@@ -864,11 +859,11 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
      * </li>
      * <li>
      * if there is an associated property value type already assigned to the
-     * given option name, that value is used. This can happen in any number of
-     * ways depending on the implementation - for example a regular expression
-     * could be applied to a property value to determine what its type is, or an
-     * implementation may already have parsed types such that the API can map
-     * that to an underlying equivalent {@link ValueType}.
+     * given option configuration name, that value is used. This can happen in
+     * any number of ways depending on the implementation - for example a
+     * regular expression could be applied to a property value to determine what
+     * its type is, or an implementation may already have parsed types such that
+     * the API can map that to an underlying equivalent {@link ValueType}.
      * </li>
      * </ul>
      *
@@ -876,16 +871,16 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
      *
      * @param config non-{@code null} configuration to check; may be empty.
      *
-     * @param optionName non-{@code null} option name.
+     * @param configName non-{@code null} option configuration name.
      *
      * @throws ValueTypeCreationException if a value type is used that is not
      * registered.
      */
     private void processType(StringBuilder sb, Map<String, String> config,
-            String optionName) throws ValueTypeCreationException {
+            String configName) throws ValueTypeCreationException {
         // determine if a value type has been assigned to the property, e,g.
         // an int or float:
-        String optionType = createOptionName(optionName, ClcParser.TYPE);
+        String optionType = createOptionName(configName, ClcParser.TYPE);
         if (config.containsKey(optionType)) {
             // user defined; however, the key type must be a valid API key type:
             sb.append(optionType)
@@ -895,13 +890,13 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
                     .append(config.get(optionType))
                     .append(System.lineSeparator());
             ValueType valueType = ValueTypeFactory.getInstance().create(config.get(optionType));
-            propertyValueTypes.put(optionName, valueType);
+            propertyValueTypes.put(configName, valueType);
         } else {
             // check property types
-            if (propertyValueTypes.containsKey(optionName)) {
+            if (propertyValueTypes.containsKey(configName)) {
                 // underlying value has been determined to be a valid type - find
                 // out what it is:
-                ValueType valueType = (ValueType) propertyValueTypes.get(optionName);
+                ValueType valueType = (ValueType) propertyValueTypes.get(configName);
                 String valueTypeName = null;
                 if (valueType != null) {
                     valueTypeName = valueType.getValueTypeName();
@@ -920,20 +915,20 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
     }
 
     /**
-     * Generate a {@link ClcParser#PROPERTIES} value for the specified option if
-     * it exists.
+     * Generate a {@link ClcParser#PROPERTIES} value for the specified option
+     * configuration name if it exists.
      *
      * @param sb non-{@code null} builder to append to.
      *
      * @param config non-{@code null} configuration to check; may be empty.
      *
-     * @param optionName non-{@code null} option name.
+     * @param configName non-{@code null} option configuration name.
      */
     private void processProperties(StringBuilder sb,
-            Map<String, String> config, String optionName) {
+            Map<String, String> config, String configName) {
         // determine if there are any value type properties for the given
         // property:
-        String optionProperties = createOptionName(optionName,
+        String optionProperties = createOptionName(configName,
                 ClcParser.PROPERTIES);
         if (config.containsKey(optionProperties)) {
             sb.append(optionProperties)
@@ -996,8 +991,6 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
      * @param sb non-{@code null} builder to append to.
      *
      * @param config non-{@code null} configuration to check; may be empty.
-     *
-     * @param optionName non-{@code null} option name.
      */
     private void processHelpCommandName(StringBuilder sb,
             Map<String, String> config) {
@@ -1561,55 +1554,55 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
      *
      * @param config non-{@code null} configuration to check; may be empty.
      *
-     * @param optionName non-{@code null} option name.
+     * @param configName non-{@code null} option configuration name.
      */
     private void padConfiguration(StringBuilder sb, Map<String, String> config,
-            String optionName) {
+            String configName) {
         boolean unary = true;
-        String optionHasArg = createOptionName(optionName, ClcParser.HAS_ARG);
+        String optionHasArg = createOptionName(configName, ClcParser.HAS_ARG);
         if (config.containsKey(optionHasArg)) {
             String hasArgValue = config.get(optionHasArg);
             if (ClcParser.TRUE.equals(hasArgValue)) {
                 unary = false;
             }
         }
-        String optsKey = createOptionName(optionName, ClcParser.IGNORE_CLI_ARGS);
+        String optsKey = createOptionName(configName, ClcParser.IGNORE_CLI_ARGS);
         if (!config.containsKey(optsKey)) {
             sb.append("# ")
-                    .append(createOptionName(optionName,
+                    .append(createOptionName(configName,
                             ClcParser.IGNORE_CLI_ARGS))
                     .append(" = false")
                     .append(System.lineSeparator());
         }
         if (!unary) {
-            optsKey = createOptionName(optionName, ClcParser.ARG_NAME);
+            optsKey = createOptionName(configName, ClcParser.ARG_NAME);
             if (!config.containsKey(optsKey)) {
                 sb.append("# ")
-                        .append(createOptionName(optionName,
+                        .append(createOptionName(configName,
                                 ClcParser.ARG_NAME))
                         .append(" = arg")
                         .append(System.lineSeparator());
             }
-            optsKey = createOptionName(optionName, ClcParser.TYPE);
+            optsKey = createOptionName(configName, ClcParser.TYPE);
             if (!config.containsKey(optsKey)) {
                 sb.append("# ")
-                        .append(createOptionName(optionName,
+                        .append(createOptionName(configName,
                                 ClcParser.TYPE))
                         .append(" = type")
                         .append(System.lineSeparator());
             }
-            optsKey = createOptionName(optionName, ClcParser.PROPERTIES);
+            optsKey = createOptionName(configName, ClcParser.PROPERTIES);
             if (!config.containsKey(optsKey)) {
                 sb.append("# ")
-                        .append(createOptionName(optionName,
+                        .append(createOptionName(configName,
                                 ClcParser.PROPERTIES))
                         .append(" = p1 = x, p2 = y, p3 = z")
                         .append(System.lineSeparator());
             }
-            optsKey = createOptionName(optionName, ClcParser.DEFAULT);
+            optsKey = createOptionName(configName, ClcParser.DEFAULT);
             if (!config.containsKey(optsKey)) {
                 sb.append("# ")
-                        .append(createOptionName(optionName,
+                        .append(createOptionName(configName,
                                 ClcParser.DEFAULT))
                         .append(" = x")
                         .append(System.lineSeparator());
@@ -1621,15 +1614,15 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
      * Create an option-prefixed command line configuration name for the
      * specified suffix.
      *
-     * @param optionName non-{@code null} option name.
+     * @param configName non-{@code null} option configuration name.
      *
      * @param suffix non-{@code null} valid command line configuration suffix.
      *
      * @return non-{@code null} string of the form
      * {@code option.<commandName>.<suffix>}
      */
-    private String createOptionName(String optionName, String suffix) {
-        return ClcParser.OPTION + ClcParser.PERIOD + optionName + ClcParser.PERIOD + suffix;
+    private String createOptionName(String configName, String suffix) {
+        return ClcParser.OPTION + ClcParser.PERIOD + configName + ClcParser.PERIOD + suffix;
     }
 
 }

@@ -17,7 +17,7 @@ package org.statefive.clic;
 
 /**
  * Contains information from a set of properties of the form
- * {@code option.[name].*}. The following option values are supported:
+ * {@code option.<config-name>.*}. The following option values are supported:
  *
  * <ul>
  * <li>{@code option.[name].opts=[options]}: specify short and long options, a

@@ -86,7 +86,7 @@ public abstract class AbstractPropertiesBuilder<P> implements PropertiesBuilder<
     private boolean help = true;
 
     /**
-     * Command keys used to check for duplicates.
+     * Option configuration names to check for duplicates.
      */
     private final Set<String> optionNames = new HashSet<>();
 
@@ -283,38 +283,38 @@ public abstract class AbstractPropertiesBuilder<P> implements PropertiesBuilder<
 
     /**
      * Receive an option update. It is up to implementations to map the
-     * specified option name to the equivalent property and set the given value
-     * on it.
+     * specified option configuration name to the equivalent property and set
+     * the given value on it.
      *
-     * @param option non-{@code null} option; this will be the
-     * {@code [option.name]} part of an {@code option.[option-name]}
+     * @param configName non-{@code null} option configuration ; this will be
+     * the {@code <config.name>} part of an {@code option.<config-name>}
      * declaration.
      *
      * @param value non-{@code null} value of the option.
      */
     @Override
-    public void option(String option, Object value) {
-        setProperty(option, value);
+    public void option(String configName, Object value) {
+        setProperty(configName, value);
     }
 
     /**
      * Check whether global help or version is defined; if they are, parsing of
      * arguments will be set to {@code false}.
      *
-     * @param optionName option name; may be {@code null}.
+     * @param configName option configuration name; may be {@code null}.
      *
      * @param propertyValue property value; may be {@code null}.
      */
     @Override
-    public void setProperty(String optionName, Object propertyValue) {
-        if (optionName != null && propertyValue == null) {
+    public void setProperty(String configName, Object propertyValue) {
+        if (configName != null && propertyValue == null) {
             // property value is null for unary arguments; so it might be a
             // standard unary option OR a global help/version option; so check:
             Map<String, String> clcMappings = configurationGenerator.getClcMappings();
-            if (optionName.equals(clcMappings.get(
+            if (configName.equals(clcMappings.get(
                     GlobalConfiguration.GLOBAL_HELP_SWITCH_OPTS))) {
                 Clc.getInstance().setParseArgs(false);
-            } else if (optionName.equals(clcMappings.get(
+            } else if (configName.equals(clcMappings.get(
                     GlobalConfiguration.GLOBAL_VERSION_SWITCH_OPTS))) {
                 Clc.getInstance().setParseArgs(false);
             }
@@ -391,7 +391,7 @@ public abstract class AbstractPropertiesBuilder<P> implements PropertiesBuilder<
     }
 
     /**
-     * Get the set of option names.
+     * Get the set of option configuration names.
      *
      * @return non-{@code null} option names.
      */

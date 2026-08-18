@@ -1087,7 +1087,7 @@ public class CliGenSrc {
     }
 
     /**
-     * Generate the case body for the given option and optiona values.
+     * Generate the case body for the given option and option values.
      *
      * @param indent indent spaces to apply when generating code.
      *

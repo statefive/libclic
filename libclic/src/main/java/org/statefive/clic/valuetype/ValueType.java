@@ -109,7 +109,7 @@ public interface ValueType<T, R> {
     /**
      * Get the value type name; this is the type name exposed via the command
      * line configuration API for conversion into underlying Java types and set
-     * via {@code option.<option-name>.type=<type-name>}.
+     * via {@code option.<config-name>.type=<type-name>}.
      *
      * @return non-{@code null} value type name.
      */

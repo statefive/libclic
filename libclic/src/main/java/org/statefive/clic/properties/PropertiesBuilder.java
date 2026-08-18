@@ -225,17 +225,17 @@ public interface PropertiesBuilder<P> extends OptionListener {
 
     /**
      * Set the given property on the underlying property implementation. It is
-     * up to implementations to map the option name to the original underlying
-     * property key in order to set the value.
+     * up to implementations to map the option configuration name to the
+     * original underlying property key in order to set the value.
      *
      * <p>
      * As command line arguments are processed the command line key is used to
      * get the property key of the underlying implementation, from which the
      * property value is set from the corresponding command-like value.
      *
-     * @param optionName non-{@code null} option name read in from the command
-     * line without any hyphens prefixed; this will be the original property
-     * name with non-alphanumeric characters converted to hyphens. See
+     * @param configName non-{@code null} option configuration name read in from
+     * the command line without any hyphens prefixed; this will be the original
+     * property name with non-alphanumeric characters converted to hyphens. See
      * {@link AbstractPropertiesReader#convertToCommandKey(java.lang.String)}.
      *
      * @param propertyValue original property read in from the properties; may
@@ -245,5 +245,5 @@ public interface PropertiesBuilder<P> extends OptionListener {
      * the value will be {@code null} and means implementations should set the
      * property to {@code true}.
      */
-    void setProperty(String optionName, Object propertyValue);
+    void setProperty(String configName, Object propertyValue);
 }

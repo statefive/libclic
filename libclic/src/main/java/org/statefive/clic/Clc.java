@@ -1515,7 +1515,8 @@ public class Clc implements ArgsListener, CommandArgsListener {
 
     /**
      * Update the specified option listener with the given option name and
-     * option value.
+     * option value. The option name will be the value read from the command
+     * line without any leading hyphens.
      *
      * @param listener non-{@code null} listener to update.
      *
@@ -1567,7 +1568,8 @@ public class Clc implements ArgsListener, CommandArgsListener {
 
     /**
      * Update the specified command option listener with the given command,
-     * option name and option value.
+     * option name and option value. The option name will be the value read from
+     * the command line without any preceding hyphens.
      *
      * @param listener non-{@code null} listener to update.
      *

@@ -16,13 +16,15 @@
 package org.statefive.clic;
 
 /**
- * Arguments that are processed once all defined command line switches have been
- * processed (and prior to which, if defined, all prefix arguments have been
- * processed). Arguments can comprise of fixed length or any number of
- * arguments, rules for arguments permitting. It is also possible for API
- * callers to limit or set the number of arguments to zero/unused if necessary
- * (for example, some applications may not take any arguments at all), thereby
- * capping the number of arguments that can be processed.
+ * Contains information from a set of properties of the form
+ * {@code args.<config-name>.*}.
+ *
+ * Arguments are processed once all defined command line switches have been
+ * processed. Arguments can comprise of fixed length or any number of arguments,
+ * rules for arguments permitting. It is also possible for API callers to limit
+ * or set the number of arguments to zero/unused if necessary (for example, some
+ * applications may not take any arguments at all), thereby capping the number
+ * of arguments that can be processed.
  *
  * <p>
  * By default, if no explicit configuration for arguments is defined, all

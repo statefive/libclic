@@ -710,7 +710,8 @@ public class ClcParserTest {
      *
      * @param optConfig non-{@code null} option configuration.
      *
-     * @param optionName non-{@code null} name of the option to match.
+     * @param configName non-{@code null} configuration name of the option to
+     * match.
      *
      * @param shortOption short option name to match; if {@code null}, implies
      * using long options.
@@ -723,12 +724,12 @@ public class ClcParserTest {
      * @param hasArg match if the option has an argument or not.
      */
     private void checkOptionConfiguration(OptionConfiguration optConfig,
-            String optionName, String shortOption, String longOption,
+            String configName, String shortOption, String longOption,
             String descrption, boolean hasArg) {
         assertNotNull(optConfig);
         assertEquals(shortOption, optConfig.getShortOption());
         assertEquals(longOption, optConfig.getLongOption());
-        assertEquals(optionName, optConfig.getName());
+        assertEquals(configName, optConfig.getName());
         assertEquals(descrption, optConfig.getDescription());
         assertEquals(hasArg, optConfig.hasArg());
     }

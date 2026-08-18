@@ -26,11 +26,6 @@ import org.statefive.clic.valuetype.DirUpdateListener;
 /**
  * Convenience class for callers utilising properties.
  *
- * <p>
- * Once a {@link Clc} has been associated with it, it will
- * register itself as an {@link ArgsListener} and {@link DirUpdateListener} to
- * receive updates from the CLC.
- *
  * @author rich
  */
 public class PropertiesListenerBindings implements ArgsListener {
@@ -57,11 +52,6 @@ public class PropertiesListenerBindings implements ArgsListener {
      * Command line configuration.
      */
     private Clc clc;
-
-    /**
-     * List of non-switch arguments (if there are any).
-     */
-    private List<String> args = null;
 
     /**
      * Used to keep track of what arguments have been added.

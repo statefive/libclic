@@ -25,8 +25,7 @@ import org.statefive.clic.valuetype.ValueType;
 public abstract class AbstractConfiguration {
 
     /**
-     * The name of the property; this is the name as it appears in the
-     * configuration after the {@code option.} declaration.
+     * The name of the configuration.
      */
     private String name;
 
@@ -67,18 +66,18 @@ public abstract class AbstractConfiguration {
     private int lineNumberEnd;
 
     /**
-     * Get the name.
+     * Get the configuration name.
      *
-     * @return the name.
+     * @return non-{@code null} configuration name.
      */
     public String getName() {
         return name;
     }
 
     /**
-     * Set the name.
+     * Set the configuration name.
      *
-     * @param name the name.
+     * @param name non-{@code null} configuration name.
      */
     public void setName(final String name) {
         this.name = name;
@@ -184,10 +183,10 @@ public abstract class AbstractConfiguration {
     public int getLineNumberEnd() {
         return lineNumberEnd;
     }
-    
+
     /**
      * Set the line number where this configuration was last defined.
-     * 
+     *
      * @param lineNumberEnd the line number.
      */
     public void setLineNumberEnd(int lineNumberEnd) {

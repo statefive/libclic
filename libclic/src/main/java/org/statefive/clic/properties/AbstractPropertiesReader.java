@@ -74,14 +74,15 @@ public abstract class AbstractPropertiesReader<P> implements PropertyReader<P> {
     protected Clc cliconfig = Clc.getInstance();
 
     /**
-     * Convert the given property to an appropriate command line switch without
-     * the leading double-hyphen prefix. All non-alphanumeric characters that
-     * are not hyphens are replaced with hyphens and the switch will not contain
-     * the prefixed {@code --} prefix.
+     * Convert the given property to an option configuration name. Unless
+     * overridden the same value will be the value represented by the command
+     * line switch without any leading hyphens. All non-alphanumeric characters
+     * that are not hyphens are replaced with hyphens and the switch will not
+     * contain the prefixed {@code --} prefix.
      *
      * @param propertyName non-{@code null} property name to convert.
      *
-     * @return the converted property; if the property contains only
+     * @return the converted property name; if the property contains only
      * alphanumeric characters and hyphens the returned value will be the same
      * as the key.
      */

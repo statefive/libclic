@@ -215,9 +215,9 @@ public interface ClcGenerator<P> {
      * Get the map of command line keys mapped to the underlying property keys.
      *
      * @return non-{@code null} map of property mappings; the key will be the
-     * option name as defined by the {@code option.<option-name>} value
-     * (<i>not</i> the option value entered on the command line) and the value
-     * will be the original property name that the option represents.
+     * option configuration name as defined by the {@code option.<config-name>}
+     * value (<i>not</i> the option value entered on the command line) and the
+     * value will be the original property name that the option represents.
      */
     Map<String, String> getPropertyMappings();
 
@@ -225,16 +225,17 @@ public interface ClcGenerator<P> {
      * Get the command line switch (short or long version) for the given option
      * name defined in the CLC, without any leading hyphens.
      *
-     * @param optionName non-{@code null} option name to get the command line
-     * switch for; this will be the {@code <option-name>} part of all
-     * {@code option.<option-name>} value of an option configuration.
+     * @param configName non-{@code null} option configuration name to get the
+     * command line switch for; this will be the {@code <config-name>} part of
+     * all {@code option.<config-name>} value of an option configuration.
      *
-     * @return non-{@code null} command line option name; either a short or long
-     * version, {@code null} if the option name is invalid.
+     * @return non-{@code null} command line option configuration name; either a
+     * short or long version, {@code null} if the option configuration name is
+     * invalid.
      *
      * @since 1.1
      */
-    String getCliOptionName(String optionName);
+    String getCliOptionName(String configName);
 
     /**
      * Get the CLC mappings from the configuration properties (if supplied).
@@ -259,7 +260,8 @@ public interface ClcGenerator<P> {
      * was not coerced to a different type.
      *
      * @param propertyName non-{@code null} property name from the underlying
-     * property implementation (not the option name of the property name).
+     * property implementation (not the option configuration name of the
+     * property name).
      *
      * @param value property value.
      *

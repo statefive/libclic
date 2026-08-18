@@ -940,22 +940,22 @@ public class ClcParser {
     }
 
     /**
-     * Generate an error for the given configuration and option name detailing
-     * that a no-argument option has been defined with an option type that is
-     * only valid for options that require an argument.
+     * Generate an error for the given configuration and option configuration
+     * name detailing that a no-argument option has been defined with an option
+     * type that is only valid for options that require an argument.
      *
      * @param optConfig non-{@code null} option configuration.
      *
-     * @param name non-{@code null} name of the option.
+     * @param configName non-{@code null} option configuration name.
      *
      * @param badPropertyName non-{@code null} offending configuration property
      * name that is only applicable to argument-based option configurations.
      *
      * @return non-{@code null} error line containing details of the error.
      */
-    private String generateNoArgError(OptionConfiguration optConfig, String name,
+    private String generateNoArgError(OptionConfiguration optConfig, String configName,
             String badPropertyName) {
-        return "Option '" + name + "', lines "
+        return "Option '" + configName + "', lines "
                 + optConfig.getLineNumberStart() + " - "
                 + optConfig.getLineNumberEnd() + ", is defined as having no"
                 + " argument (is a unary switch) but has the property '"

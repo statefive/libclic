@@ -83,7 +83,8 @@ public abstract class AbstractTestConfig {
     /**
      * Add the given option to the map of top-level (non-command) options.
      *
-     * @param option non-{@code null} option name.
+     * @param option non-{@code null} option name; this will be the option read
+     * from the command line without leading hyphens.
      *
      * @param value non-{@code null} option value.
      *
@@ -94,13 +95,14 @@ public abstract class AbstractTestConfig {
     }
 
     /**
-     * Add the
+     * Add the given option and value to the map of command options.
      *
      * @param command non-{@code null} command name to add to; for testing
      * purposes can be anything but is advised to use the command path (so long
      * as it is used consistently in testing).
      *
-     * @param option non-{@code null} option name to add.
+     * @param option non-{@code null} option name to add; this will be the
+     * option read from the command line without leading hyphens.
      *
      * @param value non-{@code null} value to add.
      */

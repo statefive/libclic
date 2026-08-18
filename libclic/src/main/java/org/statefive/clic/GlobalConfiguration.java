@@ -319,9 +319,9 @@ public class GlobalConfiguration {
     public static final String GLOBAL_HELP_COMMAND_FOOTER = "global.help.command.footer";
 
     /**
-     * Declaration for the help option name (e.g. {@code option.help} of that is
-     * defined in the {@link OptionConfiguration} such that when that CLI option
-     * is invoked, help will be printed.
+     * Declaration for the help option configuration name (e.g.
+     * {@code option.help} that is defined in the {@link OptionConfiguration}
+     * such that when that CLI option is invoked, help will be printed.
      */
     public static final String GLOBAL_HELP_OPTION_NAME = "global.help.option.name";
 
@@ -357,9 +357,9 @@ public class GlobalConfiguration {
     public static final String GLOBAL_HELP_FORMAT_SORT_OPTIONS = "global.help.format.sort-options";
 
     /**
-     * Declaration for the version option name (e.g. {@code option.version} of
-     * that is defined in the {@link OptionConfiguration} such that when that
-     * CLI option is invoked, the version will be printed.
+     * Declaration for the version option configuration name (e.g.
+     * {@code option.version} that is defined in the {@link OptionConfiguration}
+     * such that when that CLI option is invoked, the version will be printed.
      */
     public static final String GLOBAL_VERSION_OPTION_NAME = "global.version.name";
 
@@ -593,11 +593,12 @@ public class GlobalConfiguration {
     }
 
     /**
-     * Get the option name specified by the global configuration; the name is
-     * the name of the {@link OptionConfiguration} that must exist in the option
-     * configurations.
+     * Get the option configuration name specified by the global configuration;
+     * the name is the name of the {@link OptionConfiguration} that must exist
+     * in the option configurations.
      *
-     * @return the help option name if it is set; {@code null} otherwise.
+     * @return the help option configuration name if it is set; {@code null}
+     * otherwise.
      */
     public String getHelpOptionName() {
         return helpOptionName;
@@ -726,10 +727,11 @@ public class GlobalConfiguration {
     }
 
     /**
-     * Get the name of the version option name - the name will be the name found
-     * in the {@code option.[option-name]...} declarations.
+     * Get the name of the version option configuration name - the name will be
+     * the name found in the {@code option.<config-name>...} declarations.
      *
-     * @return the option name if it is set; {@code null} otherwise.
+     * @return the option configuration name if it is set; {@code null}
+     * otherwise.
      */
     public String getVersionOptionName() {
         return versionOptionName;
@@ -1198,8 +1200,8 @@ public class GlobalConfiguration {
     /**
      * Parse the option type.
      *
-     * @param data data containing the option type - one of
-     * {@link OptionsTypeEnum#SHORT}, {@link #OptionsTypeEnum#LONG},
+     * @param data data containing the option type - one of null null null null
+     * null null     {@link OptionsTypeEnum#SHORT}, {@link #OptionsTypeEnum#LONG},
      * {@link OptionsTypeEnum#BOTH} or {@link #OptionsTypeEnum#ANY}.
      *
      * @throws ClcException if the global options type has already been set, or
