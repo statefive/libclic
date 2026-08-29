@@ -49,11 +49,6 @@ import org.statefive.clic.valuetype.ValueTypeFactory;
 public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
 
     /**
-     * Default help string.
-     */
-    private static final String HELP_DEFAULT = "help";
-
-    /**
      * Manifest implementation version.
      *
      * @since 1.1
@@ -478,7 +473,7 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
             Map<String, Object> properties) throws ClcException {
         StringBuilder sb = new StringBuilder();
         processOptionsType(sb, config);
-        String helpOptionName = HELP_DEFAULT;
+        String helpOptionName = GlobalConfiguration.GLOBAL_HELP_OPTION_LONG_DEFAULT;
         if (this.help) {
             String helpOptionNameOverride = processHelpCommandOptionName(sb, config);
             if (helpOptionNameOverride != null) {
@@ -497,7 +492,10 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
         }
         if (propertyVersion != null) {
             // needs to be added in before any non-global options are generated:
-            addPropertyVersionInformation(sb, propertyVersion, properties);
+            clcMappings.put(GlobalConfiguration.GLOBAL_VERSION_OPTION_LONG_DEFAULT,
+                    propertyVersion);
+            addGlobalPropertyVersionInformation(sb, propertyVersion, properties, config);
+            processVersionSwitchOpts(sb, config);
         }
         // coment to separate global and standard options
         sb.append(System.lineSeparator())
@@ -507,6 +505,11 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
             processHelpOptionOpts(sb, config, helpOptionName);
             processHelpOptionDescription(sb, config, helpOptionName);
             processHelpKeyIgnoreCliArgs(sb, config, helpOptionName);
+        }
+        if (this.propertyVersion != null) {
+            processVersionOptionOpts(sb, config, propertyVersion);
+            processVersionOptionDescription(sb, config, propertyVersion);
+            processVersionKeyIgnoreCliArgs(sb, config, propertyVersion);
         }
         return sb.append(System.lineSeparator()).toString();
     }
@@ -1350,6 +1353,91 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
     }
 
     /**
+     * Generate a {@link GlobalConfiguration#GLOBAL_VERSION_SWITCH_OPTS} value;
+     * if there is no user-defined value present in the supplied configuration
+     * map, a default value will be added to the given builder; otherwise the
+     * user-defined option will be used.
+     *
+     * <p>
+     * If a default value is generated the value will be generated from the
+     * options type. Thus, for options type {@link OptionsTypeEnum#BOTH} and
+     * {@link OptionsTypeEnum#ANY} a short and long option will be used, for
+     * {@link OptionsTypeEnum#SHORT} a short option will be used and for
+     * {@link OptionsTypeEnum#LONG} a long option will be used. If no options
+     * type was overridden, the default will be {@link OptionsTypeEnum#LONG}.
+     *
+     * @param sb non-{@code null} builder to append to.
+     *
+     * @param config non-{@code null} configuration to check; may be empty.
+     *
+     * @throws ClcException if
+     * {@link GlobalConfiguration#GLOBAL_VERSION_SWITCH_OPTS} is overridden but
+     * the long-form version does not match the user-defined overridden version
+     * name.
+     *
+     * @since 1.1
+     */
+    private void processVersionSwitchOpts(StringBuilder sb,
+            Map<String, String> config) throws ClcException {
+        if (!config.containsKey(GlobalConfiguration.GLOBAL_VERSION_SWITCH_OPTS)) {
+            // add defaults, depending on options type:
+            switch (optionsType) {
+                case SHORT:
+                    sb.append(GlobalConfiguration.GLOBAL_VERSION_SWITCH_OPTS)
+                            .append(ClcParser.SPACE)
+                            .append(ClcParser.ASSIGNMENT)
+                            .append(ClcParser.SPACE)
+                            .append(GlobalConfiguration.GLOBAL_VERSION_OPTION_SHORT_DEFAULT);
+                    clcMappings.put(GlobalConfiguration.GLOBAL_VERSION_SWITCH_OPTS,
+                            GlobalConfiguration.GLOBAL_VERSION_OPTION_SHORT_DEFAULT);
+                    break;
+                case LONG:
+                    sb.append(GlobalConfiguration.GLOBAL_VERSION_SWITCH_OPTS)
+                            .append(ClcParser.SPACE)
+                            .append(ClcParser.ASSIGNMENT)
+                            .append(ClcParser.SPACE)
+                            .append(GlobalConfiguration.GLOBAL_VERSION_OPTION_LONG_DEFAULT);
+                    clcMappings.put(GlobalConfiguration.GLOBAL_VERSION_SWITCH_OPTS,
+                            GlobalConfiguration.GLOBAL_VERSION_OPTION_LONG_DEFAULT);
+                    break;
+                case BOTH:
+                case ANY:
+                    String options = GlobalConfiguration.GLOBAL_VERSION_OPTION_SHORT_DEFAULT
+                            + ClcParser.OPTION_SEPARATOR
+                            + GlobalConfiguration.GLOBAL_VERSION_OPTION_LONG_DEFAULT;
+                    sb.append(GlobalConfiguration.GLOBAL_VERSION_SWITCH_OPTS)
+                            .append(ClcParser.SPACE)
+                            .append(ClcParser.ASSIGNMENT)
+                            .append(ClcParser.SPACE)
+                            .append(options);
+                    clcMappings.put(GlobalConfiguration.GLOBAL_VERSION_SWITCH_OPTS,
+                            options);
+                    break;
+
+            }
+        } else {
+            String versionOpts = config.get(GlobalConfiguration.GLOBAL_VERSION_SWITCH_OPTS);
+            Pair<String, String> opts = ClcParser.parseShortLongOptions(versionOpts, null);
+            if (opts.getRight() != null && !propertyVersion.equals(opts.getRight())) {
+                throw new ClcException("Long option '" + opts.getRight()
+                        + "' is not the same as property-defined version '"
+                        + propertyVersion + "'; only the short options can be overridden"
+                        + " (if present).");
+            }
+            clcMappings.put(GlobalConfiguration.GLOBAL_VERSION_SWITCH_OPTS,
+                    versionOpts);
+            sb.append(GlobalConfiguration.GLOBAL_VERSION_SWITCH_OPTS)
+                    .append(ClcParser.SPACE)
+                    .append(ClcParser.ASSIGNMENT)
+                    .append(ClcParser.SPACE)
+                    .append(versionOpts)
+                    .append(System.lineSeparator());
+
+        }
+        sb.append(System.lineSeparator());
+    }
+
+    /**
      * Add in version information in the form of globally defined version,
      * taking the version either from the given properties, or, if not present,
      * using the {@link #MANIFEST_IMPLEMENTATION_VERSION}.
@@ -1361,25 +1449,39 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
      *
      * @param properties non-{@code null} properties to check; may be empty.
      *
+     * @param config non-{@code null} configuration to check; if
+     * {@link GlobalConfiguration#GLOBAL_VERSION_OPTION_NAME} is present, the
+     * switch options will be used to override the default generated options.
+     *
+     * @throws ClcException if a user defined global option name does not match
+     * the defined version name.
+     *
      * @since 1.1
      */
-    private void addPropertyVersionInformation(StringBuilder sb,
-            String propertyVersion, Map<String, Object> properties) {
+    private void addGlobalPropertyVersionInformation(StringBuilder sb,
+            String propertyVersion, Map<String, Object> properties,
+            Map<String, String> config) throws ClcException {
         String value = null;
         if (properties.get(propertyVersion) != null) {
             value = properties.get(propertyVersion).toString();
         } else {
             value = MANIFEST_IMPLEMENTATION_VERSION;
         }
-        //finally, remove the properties:
-        if (properties.containsKey(propertyVersion)) {
-            properties.remove(propertyVersion);
+        if (config.containsKey(GlobalConfiguration.GLOBAL_VERSION_OPTION_NAME)) {
+            String globalVersionName = config.get(
+                    GlobalConfiguration.GLOBAL_VERSION_OPTION_NAME);
+            if (!propertyVersion.equals(globalVersionName)) {
+                throw new ClcException("Cannot override "
+                        + GlobalConfiguration.GLOBAL_VERSION_OPTION_NAME
+                        + ", it is defined already by the property '"
+                        + propertyVersion + "'");
+            }
         }
         sb.append(GlobalConfiguration.GLOBAL_VERSION_OPTION_NAME)
                 .append(ClcParser.SPACE)
                 .append(ClcParser.ASSIGNMENT)
                 .append(ClcParser.SPACE)
-                .append(propertyVersion)
+                .append(this.propertyVersion)
                 .append(System.lineSeparator());
         sb.append(GlobalConfiguration.GLOBAL_VERSION_OPTION_TEXT)
                 .append(ClcParser.SPACE)
@@ -1387,6 +1489,10 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
                 .append(ClcParser.SPACE)
                 .append(value)
                 .append(System.lineSeparator());
+        //finally, remove the properties:
+        if (properties.containsKey(propertyVersion)) {
+            properties.remove(propertyVersion);
+        }
     }
 
     /**
@@ -1411,10 +1517,10 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
                     .append(ClcParser.SPACE)
                     .append(ClcParser.ASSIGNMENT)
                     .append(ClcParser.SPACE)
-                    .append(HELP_DEFAULT)
+                    .append(GlobalConfiguration.GLOBAL_HELP_OPTION_LONG_DEFAULT)
                     .append(System.lineSeparator());
             clcMappings.put(GlobalConfiguration.GLOBAL_HELP_OPTION_NAME,
-                    HELP_DEFAULT);
+                    GlobalConfiguration.GLOBAL_HELP_OPTION_LONG_DEFAULT);
         } else {
             // user defined
             sb.append(GlobalConfiguration.GLOBAL_HELP_OPTION_NAME)
@@ -1446,7 +1552,9 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
     private void processHelpOptionOpts(StringBuilder sb,
             Map<String, String> config, String helpOptionKey) throws ClcException {
         String optsKey = createOptionName(helpOptionKey, ClcParser.OPTS);
-        if (!config.containsKey(optsKey) && HELP_DEFAULT.equals(helpOptionKey)) {
+        if (!config.containsKey(optsKey)
+                && GlobalConfiguration.GLOBAL_HELP_OPTION_LONG_DEFAULT.equals(
+                        helpOptionKey)) {
             // add default
             sb.append(ClcParser.OPTION)
                     .append(ClcParser.PERIOD)
@@ -1490,21 +1598,24 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
      */
     private void processHelpOptionDescription(StringBuilder sb,
             Map<String, String> config, String helpOptionKey) throws ClcException {
-        String optsKey = createOptionName(helpOptionKey, ClcParser.DESCRIPTION);
-        if (!config.containsKey(optsKey)
-                && HELP_DEFAULT.equals(helpOptionKey)) {
+        String descriptionKey = createOptionName(helpOptionKey, ClcParser.DESCRIPTION);
+        if (!config.containsKey(descriptionKey)
+                && GlobalConfiguration.GLOBAL_HELP_OPTION_LONG_DEFAULT.equals(helpOptionKey)) {
             // add default
-            sb.append(optsKey)
-                    .append(" = Print this help then exit.")
-                    .append(System.lineSeparator());
-
-        } else if (config.containsKey(optsKey)) {
-            // user defined
-            sb.append(optsKey)
+            sb.append(descriptionKey)
                     .append(ClcParser.SPACE)
                     .append(ClcParser.ASSIGNMENT)
                     .append(ClcParser.SPACE)
-                    .append(config.get(optsKey))
+                    .append(GlobalConfiguration.DEFAULT_HELP_DESCRIPTION)
+                    .append(System.lineSeparator());
+
+        } else if (config.containsKey(descriptionKey)) {
+            // user defined
+            sb.append(descriptionKey)
+                    .append(ClcParser.SPACE)
+                    .append(ClcParser.ASSIGNMENT)
+                    .append(ClcParser.SPACE)
+                    .append(config.get(descriptionKey))
                     .append(System.lineSeparator());
         } else {
             // no such definition, throw error:
@@ -1523,13 +1634,124 @@ public abstract class AbstractClcGenerator<P> implements ClcGenerator<P> {
      *
      * @param config non-{@code null} configuration to check; may be empty.
      *
-     * @param helpOptionKey non-{@code null} help option key.
-     *
-     * @throws ClcException if there is no help description present.
+     * @param helpOptionName non-{@code null} help option configuration name.
      */
     private void processHelpKeyIgnoreCliArgs(StringBuilder sb,
-            Map<String, String> config, String helpOptionKey) {
-        String optsKey = createOptionName(helpOptionKey, ClcParser.IGNORE_CLI_ARGS);
+            Map<String, String> config, String helpOptionName) {
+        String optsKey = createOptionName(helpOptionName,
+                ClcParser.IGNORE_CLI_ARGS);
+        if (!config.containsKey(optsKey)) {
+            // add default
+            sb.append(optsKey)
+                    .append(" = true")
+                    .append(System.lineSeparator());
+        } else {
+            // user defined
+            sb.append(optsKey)
+                    .append(ClcParser.SPACE)
+                    .append(ClcParser.ASSIGNMENT)
+                    .append(ClcParser.SPACE)
+                    .append(config.get(optsKey))
+                    .append(System.lineSeparator());
+        }
+    }
+
+    /**
+     * Generate a help {@link ClcParser#OPTS} value; if there is a user-defined
+     * value present in the supplied configuration map an exception will be
+     * thrown.
+     *
+     * @param sb non-{@code null} builder to append to.
+     *
+     * @param config non-{@code null} configuration to check; may be empty.
+     *
+     * @param propertyOptionKey non-{@code null} help option key.
+     *
+     * @throws ClcException if the version options key has been specified (the
+     * API will add this on behalf of the user).
+     *
+     * @since 1.1
+     */
+    private void processVersionOptionOpts(StringBuilder sb,
+            Map<String, String> config, String propertyOptionKey) throws ClcException {
+        String optsKey = createOptionName(propertyOptionKey, ClcParser.OPTS);
+        if (!config.containsKey(optsKey)) {
+            // add default
+            sb.append(ClcParser.OPTION)
+                    .append(ClcParser.PERIOD)
+                    .append(propertyOptionKey)
+                    .append(ClcParser.PERIOD)
+                    .append(ClcParser.OPTS)
+                    .append(ClcParser.SPACE)
+                    .append(ClcParser.ASSIGNMENT)
+                    .append(ClcParser.SPACE)
+                    .append(clcMappings.get(
+                            GlobalConfiguration.GLOBAL_VERSION_SWITCH_OPTS))
+                    .append(System.lineSeparator());
+        } else {
+            // user defined; cannot do this, the API handles all version-based
+            // options
+            throw new ClcException("Cannot override '" + optsKey + "'; override '"
+                    + GlobalConfiguration.GLOBAL_VERSION_SWITCH_OPTS + "' instead.");
+        }
+    }
+
+    /**
+     * Generate a version {@link ClcParser#DESCRIPTION} value; if there is no
+     * user-defined value present in the supplied configuration map, a default
+     * value will be added to the given builder; otherwise the user-defined
+     * option will be used.
+     *
+     * @param sb non-{@code null} builder to append to.
+     *
+     * @param config non-{@code null} configuration to check; may be empty.
+     *
+     * @param propertyOptionKey non-{@code null} help option key.
+     *
+     * @since 1.1
+     */
+    private void processVersionOptionDescription(StringBuilder sb,
+            Map<String, String> config, String propertyOptionKey) throws ClcException {
+        String optsKey = createOptionName(propertyOptionKey, ClcParser.DESCRIPTION);
+        if (!config.containsKey(optsKey)) {
+            // add default
+            sb.append(optsKey)
+                    .append(ClcParser.SPACE)
+                    .append(ClcParser.ASSIGNMENT)
+                    .append(ClcParser.SPACE)
+                    .append(GlobalConfiguration.DEFAULT_VERSION_DESCRIPTION)
+                    .append(System.lineSeparator());
+
+        } else {
+            // user defined
+            sb.append(optsKey)
+                    .append(ClcParser.SPACE)
+                    .append(ClcParser.ASSIGNMENT)
+                    .append(ClcParser.SPACE)
+                    .append(config.get(optsKey))
+                    .append(System.lineSeparator());
+        }
+    }
+
+    /**
+     * Generate a version {@link ClcParser#IGNORE_CLI_ARGS} value; if there is
+     * no user-defined value present in the supplied configuration map, a
+     * default value will be added to the given builder; otherwise the
+     * user-defined option will be used.
+     *
+     * @param sb non-{@code null} builder to append to.
+     *
+     * @param config non-{@code null} configuration to check; may be empty.
+     *
+     * @param propertyOptionKey non-{@code null} version option configuration
+     * name.
+     *
+     * @since 1.1
+     */
+    private void processVersionKeyIgnoreCliArgs(StringBuilder sb,
+            Map<String, String> config, String propertyOptionKey) {
+        String optsKey = createOptionName(propertyOptionKey,
+                ClcParser.IGNORE_CLI_ARGS);
         if (!config.containsKey(optsKey)) {
             // add default
             sb.append(optsKey)

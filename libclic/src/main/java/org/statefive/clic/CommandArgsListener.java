@@ -33,8 +33,8 @@ public interface CommandArgsListener {
      *
      * @param command non-{@code null} full path to the command of the argument.
      *
-     * @param name non-{@code null} name; this is the {@code args.[name]} value
-     * of the defined argument for the given command.
+     * @param name non-{@code null} name; this is the {@code args.[config-name]}
+     * value of the defined argument for the given command.
      *
      * @param index index of the argument for the specified name, starting at 0
      * for the named argument and incrementing by one for each newly processed

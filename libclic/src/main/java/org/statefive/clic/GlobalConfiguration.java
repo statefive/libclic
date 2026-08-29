@@ -73,7 +73,7 @@ import org.statefive.clic.properties.PropertiesBuilder;
  * {@code [optionName]} for help. It is optional whether to define any
  * help-based options; if none are defined, a short and/or long option will be
  * defined as {@code -h} and {@code --help} (respectively) with the text
- * {@code Print this help then exit.};</li>
+ * {@link #DEFAULT_HELP_DESCRIPTION;</li>
  *
  * <li>{@code global.help.command.usage=[commandName]}: The command name is the
  * name of the command that will be printed when the "Usage: commandName..." is
@@ -120,7 +120,7 @@ import org.statefive.clic.properties.PropertiesBuilder;
  * for version. It is optional whether to define any version-based options; if
  * none are defined, a short and/or long option will be defined as {@code -v}
  * and {@code --version} (respectively) with the text
- * {@code Print version then exit.}</li>
+ * {@link #DEFAULT_VERSION_DESCRIPTION}</li>
  *
  * <li>{@code global.version.text=[versionText]}: The text to display when
  * printing the version. Dynamic entries can be read from the manifest file
@@ -182,7 +182,7 @@ import org.statefive.clic.properties.PropertiesBuilder;
  * <p>
  * Regardless of how the lines are escaped with regard to the number of
  * characters per line, this will not affect the CLI help output since the CLI
- * {@link HelpFormatter} will format this according to the API rules for line
+ * null {@link HelpFormatter} will format this according to the API rules for line
  * sizes.
  *
  * <p>
@@ -249,6 +249,13 @@ public class GlobalConfiguration {
     public static final String GLOBAL_OPTION_ASSIGNMENT_REGEX = "(global\\.[a-z0-9\\-\\.]+)\\s*=\\s*(.+)";
 
     /**
+     * Default help description.
+     * 
+     * @since 1.1
+     */
+    public static final String DEFAULT_HELP_DESCRIPTION = "Print this help then exit.";
+
+    /**
      * Prefix for all global help options.
      */
     public static final String GLOBAL_HELP = "global.help";
@@ -262,6 +269,13 @@ public class GlobalConfiguration {
      * Default long option for help.
      */
     public static final String GLOBAL_HELP_OPTION_LONG_DEFAULT = "help";
+
+    /**
+     * Default version description.
+     * 
+     * @since 1.1
+     */
+    public static final String DEFAULT_VERSION_DESCRIPTION = "Print version then exit.";
 
     /**
      * Prefix for all global version options.
@@ -384,14 +398,14 @@ public class GlobalConfiguration {
     public static final String REGEX_RESOURCE = "(?<!\\\\)\\$\\{resource:(.*)\\}";
 
     /**
-     * The key is the actual name part of the {@code option.[name].*}
+     * The key is the actual name part of the {@code option.[config-name].*}
      * declaration.
      */
     private final Map<String, OptionConfiguration> optionMap = new LinkedHashMap<>();
 
     /**
      * Map of root-level arguments; the key is the actual name part of the
-     * {@code args.[name].*} declaration.
+     * {@code args.[config-name].*} declaration.
      */
     private final Map<String, ArgsConfiguration> argsMap = new LinkedHashMap<>();
 
@@ -420,7 +434,7 @@ public class GlobalConfiguration {
 
     /**
      * The option configuration name for the configuration help value,
-     * {@code option.[name]}, for example, {@code option.help}.
+     * {@code option.[config-name]}, for example, {@code option.help}.
      */
     private String helpOptionName;
 
@@ -477,7 +491,7 @@ public class GlobalConfiguration {
 
     /**
      * The option configuration name for the configuration version value
-     * {@code option.[name]}, for example, {@code option.version}.
+     * {@code option.[config-name]}, for example, {@code option.version}.
      */
     private String versionOptionName;
 
@@ -941,7 +955,8 @@ public class GlobalConfiguration {
      * Get the option map for this configuration; the current command's
      * configuration will be returned if there is one, otherwise the global
      * configuration will be returned - the key to the map will be the option
-     * configuration names defined by the {@code option.[name]} declarations.
+     * configuration names defined by the {@code option.[config-name]}
+     * declarations.
      *
      * @return the non-{@code null}, non-empty option map either of the global
      * configuration or the configuration for the current command (note that if
@@ -989,8 +1004,8 @@ public class GlobalConfiguration {
 
     /**
      * Get the option map for this configuration - the key to the map will be
-     * the option configuration names defined by the {@code option.[name]}
-     * declarations.
+     * the option configuration names defined by the
+     * {@code option.[config-name]} declarations.
      *
      * @return the non-{@code null}, non-empty option map either of the global
      * configuration or the configuration for the current command (note that if
@@ -1031,7 +1046,7 @@ public class GlobalConfiguration {
         String globalHelpOptionName = getHelpOptionName();
         OptionConfiguration optConfigHelp = new OptionConfiguration();
         optConfigHelp.setName(getHelpOptionName());
-        optConfigHelp.setDescription("Print this help then exit.");
+        optConfigHelp.setDescription(GlobalConfiguration.DEFAULT_HELP_DESCRIPTION);
         optConfigHelp.setHasArg(false);
         optConfigHelp.setIgnoreCliArgs(true);
         if (null == getOptionsType()) {
@@ -1069,7 +1084,7 @@ public class GlobalConfiguration {
         String globalVersionOptionName = getVersionOptionName();
         OptionConfiguration optConfigVersion = new OptionConfiguration();
         optConfigVersion.setName(getVersionOptionName());
-        optConfigVersion.setDescription("Print version then exit.");
+        optConfigVersion.setDescription(DEFAULT_VERSION_DESCRIPTION);
         optConfigVersion.setHasArg(false);
         optConfigVersion.setIgnoreCliArgs(true);
         if (null == getOptionsType()) {
@@ -1200,8 +1215,7 @@ public class GlobalConfiguration {
     /**
      * Parse the option type.
      *
-     * @param data data containing the option type - one of null null null null
-     * null null     {@link OptionsTypeEnum#SHORT}, {@link #OptionsTypeEnum#LONG},
+     * @param data data containing the option type - one of null null     {@link OptionsTypeEnum#SHORT}, {@link #OptionsTypeEnum#LONG},
      * {@link OptionsTypeEnum#BOTH} or {@link #OptionsTypeEnum#ANY}.
      *
      * @throws ClcException if the global options type has already been set, or

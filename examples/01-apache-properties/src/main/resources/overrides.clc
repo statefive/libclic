@@ -5,8 +5,6 @@ global.help.command.header = Process files in the given input directory and move
     to the specified output directory.
 global.help.command.footer = See some random URL for information
 
-global.version.name = v / version
-
 option.host-ip.opts = ip
 option.host-port.opts = p / port
 option.host-protocol.opts = P / protocol

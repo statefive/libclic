@@ -35,6 +35,7 @@ import org.statefive.clic.ClcParser;
 import org.statefive.clic.Clc;
 import org.statefive.clic.ClcException;
 import org.statefive.clic.GlobalConfiguration;
+import org.statefive.clic.OptionsTypeEnum;
 import org.statefive.clic.valuetype.ValueType;
 
 /**
@@ -110,7 +111,8 @@ public class AbstractClcGeneratorTest {
     private void setFields(PropertyNameFilter filter,
             TypeInferralConfig typeInferralConfig, boolean header, boolean pad,
             boolean insertDefaults) {
-        setFields(filter, typeInferralConfig, header, pad, insertDefaults, true);
+        setFields(filter, typeInferralConfig, header, pad, insertDefaults,
+                true, null);
     }
 
     /**
@@ -127,11 +129,38 @@ public class AbstractClcGeneratorTest {
      *
      * @param insertDefaults {@code true} to insert property defaults.
      *
-     * @param {@code true} to set help (the default), {@code false} for no help.
+     * @param help {@code true} to set help (the default), {@code false} for no
+     * help.
      */
     private void setFields(PropertyNameFilter filter,
             TypeInferralConfig typeInferralConfig, boolean header, boolean pad,
             boolean insertDefaults, boolean help) {
+        setFields(filter, typeInferralConfig, header, pad, insertDefaults,
+                help, null);
+    }
+
+    /**
+     * Set the class generator fields with the given arguments.
+     *
+     * @param filter filter; may be {@code null}.
+     *
+     * @param typeInferralConfig type inference configurationl if {@code null},
+     * a new default configuration will be created.
+     *
+     * @param header {@code true} to set global header.
+     *
+     * @param pad {@code true} to pad.
+     *
+     * @param insertDefaults {@code true} to insert property defaults.
+     *
+     * @param help {@code true} to set help (the default), {@code false} for no
+     * help.
+     *
+     * @param version version to set; may be {@code null}.
+     */
+    private void setFields(PropertyNameFilter filter,
+            TypeInferralConfig typeInferralConfig, boolean header, boolean pad,
+            boolean insertDefaults, boolean help, String version) {
         generator.setPropertyNameFilter(filter);
         if (typeInferralConfig != null) {
             generator.setTypeInferralConfig(typeInferralConfig);
@@ -142,6 +171,7 @@ public class AbstractClcGeneratorTest {
         generator.setPad(pad);
         generator.setInsertDefault(insertDefaults);
         generator.setHelp(help);
+        generator.setPropertyVersion(version);
     }
 
     /**
@@ -164,7 +194,7 @@ public class AbstractClcGeneratorTest {
     }
 
     /**
-     * 
+     *
      */
     @Test
     public void testGenerateConfigurationOverrideLongOptionsUsingANY() throws Exception {
@@ -589,7 +619,7 @@ public class AbstractClcGeneratorTest {
         config.put(GlobalConfiguration.GLOBAL_HELP_OPTION_NAME, "get-some-help");
         config.put("option.get-some-help-x.opts", "get-some-help");
         try {
-        setFields(null, null, true, false, false);
+            setFields(null, null, true, false, false);
             generator.generateConfiguration(
                     getBasicPropertyMap(), config);
             fail("Expected an exception");
@@ -610,7 +640,7 @@ public class AbstractClcGeneratorTest {
         config.put("option.get-some-help.opts", "get-some-help");
         config.put("option.get-some-help-x.descripton", "Complex description here");
         try {
-        setFields(null, null, true, false, false);
+            setFields(null, null, true, false, false);
             generator.generateConfiguration(
                     getBasicPropertyMap(), config);
             fail("Expected an exception");
@@ -619,7 +649,7 @@ public class AbstractClcGeneratorTest {
                     "No definition for option.get-some-help.description");
         }
     }
-    
+
     /**
      * Test of getPropertyMappings method, of class
      * AbstractConfigurationGenerator.
@@ -642,7 +672,7 @@ public class AbstractClcGeneratorTest {
                     + " 'option.get-some-help.description' but was not present.");
         }
     }
-    
+
     /**
      * Test of getPropertyMappings method, of class
      * AbstractConfigurationGenerator.
@@ -1097,6 +1127,294 @@ public class AbstractClcGeneratorTest {
             if (expected.equals(line)) {
                 fail(expected + " found in generated data but should not have been present.");
             }
+        }
+    }
+
+    /**
+     * Test that when overriding global version name, if it is different from
+     * the defined version, an exception is thrown.
+     */
+    @Test
+    public void testGenerateConfigurationConfigVersionOverrideGlobalNameThrowsException() throws Exception {
+        Map<String, String> config = new HashMap<>();
+        config.put("global.version.name", "version-different");
+        Map<String, String> props = new HashMap<>();
+        props.put("foo", "bar");
+        props.put("version", "1.2.3");
+        setFields(null, null, true, true, true,
+                false, "version");
+        try {
+            generator.generateConfiguration(props, config);
+            fail("Expected an exception");
+        } catch (ClcException ex) {
+            assertEquals("Cannot override "
+                    + GlobalConfiguration.GLOBAL_VERSION_OPTION_NAME
+                    + ", it is defined already by the property 'version'",
+                    ex.getMessage());
+        }
+    }
+
+    /**
+     * Test that version options can be overridden using
+     * {@link GlobalConfiguration#GLOBAL_VERSION_SWITCH_OPTS}.
+     */
+    @Test
+    public void testGenerateConfigurationConfigVersionOverrideGlobalVersionOpts() throws Exception {
+        Map<String, String> config = new HashMap<>();
+        config.put("global.version.switch.opts", "V / version");
+        Map<String, String> props = new HashMap<>();
+        props.put("foo", "bar");
+        props.put("version", "1.2.3");
+        setFields(null, null, true, true, true,
+                false, "version");
+
+        String data = generator.generateConfiguration(props, config);
+        String[] lines = data.split(System.lineSeparator());
+        String expected = "global.version.switch.opts = V / version";
+        boolean found = false;
+        for (String line : lines) {
+            if (expected.equals(line)) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            fail("Expected to find 'global.version.switch.opts = V / version-different'"
+                    + " in the generated configuration but it was not present.");
+        }
+    }
+
+    /**
+     * Test that when version options can be overridden using
+     * {@link GlobalConfiguration#GLOBAL_VERSION_SWITCH_OPTS} an error is
+     * produced if the long version name is not the same as the property name.
+     */
+    @Test
+    public void testGenerateConfigurationConfigVersionOverrideGlobalVersionOptsErrorWhenLongOptionNotMatches() throws Exception {
+        Map<String, String> config = new HashMap<>();
+        config.put("global.version.switch.opts", "V / version-info");
+        Map<String, String> props = new HashMap<>();
+        props.put("foo", "bar");
+        props.put("version", "1.2.3");
+        setFields(null, null, true, true, true,
+                false, "version");
+
+        try {
+            generator.generateConfiguration(props, config);
+        } catch (ClcException ex) {
+            assertEquals("Long option 'version-info' is not the same as"
+                    + " property-defined version 'version'; only the short"
+                    + " options can be overridden (if present).",
+                    ex.getMessage());
+        }
+    }
+
+    /**
+     * Test that when version options can be overridden using
+     * {@link GlobalConfiguration#GLOBAL_VERSION_SWITCH_OPTS} no error is
+     * produced when including only a short option (and that the short option is
+     * present in the generated output).
+     */
+    @Test
+    public void testGenerateConfigurationConfigVersionOverrideGlobalVersionOptsDoesNotBreak() throws Exception {
+        Map<String, String> config = new HashMap<>();
+        config.put("global.version.switch.opts", "V");
+        Map<String, String> props = new HashMap<>();
+        props.put("foo", "bar");
+        props.put("version", "1.2.3");
+        setFields(null, null, true, true, true,
+                false, "version");
+
+        String data = generator.generateConfiguration(props, config);
+        String[] lines = data.split(System.lineSeparator());
+        String expected = "global.version.switch.opts = V";
+        boolean found = false;
+        for (String line : lines) {
+            if (expected.equals(line)) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            fail("Expected to find 'option.version.switch.opts = Get version information'"
+                    + " in the generated configuration but it was not present.");
+        }
+    }
+
+    /**
+     * Test that when using {@link OptionsTypeEnum#SHORT} is specified the
+     * options are set to {@code v} (for short) and {@code version} (for long)
+     * options.
+     */
+    @Test
+    public void testGenerateConfigurationConfigVersionOverrideGlobalVersionShortOnly() throws Exception {
+        Map<String, String> config = new HashMap<>();
+        config.put(GlobalConfiguration.GLOBAL_OPTIONS_OPTS_TYPE,
+                OptionsTypeEnum.SHORT.getType());
+        Map<String, String> props = new HashMap<>();
+        props.put("foo", "bar");
+        props.put("version", "1.2.3");
+        setFields(null, null, true, true, true,
+                false, "version");
+
+        String data = generator.generateConfiguration(props, config);
+        String[] lines = data.split(System.lineSeparator());
+        String expected = "global.version.switch.opts = v";
+        boolean found = false;
+        for (String line : lines) {
+            if (expected.equals(line)) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            fail("Expected to find 'option.version.switch.opts = V'"
+                    + " in the generated configuration but it was not present.");
+        }
+    }
+
+    /**
+     * Test that when using {@link OptionsTypeEnum#BOTH} is specified the
+     * options are set to {@code v} (for short) and {@code version} (for long)
+     * options.
+     */
+    @Test
+    public void testGenerateConfigurationConfigVersionOverrideGlobalVersionBothShortAndLong() throws Exception {
+        Map<String, String> config = new HashMap<>();
+        config.put(GlobalConfiguration.GLOBAL_OPTIONS_OPTS_TYPE,
+                OptionsTypeEnum.BOTH.getType());
+        Map<String, String> props = new HashMap<>();
+        props.put("foo", "bar");
+        props.put("version", "1.2.3");
+        setFields(null, null, true, true, true,
+                false, "version");
+
+        String data = generator.generateConfiguration(props, config);
+        String[] lines = data.split(System.lineSeparator());
+        String expected = "global.version.switch.opts = v/version";
+        boolean found = false;
+        for (String line : lines) {
+            if (expected.equals(line)) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            fail("Expected to find 'option.version.switch.opts = version'"
+                    + " in the generated configuration but it was not present.");
+        }
+    }
+
+    /**
+     * Test that when using {@link OptionsTypeEnum#ANY} is specified the options
+     * are set to {@code v} (for short) and {@code version} (for long) options.
+     */
+    @Test
+    public void testGenerateConfigurationConfigVersionOverrideGlobalVersionAnyShortAndLong() throws Exception {
+        Map<String, String> config = new HashMap<>();
+        config.put(GlobalConfiguration.GLOBAL_OPTIONS_OPTS_TYPE, 
+                OptionsTypeEnum.ANY.getType());
+        Map<String, String> props = new HashMap<>();
+        props.put("foo", "bar");
+        props.put("version", "1.2.3");
+        setFields(null, null, true, false, true,
+                false, "version");
+
+        String data = generator.generateConfiguration(props, config);
+        String[] lines = data.split(System.lineSeparator());
+        String expected = "global.version.switch.opts = v/version";
+        boolean found = false;
+        for (String line : lines) {
+            if (expected.equals(line)) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            fail("Expected to find 'option.version.switch.opts = V'"
+                    + " in the generated configuration but it was not present.");
+        }
+    }
+
+    /**
+     * Test that overriding version options throws an exception (API callers
+     * should override the global version).
+     */
+    @Test
+    public void testGenerateConfigurationConfigVersionOverrideVersionOptsThrowsException() throws Exception {
+        Map<String, String> config = new HashMap<>();
+        config.put("option.version.opts", "V");
+        Map<String, String> props = new HashMap<>();
+        props.put("foo", "bar");
+        props.put("version", "1.2.3");
+        setFields(null, null, true, true, true,
+                false, "version");
+
+        try {
+            generator.generateConfiguration(props, config);
+            fail("Expected an exception");
+        } catch (ClcException ex) {
+            assertEquals(ex.getMessage(), "Cannot override"
+                    + " 'option.version.opts'; override"
+                    + " 'global.version.switch.opts' instead.");
+        }
+    }
+
+    /**
+     * Test that version description can be overridden.
+     */
+    @Test
+    public void testGenerateConfigurationConfigVersionOverrideDescription() throws Exception {
+        Map<String, String> config = new HashMap<>();
+        config.put("option.version.description", "some other kind of description");
+        Map<String, String> props = new HashMap<>();
+        props.put("foo", "bar");
+        props.put("version", "1.2.3");
+        setFields(null, null, true, true, true,
+                false, "version");
+
+        String data = generator.generateConfiguration(props, config);
+        String[] lines = data.split(System.lineSeparator());
+        String expected = "option.version.description = some other kind of description";
+        boolean found = false;
+        for (String line : lines) {
+            if (expected.equals(line)) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            fail("Expected to find 'option.version.description = some other kind of description'"
+                    + " in the generated configuration but it was not present.");
+        }
+    }
+
+    /**
+     * Test that ignoreCliArgs can be overridden.
+     */
+    @Test
+    public void testGenerateConfigurationConfigVersionOverrideIgnoreCliArgs() throws Exception {
+        Map<String, String> config = new HashMap<>();
+        config.put("option.version.ignoreCliArgs", "false");
+        Map<String, String> props = new HashMap<>();
+        props.put("foo", "bar");
+        props.put("version", "1.2.3");
+        setFields(null, null, true, true, true,
+                false, "version");
+
+        String data = generator.generateConfiguration(props, config);
+        String[] lines = data.split(System.lineSeparator());
+        String expected = "option.version.ignoreCliArgs = false";
+        boolean found = false;
+        for (String line : lines) {
+            if (expected.equals(line)) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            fail("Expected to find 'option.version.ignoreCliArgs = false'"
+                    + " in the generated configuration but it was not present.");
         }
     }
 

@@ -30,6 +30,7 @@ import org.statefive.clic.Command;
 import org.statefive.clic.Clc;
 import org.statefive.clic.CommandRoot;
 import org.statefive.clic.ClcException;
+import org.statefive.clic.ClcParser;
 import org.statefive.clic.GlobalConfiguration;
 import static org.statefive.clic.GlobalConfiguration.GLOBAL_HELP_OPTION_NAME;
 import static org.statefive.clic.GlobalConfiguration.GLOBAL_HELP_SWITCH_OPTS;
@@ -459,12 +460,25 @@ public abstract class AbstractPropertiesBuilder<P> implements PropertiesBuilder<
         String helpName = configMappings.get(GLOBAL_HELP_SWITCH_OPTS);
         sb.append(System.lineSeparator())
                 .append(System.lineSeparator())
-                .append("option.")
+                .append(ClcParser.OPTION)
+                .append(ClcParser.PERIOD)
                 .append(helpCmdName)
-                .append(".opts = ")
+                .append(ClcParser.PERIOD)
+                .append(ClcParser.OPTS)
+                .append(ClcParser.SPACE)
+                .append(ClcParser.ASSIGNMENT)
+                .append(ClcParser.SPACE)
                 .append(helpName)
                 .append(System.lineSeparator())
-                .append("option.help.description = Print this help then exit.");
+                .append(ClcParser.OPTION)
+                .append(ClcParser.PERIOD)
+                .append(GlobalConfiguration.GLOBAL_HELP_OPTION_LONG_DEFAULT)
+                .append(ClcParser.PERIOD)
+                .append(ClcParser.DESCRIPTION)
+                .append(ClcParser.SPACE)
+                .append(ClcParser.ASSIGNMENT)
+                .append(ClcParser.SPACE)
+                .append(GlobalConfiguration.DEFAULT_HELP_DESCRIPTION);
         // now replace the default string with the newly generated usage
         String toReplace = COMMAND_USAGE_PREFIX + command.getPath().toUpperCase();
         int start = configurationData.indexOf(toReplace);

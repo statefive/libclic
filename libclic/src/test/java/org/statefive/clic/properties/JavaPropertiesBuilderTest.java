@@ -679,7 +679,7 @@ public class JavaPropertiesBuilderTest
         assertTrue(PropertiesTestHelper.checkHasCommandUsage("Usage: import <options>", lineSet));
         assertTrue(PropertiesTestHelper.checkHasCommandOption(cmdImport,
                 "help", "help", null,
-                "Print this help then exit.", lineSet));
+                GlobalConfiguration.DEFAULT_HELP_DESCRIPTION, lineSet));
         assertTrue(PropertiesTestHelper.checkHasCommandOption(cmdImport,
                 "import-arg", "import-arg", ClcParser.TRUE,
                 "Overrides property 'import.arg', default value 'x'", lineSet));
@@ -688,7 +688,7 @@ public class JavaPropertiesBuilderTest
         assertTrue(PropertiesTestHelper.checkHasCommandUsage("Usage: export <options>", lineSet));
         assertTrue(PropertiesTestHelper.checkHasCommandOption(cmdExport,
                 "help", "help", null,
-                "Print this help then exit.", lineSet));
+                GlobalConfiguration.DEFAULT_HELP_DESCRIPTION, lineSet));
         assertTrue(PropertiesTestHelper.checkHasCommandOption(cmdExport,
                 "export-arg", "export-arg", ClcParser.TRUE,
                 "Overrides property 'export.arg', default value 'y'", lineSet));
@@ -841,7 +841,7 @@ public class JavaPropertiesBuilderTest
         System.setOut(ps);
         instance.build(args);
         String output = os.toString("UTF8");
-        assertTrue(output.contains("--help             Print this help then exit."));
+        assertTrue(output.contains("--help             " + GlobalConfiguration.DEFAULT_HELP_DESCRIPTION));
         assertTrue(output.contains("--delay <arg>      Overrides property 'delay', default value '4.5'"));
         // Note missing <argg> entry denoting a unary switch:
         assertTrue(output.contains("--failover         Overrides property 'failover', default value"));
@@ -898,7 +898,7 @@ public class JavaPropertiesBuilderTest
         instance.build(args);
         String helpOutput = baos.toString();
         assertTrue(helpOutput.contains("--version"));
-        assertTrue(helpOutput.contains("Print version then exit."));
+        assertTrue(helpOutput.contains(GlobalConfiguration.DEFAULT_VERSION_DESCRIPTION));
     }
 
     /**

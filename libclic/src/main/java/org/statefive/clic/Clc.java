@@ -1538,8 +1538,9 @@ public class Clc implements ArgsListener, CommandArgsListener {
             String optionValue) throws ClcException {
         // the option could be a short option or a long option - since option
         // configurations are defined with the key being the
-        // option.[name] value in the original configuration, we need to get the
-        // corresponding configuration that matches the given short/long option
+        // option.[config-name] value in the original configuration, we need to
+        // get the corresponding configuration that matches the given short/long
+        // option
         OptionConfiguration optConfig = getOptionConfiguration(optionConfig,
                 option);
         Object value = null;
@@ -1594,8 +1595,9 @@ public class Clc implements ArgsListener, CommandArgsListener {
             String option, String optionValue) throws ClcException {
         // the option could be a short option or a long option - since option
         // configurations are defined with the key being the
-        // option.[name] value in the original configuration, we need to get the
-        // corresponding configuration that matches the given short/long option
+        // option.[config-name] value in the original configuration, we need to
+        // get the corresponding configuration that matches the given short/long
+        // option
         OptionConfiguration optConfig = getOptionConfiguration(optionConfig,
                 option);
         Object value = null;

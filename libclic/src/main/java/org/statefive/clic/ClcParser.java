@@ -414,7 +414,7 @@ public class ClcParser {
                     throw new ClcException(currentLineNo, ex.getMessage());
                 }
             } else if (builtLine.toString().matches(OPTION_REGEX_BASIC_LINE)) {
-                // it's a standard option.[name].* definition;
+                // it's a standard option.[config-name].* definition;
                 // there shall be no more global definitions or prefix arguments
                 // after this:
                 globalConfigParsed = true;
@@ -434,7 +434,7 @@ public class ClcParser {
                 updateCurrentOption(name, subOption, value, currentLineNo);
                 builtLine = null;
             } else if (builtLine.toString().matches(ARGS_REGEX_BASIC_LINE)) {
-                // it's an argument args.[name].* definition; no more global
+                // it's an argument args.[config-name].* definition; no more global
                 // definitions, prefix arguments or options after this:
                 globalConfigParsed = true;
                 optionsParsed = true;

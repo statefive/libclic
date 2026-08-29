@@ -40,9 +40,9 @@ import java.util.Objects;
  * commands cannot be declared with prefix arguments. As with top-level
  * (non-command) options, option configurations must be defined first, followed
  * by argument configurations (if present). Commands must be defined after
- * global options, and once declared, all {@code option.[name].*} and all
- * {@code args.[name].*} definitions will be attached to the specified command
- * until a new command definition is defined.
+ * global options, and once declared, all {@code option.[config-name].*} and all
+ * {@code args.[config-name].*} definitions will be attached to the specified
+ * command until a new command definition is defined.
  *
  * <p>
  * Commands are defined as follows:
@@ -251,7 +251,7 @@ public class Command {
 
     /**
      * Get the option map for this configuration; the key to the map will be the
-     * option configuration names defined by the {@code option.[name]}
+     * option configuration names defined by the {@code option.[config-name]}
      * declarations.
      *
      * @return the non-{@code null}, non-empty option map (note that if no
@@ -286,7 +286,7 @@ public class Command {
      * Add the specified option configuration.
      *
      * @param name non-{@code null} name of the option configuration; this will
-     * be the {@code option.[name]} from the configuration file.
+     * be the {@code option.[config-name]} from the configuration file.
      *
      * @param optConfig non-{@code null} option configuration option to add.
      */
@@ -299,7 +299,7 @@ public class Command {
      * Add the specified argument configuration.
      *
      * @param name non-{@code null} name of the argument configuration; this
-     * will be the {@code option.[name]} from the configuration file.
+     * will be the {@code option.[config-name]} from the configuration file.
      *
      * @param argsConfiguration non-{@code null} argument configuration option
      * to add.

@@ -33,6 +33,7 @@ import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.PropertiesConfiguration;
 import org.statefive.clic.ClcException;
 import org.statefive.clic.ClcParser;
+import org.statefive.clic.GlobalConfiguration;
 import static org.statefive.clic.GlobalConfiguration.GLOBAL_HELP_AUTO_USAGE;
 import static org.statefive.clic.GlobalConfiguration.GLOBAL_HELP_COMMAND_FOOTER;
 import static org.statefive.clic.GlobalConfiguration.GLOBAL_HELP_COMMAND_HEADER;
@@ -241,8 +242,8 @@ public class PropertiesTestHelper {
         if (!config.contains("option.help.ignoreCliArgs = true")) {
             throw new Exception("Missing default configuration: option.help.ignoreCliArgs = true");
         }
-        if (!config.contains("option.help.description = Print this help then exit.")) {
-            throw new Exception("Missing default configuration: option.help.description = Print this help then exit.");
+        if (!config.contains("option.help.description = " + GlobalConfiguration.DEFAULT_HELP_DESCRIPTION)) {
+            throw new Exception("Missing default configuration: option.help.description = " + GlobalConfiguration.DEFAULT_HELP_DESCRIPTION);
         }
     }
 

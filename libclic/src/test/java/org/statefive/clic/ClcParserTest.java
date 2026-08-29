@@ -630,7 +630,7 @@ public class ClcParserTest {
                 = globalConfig.getGlobalOptionConfigurations();
         OptionConfiguration optConfig = optionConfig.get("showHelp");
         checkOptionConfiguration(optConfig, "showHelp", "h", "help",
-                "Print this help then exit.", false);
+                GlobalConfiguration.DEFAULT_HELP_DESCRIPTION, false);
         // now check command options
         // first, command named import
         Command command = globalConfig.getCommandRoot().find(globalConfig.getCommandRoot().getRoot(), "import");

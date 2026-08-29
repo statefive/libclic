@@ -20,13 +20,13 @@ package org.statefive.clic;
  * {@code option.<config-name>.*}. The following option values are supported:
  *
  * <ul>
- * <li>{@code option.[name].opts=[options]}: specify short and long options, a
- * short option or a long option. For the first form, a single character is
- * specified for the short option followed by a forward slash, followed by a
- * text string of at least one character for the long option. For the second
- * form, a single character is specified for the short option. For the final
- * form, text of at least one character is specified for the long option. This
- * is the only required configuration option.
+ * <li>{@code option.[config-name].opts=[options]}: specify short and long
+ * options, a short option or a long option. For the first form, a single
+ * character is specified for the short option followed by a forward slash,
+ * followed by a text string of at least one character for the long option. For
+ * the second form, a single character is specified for the short option. For
+ * the final form, text of at least one character is specified for the long
+ * option. This is the only required configuration option.
  *
  * <p>
  * If the {@link GlobalConfiguration} {@code OPTION_TYPE} is not defined, all
@@ -34,20 +34,20 @@ package org.statefive.clic;
  * thrown. if the global configuration is defined then all options must conform
  * to that type;
  * </li>
- * <li>{@code option.[name].hasArg=[true|false]}: if {@code true} then the
- * argument will be supplied with a value via the command line; otherwise the
- * option will not require a value. By default, this is {@code false} so is not
- * required for options that do not require arguments although can be supplied
- * for clarity;</li>
- * <li>{@code option.[name].argName=[argName]}: used when displaying help and
- * when {@code option.[name].hasArg} is supplied. By default, this configuration
- * is not required;</li>
- * <li>{@code option.[name].description=[description]}: used when displaying
- * help. By default this configuration is not required.</li>
+ * <li>{@code option.[config-name].hasArg=[true|false]}: if {@code true} then
+ * the argument will be supplied with a value via the command line; otherwise
+ * the option will not require a value. By default, this is {@code false} so is
+ * not required for options that do not require arguments although can be
+ * supplied for clarity;</li>
+ * <li>{@code option.[config-name].argName=[argName]}: used when displaying help
+ * and when {@code option.[config-name].hasArg} is supplied. By default, this
+ * configuration is not required;</li>
+ * <li>{@code option.[config-name].description=[description]}: used when
+ * displaying help. By default this configuration is not required.</li>
  * </ul>
  *
  * <p>
- * The {@code [name]} section of the option is the name that
+ * The {@code [config-name]} section of the option is the name that
  * {@link OptionListener}s will receive an update for via the {@code option}
  * parameter via
  * {@link OptionListener#option(java.lang.String, java.lang.Object)}; if the the

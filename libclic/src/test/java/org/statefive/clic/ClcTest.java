@@ -268,7 +268,7 @@ public class ClcTest {
         System.setOut(ps);
         cliConfig.process(is, "UTF-8", arguments);
         String output = os.toString("UTF8");
-        assertFalse(output.contains("Print this then quit."));
+        assertFalse(output.contains(GlobalConfiguration.DEFAULT_HELP_DESCRIPTION));
         assertFalse(output.contains("Fail if no connection made, rather than retrying."));
         assertFalse(output.contains("Specify the host; optional. Use localhost if not set."));
         assertFalse(output.contains(" Protocol is optional, assumes HTTP."));
@@ -1260,7 +1260,7 @@ public class ClcTest {
         System.setOut(ps);
         cliConfig.process(is, "UTF-8", arguments);
         String output = os.toString("UTF8");
-        assertTrue(output.contains("Print this help then exit."));
+        assertTrue(output.contains(GlobalConfiguration.DEFAULT_HELP_DESCRIPTION));
         ps.close();
         os.close();
     }
@@ -1282,7 +1282,7 @@ public class ClcTest {
         System.setOut(ps);
         cliConfig.process(is, "UTF-8", arguments);
         String output = os.toString("UTF8");
-        assertTrue(output.contains("Print this help then exit."));
+        assertTrue(output.contains(GlobalConfiguration.DEFAULT_HELP_DESCRIPTION));
         ps.close();
         os.close();
     }
@@ -1348,7 +1348,7 @@ public class ClcTest {
         System.setOut(ps);
         cliConfig.process(is, "UTF-8", arguments);
         String output = os.toString("UTF8");
-        assertTrue(output.contains("Print this help then exit."));
+        assertTrue(output.contains(GlobalConfiguration.DEFAULT_HELP_DESCRIPTION));
         ps.close();
         os.close();
         is.close();
@@ -1371,7 +1371,7 @@ public class ClcTest {
         System.setOut(ps);
         cliConfig.process(is, "UTF-8", arguments);
         String output = os.toString("UTF8");
-        assertTrue(output.contains("Print this help then exit."));
+        assertTrue(output.contains(GlobalConfiguration.DEFAULT_HELP_DESCRIPTION));
         ps.close();
         os.close();
         is.close();
